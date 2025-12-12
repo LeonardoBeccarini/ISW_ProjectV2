@@ -50,7 +50,7 @@ public class GitRetriever {
 
     private static final String JAVA_EXTENSION = ".java";
     private static final String TEST_DIR_FRAGMENT = "/test/";
-    private static final double ANALYSIS_FRACTION = 0.5; // Prima porzione di release da usare per l'analisi
+    private static final double ANALYSIS_FRACTION = 0.7; // Prima porzione di release da usare per l'analisi
 
     private final String projectName;
     private final List<Version> versionList; // lista completa delle versioni
@@ -220,7 +220,7 @@ public class GitRetriever {
         for (RevCommit c : log) {
             if (c.getParentCount() == 0) continue;          // root
             String msg = Optional.ofNullable(c.getFullMessage()).orElse("");
-            if (msg.startsWith("Merge")) continue;          // salta i merge
+            if (c.getParentCount() > 1) continue;         // salta i merge
 
             LocalDate d = Instant.ofEpochSecond(c.getCommitTime())
                     .atZone(ZoneOffset.UTC)

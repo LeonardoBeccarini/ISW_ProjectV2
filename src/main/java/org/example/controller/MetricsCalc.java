@@ -1,5 +1,10 @@
 package org.example.controller;
 
+import net.sourceforge.pmd.*;
+import net.sourceforge.pmd.lang.LanguageRegistry;
+import net.sourceforge.pmd.util.datasource.DataSource;
+
+// JavaParser Imports
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
@@ -7,12 +12,8 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.stmt.*;
-import net.sourceforge.pmd.PMDConfiguration;
-import net.sourceforge.pmd.PmdAnalysis;
-import net.sourceforge.pmd.RulePriority;
-import net.sourceforge.pmd.lang.LanguageRegistry;
-import net.sourceforge.pmd.renderers.Renderer;
-import net.sourceforge.pmd.renderers.XMLRenderer;
+
+// JGit Imports
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
@@ -24,22 +25,21 @@ import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
+
+// Model Imports
 import org.example.model.Method;
 import org.example.model.Metrics;
 import org.example.model.Ticket;
 import org.example.model.Version;
 
+// Standard Java Imports
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -58,12 +58,30 @@ public class MetricsCalc {
     private final Map<String, Version> commitToVersion;
     private final List<Ticket> ticketList;
 
+    private final PMDConfiguration pmdConfiguration;
+    private final RuleSets ruleSets; // Carico le regole una volta sola
+
     public MetricsCalc(Repository repository,
                        Map<String, Version> commitToVersion,
                        List<Ticket> ticketList) {
         this.repository = repository;
         this.commitToVersion = commitToVersion;
         this.ticketList = (ticketList != null) ? ticketList : new ArrayList<>();
+
+        // CONFIGURAZIONE PMD 6.55.0
+        this.pmdConfiguration = new PMDConfiguration();
+        this.pmdConfiguration.setDefaultLanguageVersion(
+                LanguageRegistry.findLanguageByTerseName("java").getVersion("11")
+        );
+
+        // Caricamento RuleSets ottimizzato (Fatto una volta sola)
+        try {
+            RuleSetFactory ruleSetFactory = new RuleSetFactory();
+            // Carica le regole standard. Se fallisce, prova "rulesets/java/quickstart.xml"
+            this.ruleSets = ruleSetFactory.createRuleSets("rulesets/java/quickstart.xml");
+        } catch (Exception e) {
+            throw new RuntimeException("Impossibile inizializzare le regole PMD", e);
+        }
     }
 
     /* =========================================================
@@ -201,30 +219,45 @@ public class MetricsCalc {
         int commitVersionIndex = commitVersion.getIndex();
 
         for (Method method : methodsToUpdate) {
+            // Aggiorna solo se il metodo appartiene a una release successiva o uguale al commit
             if (method.getVersion().getIndex() >= commitVersionIndex) {
                 Metrics metrics = method.getMetrics();
 
-                method.getCommits().add(commit);
-                metrics.incrementNumRevisions();
+                // Aggiungiamo il commit solo se non è già presente (per sicurezza)
+                if (!method.getCommits().contains(commit)) {
+                    method.getCommits().add(commit);
+                    metrics.incrementNumRevisions();
+                }
+
                 method.setBodyHash(newBodyHash);
+
+                int locNew = calculateLOC(currentMdAst);
+                int locOld = (oldMdAst != null) ? calculateLOC(oldMdAst) : 0;
 
                 int added = 0;
                 int deleted = 0;
 
-                if (oldMdAst != null) {
-                    int locOld = calculateLOC(oldMdAst);
-                    int locNew = calculateLOC(currentMdAst);
+                if (oldMdAst == null) {
+                    // Metodo nuovo
+                    added = locNew;
+                } else {
+                    // Metodo modificato
                     if (locNew > locOld) {
                         added = locNew - locOld;
-                        metrics.addTotalStmtAdded(added);
                     } else if (locOld > locNew) {
                         deleted = locOld - locNew;
-                        metrics.addTotalStmtDeleted(deleted);
+                    } else {
+                        // FIX: Le LOC sono uguali, ma l'hash è diverso (modifica interna).
+                        // Stimiamo un churn minimo per non avere 0.
+                        // Oppure, idealmente, si userebbe la Levenshtein distance sulle stringhe.
+                        // Qui applichiamo una euristica semplice: si considera una "touched line".
+                        added = 1;
+                        deleted = 1;
                     }
-                } else {
-                    added = calculateLOC(currentMdAst);
-                    metrics.addTotalStmtAdded(added);
                 }
+
+                metrics.addTotalStmtAdded(added);
+                metrics.addTotalStmtDeleted(deleted);
 
                 int churn = added + deleted;
                 if (churn > metrics.getMaxChurn()) {
@@ -514,58 +547,44 @@ public class MetricsCalc {
     }
 
     /* =========================================================
-       =             UTILITY: PMD CODE SMELLS                   =
-       ========================================================= */
+           =             UTILITY: PMD CODE SMELLS (OTTIMIZZATO)     =
+           ========================================================= */
 
-    /**
-     * Lancia PMD sul contenuto del file e restituisce una mappa
-     * linea → numero di violazioni su quella linea.
-     */
     public Map<Integer, Integer> calculateCodeSmellsByLine(String fileContent) {
         Map<Integer, Integer> result = new HashMap<>();
         if (fileContent == null || fileContent.isEmpty()) {
             return result;
         }
 
-        Path tempFile = null;
-        Writer writer = new StringWriter();
         try {
-            tempFile = Files.createTempFile("pmd-", ".java");
-            Files.write(tempFile, fileContent.getBytes(StandardCharsets.UTF_8));
+            // 1. Prepara il contesto e il report vuoto
+            RuleContext ctx = new RuleContext();
+            Report report = new Report();
+            ctx.setReport(report);
 
-            PMDConfiguration configuration = new PMDConfiguration();
-            configuration.setMinimumPriority(RulePriority.MEDIUM);
-            configuration.addRuleSet("rulesets/java/quickstart.xml");
-            configuration.setDefaultLanguageVersion(
-                    LanguageRegistry.findLanguageByTerseName("java").getVersion("11"));
-            configuration.setReportFormat("xml");
+            // Nome fittizio necessario per il contesto
+            ctx.setSourceCodeFilename("Analysis.java");
 
-            Renderer renderer = new XMLRenderer();
-            renderer.setWriter(writer);
+            // 2. Prepara il processore
+            SourceCodeProcessor processor = new SourceCodeProcessor(this.pmdConfiguration);
 
-            try (PmdAnalysis pmd = PmdAnalysis.create(configuration)) {
-                pmd.files().addFile(tempFile);
-                pmd.addRenderer(renderer);
-                pmd.performAnalysis();
+            // 3. Esegui l'analisi direttamente sullo stream di byte (In-Memory)
+            processor.processSourceCode(
+                    new ByteArrayInputStream(fileContent.getBytes(StandardCharsets.UTF_8)),
+                    this.ruleSets,
+                    ctx
+            );
+
+            // 4. Leggi i risultati direttamente dal Report
+            for (RuleViolation rv : report.getViolations()) {
+                result.merge(rv.getBeginLine(), 1, Integer::sum);
             }
 
-            String xmlReport = writer.toString();
-            Pattern p = Pattern.compile("beginline=\"(\\d+)\"");
-            Matcher m = p.matcher(xmlReport);
-            while (m.find()) {
-                int line = Integer.parseInt(m.group(1));
-                result.merge(line, 1, Integer::sum);
-            }
         } catch (Exception e) {
-            return result;
-        } finally {
-            if (tempFile != null) {
-                try {
-                    Files.deleteIfExists(tempFile);
-                } catch (IOException ignored) {
-                }
-            }
+            // Loggare errore se necessario
+            System.err.println("Errore PMD: " + e.getMessage());
         }
+
         return result;
     }
 

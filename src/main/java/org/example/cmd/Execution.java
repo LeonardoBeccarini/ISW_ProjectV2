@@ -10,6 +10,7 @@ import org.example.model.Method;
 import org.example.model.Ticket;
 import org.example.model.Version;
 import org.example.utilities.CsvExporter;
+import org.example.utilities.DatasetDiagnostics;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -33,6 +34,8 @@ public class Execution {
 
             // 4) Stampa quanti metodi sono stati estratti
             System.out.println("Metodi estratti: " + methods.size());
+
+            DatasetDiagnostics.analyzeLabelingQuality(projectName, methods, finalTicketList, versionList);
 
             // 5) Esportazione CSV (versioni, commit, ticket, dataset completo)
             CsvExporter.exportAll(projectName, versionList, finalTicketList, methods);

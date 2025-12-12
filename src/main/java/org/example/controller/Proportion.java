@@ -12,105 +12,142 @@ import static java.lang.Math.max;
 
 public class Proportion {
 
+    private static final int MIN_PROPORTIONS_FOR_INCREMENT = 5;
+    // Donors suggeriti basati sull'ecosistema Apache
+    private static final List<String> DONORS = List.of("AVRO", "SYNCOPE", "CAMEL", "ZOOKEEPER");
+
+    // Soglie per filtrare proportion anomale
+    private static final double MIN_PROPORTION = 0.0;
+    private static final double MAX_PROPORTION = 10.0;
+    private static final int MIN_CONSISTENT_TICKETS = 5;
+
     private final List<Double> proportionList = new ArrayList<>();
     private double totalProportion = 0.0;
 
-    private static final int MIN_PROPORTIONS_FOR_INCREMENT = 5;
-    private static final List<String> DONORS = List.of("AVRO", "SYNCOPE", "STORM", "ZOOKEEPER");
-
-    /** Processa in ordine di risoluzione; usa cold-start finché poche proporzioni, poi increment. */
     public List<Ticket> processProportion(List<Ticket> tickets, List<Version> versions) {
-        if (tickets == null || versions == null || versions.isEmpty()) return tickets;
+        if (tickets == null || versions == null || versions.isEmpty()) {
+            return new ArrayList<>();
+        }
 
+        // Ordine cronologico necessario per Proportion_Incremental
         tickets.sort(Comparator.comparing(Ticket::getResolutionDate));
 
         for (Ticket t : tickets) {
-            // Se IV noto (da JIRA/AV), aggiorna la serie e continua
+            if (t.getOpeningVersion() == null || t.getFixedVersion() == null) {
+                continue;
+            }
+
+            // Se IV è già noto (training set), impariamo P
             if (t.hasIV()) {
                 addProportion(t);
                 continue;
             }
-            // Stima proporzione: cold-start (donors) se poche osservazioni, poi media cumulativa
+
+            // Se IV manca, lo stimiamo
+            // Usa ColdStart se pochi dati (<5), altrimenti Incremental (media storica)
             double p = (proportionList.size() < MIN_PROPORTIONS_FOR_INCREMENT)
                     ? coldStart(t.getResolutionDate())
                     : increment();
 
             int estIV = obtainIV(p, t);
 
-            // Applica IV stimato (senza aggiornare la media: niente feedback loop)
+            // Applica IV con validazione range, fallback su OV se stima invalida
             if (estIV >= 1 && estIV <= versions.size()) {
                 t.setInjectedVersion(versions.get(estIV - 1));
+            } else {
+                t.setInjectedVersion(t.getOpeningVersion());
             }
         }
         return tickets;
     }
 
-    /** Aggiunge una proporzione calcolata da un ticket con IV/OV/FV noti. */
     private void addProportion(Ticket ticket) {
-        if (ticket.getInjectedVersion() == null || ticket.getOpeningVersion() == null || ticket.getFixedVersion() == null) return;
         int ov = ticket.getOpeningVersion().getIndex();
         int fv = ticket.getFixedVersion().getIndex();
         int iv = ticket.getInjectedVersion().getIndex();
-        int denom = (ov == fv) ? 1 : (fv - ov);
-        double p = (double) (fv - iv) / (double) denom;
-        proportionList.add(p);
-        totalProportion += p;
+
+        if (iv > ov) return; // Dato inconsistente
+
+        // Formula: P = (FV - IV) / (FV - OV)
+        double denom = (ov == fv) ? 1.0 : (double) (fv - ov);
+        double p = (fv - iv) / denom;
+
+        if (!isOutlier(p)) {
+            proportionList.add(p);
+            totalProportion += p;
+        }
     }
 
-    /** Media cumulativa delle proporzioni osservate (increment). */
     private double increment() {
-        return totalProportion / Math.max(1, proportionList.size());
+        return proportionList.isEmpty() ? 0.5 : totalProportion / proportionList.size();
     }
 
-    /** Cold-start: mediana delle medie dei progetti donatori, filtrando ticket consistenti fino a resolutionDate. */
     private double coldStart(LocalDate resolutionDate) {
         List<Double> donorMeans = new ArrayList<>();
+
         for (String project : DONORS) {
             try {
                 JiraRetriever jiraRetriever = new JiraRetriever(project);
                 List<Version> versionList = jiraRetriever.retrieveVersions();
-                List<Ticket> ticketList= jiraRetriever.retrieveTickets(versionList);
+                List<Ticket> ticketList = jiraRetriever.retrieveTickets(versionList);
 
-                // ticket "consistenti": IV noto e risolti entro la data corrente
-                List<Ticket> consistent = new ArrayList<>();
+                List<Double> validProportions = new ArrayList<>();
+
+                // Calcola media P per il donatore usando solo ticket validi e antecedenti
                 for (Ticket t : ticketList) {
-                    if (t.hasIV()
-                            && t.getResolutionDate() != null
-                            && !t.getResolutionDate().isAfter(resolutionDate)) {
-                        consistent.add(t);
-                    }
-                }
-                if (consistent.size() >= 5) {
-                    double sum = 0.0;
-                    for (Ticket t : consistent) {
+                    if (t.hasIV() && t.getResolutionDate() != null && !t.getResolutionDate().isAfter(resolutionDate)) {
                         int ov = t.getOpeningVersion().getIndex();
                         int fv = t.getFixedVersion().getIndex();
                         int iv = t.getInjectedVersion().getIndex();
-                        int denom = (ov == fv) ? 1 : (fv - ov);
-                        double p = (double) (fv - iv) / (double) denom;
-                        sum += p;
+
+                        if (iv > ov) continue;
+
+                        double denom = (ov == fv) ? 1.0 : (double) (fv - ov);
+                        double p = (fv - iv) / denom;
+
+                        if (!isOutlier(p)) validProportions.add(p);
                     }
-                    donorMeans.add(sum / consistent.size());
                 }
-            } catch (Exception ignored) {
-                // robustezza: se un donatore fallisce lo saltiamo
+
+                if (validProportions.size() >= MIN_CONSISTENT_TICKETS) {
+                    double sum = validProportions.stream().mapToDouble(Double::doubleValue).sum();
+                    donorMeans.add(sum / validProportions.size());
+                }
+
+            } catch (Exception e) {
+                // Ignora donatore in caso di errore
             }
         }
-        if (donorMeans.isEmpty()) return 0.5; // fallback sobrio
-        donorMeans.sort(Double::compareTo);
-        int n = donorMeans.size();
-        return (n % 2 == 1) ? donorMeans.get(n / 2)
-                : (donorMeans.get(n / 2 - 1) + donorMeans.get(n / 2)) / 2.0;
+
+        return donorMeans.isEmpty() ? 0.5 : calculateMedian(donorMeans);
     }
 
-    /** Stima IV con clamp a [1, OV] per evitare IV future rispetto a OV. */
     private int obtainIV(double proportion, Ticket ticket) {
-        if (ticket.getOpeningVersion() == null || ticket.getFixedVersion() == null) return 1;
         int ov = ticket.getOpeningVersion().getIndex();
         int fv = ticket.getFixedVersion().getIndex();
-        int estimatedIV = (ov != fv)
-                ? max(1, (int) Math.floor(fv - proportion * (fv - ov)))
-                : max(1, (int) Math.floor(fv - proportion));
+
+        // Formula inversa: IV = FV - P * (FV - OV)
+        int estimatedIV;
+        if (ov == fv) {
+            estimatedIV = max(1, (int) Math.floor(fv - proportion));
+        } else {
+            estimatedIV = max(1, (int) Math.floor(fv - proportion * (fv - ov)));
+        }
+
+        // Vincolo: IV non può essere successivo a OV
         return Math.min(ov, estimatedIV);
+    }
+
+    private boolean isOutlier(double p) {
+        return p < MIN_PROPORTION || p > MAX_PROPORTION || Double.isNaN(p) || Double.isInfinite(p);
+    }
+
+    private double calculateMedian(List<Double> values) {
+        if (values.isEmpty()) return 0.5;
+        values.sort(Double::compareTo);
+        int n = values.size();
+        return (n % 2 == 1)
+                ? values.get(n / 2)
+                : (values.get(n / 2 - 1) + values.get(n / 2)) / 2.0;
     }
 }
