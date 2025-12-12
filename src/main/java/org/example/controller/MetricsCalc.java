@@ -1,8 +1,12 @@
 package org.example.controller;
 
 import net.sourceforge.pmd.*;
+import net.sourceforge.pmd.PMDConfiguration;
+import net.sourceforge.pmd.PmdAnalysis;
+import net.sourceforge.pmd.Report;
+import net.sourceforge.pmd.RuleViolation;
 import net.sourceforge.pmd.lang.LanguageRegistry;
-import net.sourceforge.pmd.util.datasource.DataSource;
+import net.sourceforge.pmd.lang.LanguageVersion;
 
 // JavaParser Imports
 import com.github.javaparser.ParseProblemException;
@@ -33,9 +37,7 @@ import org.example.model.Ticket;
 import org.example.model.Version;
 
 // Standard Java Imports
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -58,8 +60,11 @@ public class MetricsCalc {
     private final Map<String, Version> commitToVersion;
     private final List<Ticket> ticketList;
 
-    private final PMDConfiguration pmdConfiguration;
-    private final RuleSets ruleSets; // Carico le regole una volta sola
+    // Ruleset standard PMD (classpath resource)
+    private static final String PMD_RULESET_PATH = "rulesets/java/quickstart.xml";
+
+    // Versione Java usata da PMD
+    private final LanguageVersion pmdJavaLv;
 
     public MetricsCalc(Repository repository,
                        Map<String, Version> commitToVersion,
@@ -68,20 +73,8 @@ public class MetricsCalc {
         this.commitToVersion = commitToVersion;
         this.ticketList = (ticketList != null) ? ticketList : new ArrayList<>();
 
-        // CONFIGURAZIONE PMD 6.55.0
-        this.pmdConfiguration = new PMDConfiguration();
-        this.pmdConfiguration.setDefaultLanguageVersion(
-                LanguageRegistry.findLanguageByTerseName("java").getVersion("11")
-        );
+        this.pmdJavaLv = LanguageRegistry.findLanguageByTerseName("java").getVersion("11");
 
-        // Caricamento RuleSets ottimizzato (Fatto una volta sola)
-        try {
-            RuleSetFactory ruleSetFactory = new RuleSetFactory();
-            // Carica le regole standard. Se fallisce, prova "rulesets/java/quickstart.xml"
-            this.ruleSets = ruleSetFactory.createRuleSets("rulesets/java/quickstart.xml");
-        } catch (Exception e) {
-            throw new RuntimeException("Impossibile inizializzare le regole PMD", e);
-        }
     }
 
     /* =========================================================
@@ -89,13 +82,17 @@ public class MetricsCalc {
        ========================================================= */
 
     /**
-     * Costruisce la firma del metodo, ad esempio: nome(T1,T2,...).
+     * Costruisce una firma univoca nel file includendo anche la catena dei tipi contenitori.
+     * Esempio: Outer$Inner#foo(int,String)
      */
     public String buildMethodSignature(MethodDeclaration md) {
+        String owner = buildEnclosingTypeChain(md);
+
         String params = md.getParameters().stream()
-                .map(p -> p.getType().asString())
+                .map(p -> eraseGenericType(p.getType().asString()))
                 .collect(Collectors.joining(","));
-        return md.getNameAsString() + "(" + params + ")";
+
+        return owner + "#" + md.getNameAsString() + "(" + params + ")";
     }
 
     /**
@@ -552,41 +549,31 @@ public class MetricsCalc {
 
     public Map<Integer, Integer> calculateCodeSmellsByLine(String fileContent) {
         Map<Integer, Integer> result = new HashMap<>();
-        if (fileContent == null || fileContent.isEmpty()) {
+        if (fileContent == null || fileContent.isBlank()) {
             return result;
         }
 
-        try {
-            // 1. Prepara il contesto e il report vuoto
-            RuleContext ctx = new RuleContext();
-            Report report = new Report();
-            ctx.setReport(report);
+        PMDConfiguration cfg = new PMDConfiguration();
+        cfg.setDefaultLanguageVersion(pmdJavaLv);
+        cfg.setFailOnViolation(false);
+        cfg.setThreads(1); // più stabile e spesso più veloce su singolo file
+        cfg.addRuleSet(PMD_RULESET_PATH); // carica ruleset via RuleSetLoader :contentReference[oaicite:3]{index=3}
 
-            // Nome fittizio necessario per il contesto
-            ctx.setSourceCodeFilename("Analysis.java");
+        try (PmdAnalysis pmd = PmdAnalysis.create(cfg)) {
+            pmd.files().addSourceFile(fileContent, "Analysis.java");
 
-            // 2. Prepara il processore
-            SourceCodeProcessor processor = new SourceCodeProcessor(this.pmdConfiguration);
+            Report report = pmd.performAnalysisAndCollectReport();
 
-            // 3. Esegui l'analisi direttamente sullo stream di byte (In-Memory)
-            processor.processSourceCode(
-                    new ByteArrayInputStream(fileContent.getBytes(StandardCharsets.UTF_8)),
-                    this.ruleSets,
-                    ctx
-            );
-
-            // 4. Leggi i risultati direttamente dal Report
             for (RuleViolation rv : report.getViolations()) {
                 result.merge(rv.getBeginLine(), 1, Integer::sum);
             }
-
         } catch (Exception e) {
-            // Loggare errore se necessario
             System.err.println("Errore PMD: " + e.getMessage());
         }
 
         return result;
     }
+
 
     /**
      * Restituisce il numero di code smell all'interno del metodo sommando
@@ -612,4 +599,63 @@ public class MetricsCalc {
         }
         return count;
     }
+
+
+        /* =========================================================
+           =             UTILITY PER LA FIRMA UNIVOCA     =
+           ========================================================= */
+        private String buildEnclosingTypeChain(MethodDeclaration md) {
+            List<String> parts = new ArrayList<>();
+
+            Node n = md;
+            while (n != null) {
+                if (n instanceof com.github.javaparser.ast.body.ClassOrInterfaceDeclaration c) {
+                    parts.add(c.getNameAsString());
+                } else if (n instanceof com.github.javaparser.ast.body.EnumDeclaration e) {
+                    parts.add(e.getNameAsString());
+                } else if (n instanceof com.github.javaparser.ast.body.RecordDeclaration r) {
+                    parts.add(r.getNameAsString());
+                } else if (n instanceof com.github.javaparser.ast.body.AnnotationDeclaration a) {
+                    parts.add(a.getNameAsString());
+                }
+                n = n.getParentNode().orElse(null);
+            }
+
+            Collections.reverse(parts);
+
+            // Fallback (raro): metodo in contesti strani/non-nominati
+            if (parts.isEmpty()) {
+                return "<unknownType>";
+            }
+            return String.join("$", parts);
+        }
+
+    /**
+     * "Erasure" semplice: rimuove tutto ciò che è tra <...> gestendo nesting.
+     * Esempio: Map<String, List<Integer>> -> Map
+     */
+    private String eraseGenericType(String typeStr) {
+        if (typeStr == null) return "";
+
+        String s = typeStr.replaceAll("\\s+", ""); // niente spazi
+        StringBuilder out = new StringBuilder(s.length());
+
+        int depth = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char ch = s.charAt(i);
+            if (ch == '<') {
+                depth++;
+                continue;
+            }
+            if (ch == '>') {
+                if (depth > 0) depth--;
+                continue;
+            }
+            if (depth == 0) {
+                out.append(ch);
+            }
+        }
+        return out.toString();
+    }
+
 }
