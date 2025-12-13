@@ -8,9 +8,14 @@ public class Metrics {
     // ========= Metriche statiche =========
     private int loc;
     private int cyclomaticComplexity;
+    /** Numero di branch decisionali (if/for/while/switch/catch/ternary...). */
+    private int numBranches;
     private int nestingDepth;
     private int numCodeSmells;
     private int parameterCount;
+
+    /** Numero di variabili locali dichiarate nel corpo del metodo. */
+    private int numLocalVariables;
 
     // ========= Metriche di processo =========
     private int numAuthors;
@@ -40,12 +45,28 @@ public class Metrics {
         this.cyclomaticComplexity = cyclomaticComplexity;
     }
 
+    public int getNumBranches() {
+        return numBranches;
+    }
+
+    public void setNumBranches(int numBranches) {
+        this.numBranches = numBranches;
+    }
+
     public int getNestingDepth() {
         return nestingDepth;
     }
 
     public void setNestingDepth(int nestingDepth) {
         this.nestingDepth = nestingDepth;
+    }
+
+    public int getNumLocalVariables() {
+        return numLocalVariables;
+    }
+
+    public void setNumLocalVariables(int numLocalVariables) {
+        this.numLocalVariables = numLocalVariables;
     }
 
     public int getNumCodeSmells() {

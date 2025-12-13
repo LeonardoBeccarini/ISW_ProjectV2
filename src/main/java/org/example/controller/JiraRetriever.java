@@ -94,20 +94,17 @@ public class JiraRetriever {
                     JSONArray affectedVersionList = o.getJSONObject("fields").getJSONArray("versions");
                     List<Version> av = JiraUtils.getAffectedVersions(affectedVersionList, versionList);
 
-                    // 4. Controllo di coerenza sulle Affected Versions (SOLO se presenti)
+                    // 4. Controllo di coerenza sulle Affected Versions (allineato al reference)
+                    // Se AV non vuota, allora la prima AV deve essere STRICTLY prima di OV,
+                    // e OV non deve essere dopo FV.
                     if (!av.isEmpty()) {
                         Version firstAV = av.getFirst();
-                        Version lastAV = av.getLast();
-
-                        // Controllo A: L'Affected Version deve esistere PRIMA (o uguale) dell'apertura del ticket.
-                        // Se OV < AV, stiamo dicendo che il bug affetta una versione futura che non esiste ancora.
-                        if (ov.getDate().isBefore(firstAV.getDate())) {
-                            continue;
+                        if (firstAV != null && firstAV.getDate() != null && ov.getDate() != null) {
+                            if (!firstAV.getDate().isBefore(ov.getDate())) {
+                                continue;
+                            }
                         }
-
-                        // Controllo B: La Fixed Version deve essere successiva all'ultima versione affetta.
-                        // Se FV è prima o uguale all'ultima AV, c'è un'incongruenza temporale.
-                        if (!fv.getDate().isAfter(lastAV.getDate())) {
+                        if (ov.getDate().isAfter(fv.getDate())) {
                             continue;
                         }
                     }
@@ -128,8 +125,6 @@ public class JiraRetriever {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                // In caso di errore nel fetch, proviamo a uscire dal loop o gestire l'eccezione
-                // Impostare total = i forza l'uscita dal while esterno
                 total = i;
             }
         } while (i < total);

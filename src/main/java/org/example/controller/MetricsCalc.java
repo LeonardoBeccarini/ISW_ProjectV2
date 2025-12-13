@@ -1,6 +1,5 @@
 package org.example.controller;
 
-import net.sourceforge.pmd.*;
 import net.sourceforge.pmd.PMDConfiguration;
 import net.sourceforge.pmd.PmdAnalysis;
 import net.sourceforge.pmd.Report;
@@ -8,7 +7,6 @@ import net.sourceforge.pmd.RuleViolation;
 import net.sourceforge.pmd.lang.LanguageRegistry;
 import net.sourceforge.pmd.lang.LanguageVersion;
 
-// JavaParser Imports
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
@@ -17,7 +15,6 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.stmt.*;
 
-// JGit Imports
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
@@ -30,13 +27,11 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
-// Model Imports
 import org.example.model.Method;
 import org.example.model.Metrics;
 import org.example.model.Ticket;
 import org.example.model.Version;
 
-// Standard Java Imports
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -45,11 +40,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Classe dedicata al calcolo di tutte le metriche (statiche e di processo)
- * per i metodi estratti dal repository Git.
- *
- * NON modifica la logica originale di GitRetriever, ma ne isola le responsabilità
- * relative al calcolo delle metriche.
+ * Calcolo metriche statiche e di processo.
+ * Code smells: PMD 6.55 via PMDConfiguration + PmdAnalysis (no API deprecated).
  */
 public class MetricsCalc {
 
@@ -60,7 +52,7 @@ public class MetricsCalc {
     private final Map<String, Version> commitToVersion;
     private final List<Ticket> ticketList;
 
-    // Ruleset standard PMD (classpath resource)
+    // Ruleset standard PMD (classpath resource) - compatibile PMD 6.55
     private static final String PMD_RULESET_PATH = "rulesets/java/quickstart.xml";
 
     // Versione Java usata da PMD
@@ -74,7 +66,6 @@ public class MetricsCalc {
         this.ticketList = (ticketList != null) ? ticketList : new ArrayList<>();
 
         this.pmdJavaLv = LanguageRegistry.findLanguageByTerseName("java").getVersion("11");
-
     }
 
     /* =========================================================
@@ -82,7 +73,7 @@ public class MetricsCalc {
        ========================================================= */
 
     /**
-     * Costruisce una firma univoca nel file includendo anche la catena dei tipi contenitori.
+     * Firma univoca nel file includendo la catena dei tipi contenitori.
      * Esempio: Outer$Inner#foo(int,String)
      */
     public String buildMethodSignature(MethodDeclaration md) {
@@ -97,6 +88,7 @@ public class MetricsCalc {
 
     /**
      * Calcola e popola tutte le metriche statiche di un metodo.
+     * IMPORTANT: include NumBranches e NumLocalVariables (allineamento reference).
      */
     public void computeStaticMetricsForMethod(Method method,
                                               MethodDeclaration md,
@@ -108,15 +100,25 @@ public class MetricsCalc {
         int branches = calculateNumBranches(md);
         int cc = branches + 1;
         int nesting = calculateNestingDepth(md);
+        int localVars = calculateNumLocalVariables(md);
         int codeSmells = estimateCodeSmellsForMethod(md, codeSmellsByLine);
 
         metrics.setLoc(loc);
         metrics.setParameterCount(params);
+        metrics.setNumBranches(branches);
         metrics.setCyclomaticComplexity(cc);
         metrics.setNestingDepth(nesting);
+        metrics.setNumLocalVariables(localVars);
         metrics.setNumCodeSmells(codeSmells);
 
         method.setBodyHash(calculateBodyHash(md));
+    }
+
+    private int calculateNumLocalVariables(MethodDeclaration md) {
+        if (md == null || md.getBody().isEmpty()) return 0;
+        return md.getBody().get()
+                .findAll(com.github.javaparser.ast.body.VariableDeclarator.class)
+                .size();
     }
 
     /* =========================================================
@@ -244,10 +246,7 @@ public class MetricsCalc {
                     } else if (locOld > locNew) {
                         deleted = locOld - locNew;
                     } else {
-                        // FIX: Le LOC sono uguali, ma l'hash è diverso (modifica interna).
-                        // Stimiamo un churn minimo per non avere 0.
-                        // Oppure, idealmente, si userebbe la Levenshtein distance sulle stringhe.
-                        // Qui applichiamo una euristica semplice: si considera una "touched line".
+                        // LOC uguali ma hash diverso: churn minimo (modifica interna)
                         added = 1;
                         deleted = 1;
                     }
@@ -426,10 +425,10 @@ public class MetricsCalc {
             for (MethodDeclaration md : cu.findAll(MethodDeclaration.class)) {
                 methods.put(buildMethodSignature(md), md);
             }
-        } catch (ParseProblemException e) {
-            // problemi di parsing, ignoriamo
-        } catch (Exception e) {
-            // altri problemi di parsing, ignoriamo
+        } catch (ParseProblemException ignored) {
+            // parsing fallito: ignora file
+        } catch (Exception ignored) {
+            // parsing fallito: ignora file
         }
         return methods;
     }
@@ -544,9 +543,13 @@ public class MetricsCalc {
     }
 
     /* =========================================================
-           =             UTILITY: PMD CODE SMELLS (OTTIMIZZATO)     =
-           ========================================================= */
+       =             PMD CODE SMELLS (PMD 6.55)                 =
+       ========================================================= */
 
+    /**
+     * PMD 6.55: analizza il contenuto del file e ritorna mappa beginLine -> count violazioni.
+     * Usa PMDConfiguration + PmdAnalysis (API non deprecata).
+     */
     public Map<Integer, Integer> calculateCodeSmellsByLine(String fileContent) {
         Map<Integer, Integer> result = new HashMap<>();
         if (fileContent == null || fileContent.isBlank()) {
@@ -556,14 +559,14 @@ public class MetricsCalc {
         PMDConfiguration cfg = new PMDConfiguration();
         cfg.setDefaultLanguageVersion(pmdJavaLv);
         cfg.setFailOnViolation(false);
-        cfg.setThreads(1); // più stabile e spesso più veloce su singolo file
-        cfg.addRuleSet(PMD_RULESET_PATH); // carica ruleset via RuleSetLoader :contentReference[oaicite:3]{index=3}
+        cfg.setThreads(1);
+        cfg.addRuleSet(PMD_RULESET_PATH);
 
         try (PmdAnalysis pmd = PmdAnalysis.create(cfg)) {
+            // il pathId serve per determinare il linguaggio via estensione
             pmd.files().addSourceFile(fileContent, "Analysis.java");
 
             Report report = pmd.performAnalysisAndCollectReport();
-
             for (RuleViolation rv : report.getViolations()) {
                 result.merge(rv.getBeginLine(), 1, Integer::sum);
             }
@@ -574,10 +577,8 @@ public class MetricsCalc {
         return result;
     }
 
-
     /**
-     * Restituisce il numero di code smell all'interno del metodo sommando
-     * le violazioni PMD sulle linee comprese tra inizio e fine del metodo.
+     * Conta i code smells nel metodo sommando le violazioni PMD sulle linee del metodo.
      */
     private int estimateCodeSmellsForMethod(MethodDeclaration md,
                                             Map<Integer, Integer> codeSmellsByLine) {
@@ -600,35 +601,34 @@ public class MetricsCalc {
         return count;
     }
 
+    /* =========================================================
+       =             UTILITY PER LA FIRMA UNIVOCA               =
+       ========================================================= */
 
-        /* =========================================================
-           =             UTILITY PER LA FIRMA UNIVOCA     =
-           ========================================================= */
-        private String buildEnclosingTypeChain(MethodDeclaration md) {
-            List<String> parts = new ArrayList<>();
+    private String buildEnclosingTypeChain(MethodDeclaration md) {
+        List<String> parts = new ArrayList<>();
 
-            Node n = md;
-            while (n != null) {
-                if (n instanceof com.github.javaparser.ast.body.ClassOrInterfaceDeclaration c) {
-                    parts.add(c.getNameAsString());
-                } else if (n instanceof com.github.javaparser.ast.body.EnumDeclaration e) {
-                    parts.add(e.getNameAsString());
-                } else if (n instanceof com.github.javaparser.ast.body.RecordDeclaration r) {
-                    parts.add(r.getNameAsString());
-                } else if (n instanceof com.github.javaparser.ast.body.AnnotationDeclaration a) {
-                    parts.add(a.getNameAsString());
-                }
-                n = n.getParentNode().orElse(null);
+        Node n = md;
+        while (n != null) {
+            if (n instanceof com.github.javaparser.ast.body.ClassOrInterfaceDeclaration c) {
+                parts.add(c.getNameAsString());
+            } else if (n instanceof com.github.javaparser.ast.body.EnumDeclaration e) {
+                parts.add(e.getNameAsString());
+            } else if (n instanceof com.github.javaparser.ast.body.RecordDeclaration r) {
+                parts.add(r.getNameAsString());
+            } else if (n instanceof com.github.javaparser.ast.body.AnnotationDeclaration a) {
+                parts.add(a.getNameAsString());
             }
-
-            Collections.reverse(parts);
-
-            // Fallback (raro): metodo in contesti strani/non-nominati
-            if (parts.isEmpty()) {
-                return "<unknownType>";
-            }
-            return String.join("$", parts);
+            n = n.getParentNode().orElse(null);
         }
+
+        Collections.reverse(parts);
+
+        if (parts.isEmpty()) {
+            return "<unknownType>";
+        }
+        return String.join("$", parts);
+    }
 
     /**
      * "Erasure" semplice: rimuove tutto ciò che è tra <...> gestendo nesting.
@@ -637,7 +637,7 @@ public class MetricsCalc {
     private String eraseGenericType(String typeStr) {
         if (typeStr == null) return "";
 
-        String s = typeStr.replaceAll("\\s+", ""); // niente spazi
+        String s = typeStr.replaceAll("\\s+", "");
         StringBuilder out = new StringBuilder(s.length());
 
         int depth = 0;
@@ -657,5 +657,4 @@ public class MetricsCalc {
         }
         return out.toString();
     }
-
 }

@@ -1,7 +1,7 @@
 package org.example.utilities;
 
-import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.example.model.Method;
 import org.example.model.Metrics;
 import org.example.model.Ticket;
@@ -26,14 +26,8 @@ import java.util.stream.Collectors;
  *  - i commit
  *  - i ticket
  *  - il dataset completo dei metodi (metriche + label buggy)
- *
  * I file vengono scritti nella cartella:
  *   output/csv/<PROJECT_NAME>/
- * Ad esempio, per BOOKKEEPER:
- *   output/csv/BOOKKEEPER/versions.csv
- *   output/csv/BOOKKEEPER/commits.csv
- *   output/csv/BOOKKEEPER/tickets.csv
- *   output/csv/BOOKKEEPER/dataset.csv
  */
 public final class CsvExporter {
 
@@ -59,7 +53,6 @@ public final class CsvExporter {
             projectName = "PROJECT";
         }
 
-        // output/csv/BOOKKEEPER
         Path baseDir = Paths.get("output", "csv", projectName.toUpperCase());
         Files.createDirectories(baseDir);
 
@@ -129,18 +122,18 @@ public final class CsvExporter {
                     if (c == null) continue;
                     String hash = c.getName();
                     if (!seenHashes.add(hash)) {
-                        // già scritto
                         continue;
                     }
 
                     PersonIdent author = c.getAuthorIdent();
                     String authorName = (author != null) ? nullSafe(author.getName()) : "";
                     String authorEmail = (author != null) ? nullSafe(author.getEmailAddress()) : "";
+
                     LocalDate commitDate = Instant.ofEpochSecond(c.getCommitTime())
                             .atZone(ZoneOffset.UTC)
                             .toLocalDate();
-                    String date = formatDate(commitDate);
 
+                    String date = formatDate(commitDate);
                     String ticketKeys = buildTicketKeysForCommit(c, tickets);
                     String shortMsg = nullSafe(c.getShortMessage());
 
@@ -174,10 +167,7 @@ public final class CsvExporter {
                 keys.add(nullSafe(t.getKey()));
             }
         }
-        if (keys.isEmpty()) {
-            return "";
-        }
-        return String.join("|", keys);
+        return keys.isEmpty() ? "" : String.join("|", keys);
     }
 
     // ================================
@@ -257,25 +247,34 @@ public final class CsvExporter {
     // ================================
     //            DATASET
     // ================================
+    /**
+     * Manteniamo VersionIndex/VersionName solo come metadati CSV (non usati in WEKA).
+     * Header (ordine reference):
+     * VersionIndex,VersionName,MethodFQN,LOC,NumParameters,NumBranches,NestingDepth,NumCodeSmells,
+     * NumLocalVariables,NumRevisions,NumAuthors,TotalStmtAdded,TotalStmtDeleted,MaxChurn,AvgChurn,
+     * HasFixHistory,Buggy,BodyHash
+     */
     private static void exportDataset(Path file,
                                       List<Method> methods) throws IOException {
 
         try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
+
             writer.write(String.join(",",
                     "VersionIndex",
                     "VersionName",
                     "MethodFQN",
-                    "Loc",
-                    "CyclomaticComplexity",
+                    "LOC",
+                    "NumParameters",
+                    "NumBranches",
                     "NestingDepth",
                     "NumCodeSmells",
-                    "ParameterCount",
+                    "NumLocalVariables",
+                    "NumRevisions",
                     "NumAuthors",
-                    "MaxChurn",
-                    "AvgChurn",
                     "TotalStmtAdded",
                     "TotalStmtDeleted",
-                    "NumRevisions",
+                    "MaxChurn",
+                    "AvgChurn",
                     "HasFixHistory",
                     "Buggy",
                     "BodyHash"
@@ -286,63 +285,76 @@ public final class CsvExporter {
                 return;
             }
 
-            for (Method m : methods) {
+            // Ordine deterministico: versione -> FQN
+            List<Method> sorted = new ArrayList<>(methods);
+            sorted.sort(Comparator
+                    .comparingInt((Method m) -> (m.getVersion() != null) ? m.getVersion().getIndex() : Integer.MAX_VALUE)
+                    .thenComparing(m -> nullSafe(m.getFullyQualifiedName())));
+
+            for (Method m : sorted) {
                 if (m == null) continue;
 
                 Version v = m.getVersion();
                 int versionIndex = (v != null) ? v.getIndex() : -1;
                 String versionName = (v != null) ? nullSafe(v.getName()) : "";
-                String fqn = nullSafe(m.getFullyQualifiedName());
+
+                String methodFqn = nullSafe(m.getFullyQualifiedName());
                 String bodyHash = nullSafe(m.getBodyHash());
-                boolean buggy = m.isBuggy();
 
                 Metrics metrics = m.getMetrics();
 
                 int loc = 0;
-                int cc = 0;
+                int numParams = 0;
+                int numBranches = 0;
                 int nesting = 0;
                 int smells = 0;
-                int params = 0;
+                int numLocalVars = 0;
+
+                int numRevisions = 0;
                 int numAuthors = 0;
-                int maxChurn = 0;
-                double avgChurn = 0.0;
                 int totalAdded = 0;
                 int totalDeleted = 0;
-                int numRevisions = 0;
+                int maxChurn = 0;
+                double avgChurn = 0.0;
                 int hasFixHistory = 0;
 
                 if (metrics != null) {
                     loc = metrics.getLoc();
-                    cc = metrics.getCyclomaticComplexity();
+                    numParams = metrics.getParameterCount();
+                    numBranches = metrics.getNumBranches();
                     nesting = metrics.getNestingDepth();
                     smells = metrics.getNumCodeSmells();
-                    params = metrics.getParameterCount();
+                    numLocalVars = metrics.getNumLocalVariables();
+
+                    numRevisions = metrics.getNumRevisions();
                     numAuthors = metrics.getNumAuthors();
-                    maxChurn = metrics.getMaxChurn();
-                    avgChurn = metrics.getAvgChurn();
                     totalAdded = metrics.getTotalStmtAdded();
                     totalDeleted = metrics.getTotalStmtDeleted();
-                    numRevisions = metrics.getNumRevisions();
+                    maxChurn = metrics.getMaxChurn();
+                    avgChurn = metrics.getAvgChurn();
                     hasFixHistory = metrics.getHasFixHistory();
                 }
+
+                String buggy = m.isBuggy() ? "yes" : "no";
 
                 writer.write(
                         versionIndex + "," +
                                 escapeCsv(versionName) + "," +
-                                escapeCsv(fqn) + "," +
+                                escapeCsv(methodFqn) + "," +
                                 loc + "," +
-                                cc + "," +
+                                numParams + "," +
+                                numBranches + "," +
                                 nesting + "," +
                                 smells + "," +
-                                params + "," +
+                                numLocalVars + "," +
+                                numRevisions + "," +
                                 numAuthors + "," +
-                                maxChurn + "," +
-                                avgChurn + "," +
                                 totalAdded + "," +
                                 totalDeleted + "," +
-                                numRevisions + "," +
+                                maxChurn + "," +
+                                avgChurn + "," +
                                 hasFixHistory + "," +
-                                (buggy ? "true" : "false") + "," +
+                                buggy + "," +
                                 escapeCsv(bodyHash)
                 );
                 writer.newLine();

@@ -50,7 +50,7 @@ public class GitRetriever {
 
     private static final String JAVA_EXTENSION = ".java";
     private static final String TEST_DIR_FRAGMENT = "/test/";
-    private static final double ANALYSIS_FRACTION = 0.7; // Prima porzione di release da usare per l'analisi
+    private static final double ANALYSIS_FRACTION = 0.5; // Prima porzione di release da usare per l'analisi
 
     private final String projectName;
     private final List<Version> versionList; // lista completa delle versioni
@@ -179,7 +179,7 @@ public class GitRetriever {
      * Associa i commit ai ticket cercando pattern PROJECT-XXX
      * nei messaggi di commit e rispettando le date del ticket.
      */
-    public void associateCommitToTicket(List<Ticket> tickets) throws GitAPIException, IOException {
+    void associateCommitToTicket(List<Ticket> tickets) throws GitAPIException, IOException {
         if (tickets == null || tickets.isEmpty()) {
             return;
         }
@@ -188,6 +188,9 @@ public class GitRetriever {
 
         Map<String, Ticket> byKey = new LinkedHashMap<>();
         LocalDate minC = null, maxR = null;
+
+        // tolleranza per mismatch Jira/Git (timezone, fix commit dopo resolutiondate, ecc.)
+        final int DATE_SLACK_DAYS = 3;
 
         for (Ticket t : tickets) {
             if (t == null) continue;
@@ -206,7 +209,8 @@ public class GitRetriever {
                         ? t.getResolutionDate()
                         : maxR;
             }
-            // resetta la lista dei commit associati
+
+            // reset commit associati
             t.setAssociatedCommits(new ArrayList<>());
         }
 
@@ -218,15 +222,17 @@ public class GitRetriever {
 
         Iterable<RevCommit> log = git.log().add(repository.resolve("HEAD")).call();
         for (RevCommit c : log) {
-            if (c.getParentCount() == 0) continue;          // root
+            if (c.getParentCount() == 0) continue; // root
+
+            // NB: includiamo anche i merge commit (prima venivano scartati)
             String msg = Optional.ofNullable(c.getFullMessage()).orElse("");
-            if (c.getParentCount() > 1) continue;         // salta i merge
 
             LocalDate d = Instant.ofEpochSecond(c.getCommitTime())
                     .atZone(ZoneOffset.UTC)
                     .toLocalDate();
-            if (minC != null && d.isBefore(minC)) continue;
-            if (maxR != null && d.isAfter(maxR)) continue;
+
+            if (minC != null && d.isBefore(minC.minusDays(DATE_SLACK_DAYS))) continue;
+            if (maxR != null && d.isAfter(maxR.plusDays(DATE_SLACK_DAYS))) continue;
 
             Matcher m = pattern.matcher(msg);
             while (m.find()) {
@@ -236,18 +242,18 @@ public class GitRetriever {
 
                 LocalDate cmin = t.getCreationDate();
                 LocalDate cmax = t.getResolutionDate();
-                if (cmin != null && d.isBefore(cmin)) continue;
-                if (cmax != null && d.isAfter(cmax)) continue;
+
+                if (cmin != null && d.isBefore(cmin.minusDays(DATE_SLACK_DAYS))) continue;
+                if (cmax != null && d.isAfter(cmax.plusDays(DATE_SLACK_DAYS))) continue;
 
                 t.getAssociatedCommits().add(c);
             }
         }
-        //elimino ticket senza commit
-        tickets.removeIf(t ->
-                t.getAssociatedCommits() == null ||
-                        t.getAssociatedCommits().isEmpty()
-        );
+
+        // NOTA: non eliminiamo più i ticket senza commit: servono comunque per Proportion
+        // (e riducono bias/instabilità temporale).
     }
+
 
     private String safeTicketKey(Ticket t) {
         return (t.getKey() != null) ? t.getKey().trim() : null;

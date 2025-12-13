@@ -2,7 +2,9 @@ package org.example.controller;
 
 import org.example.model.Ticket;
 import org.example.model.Version;
+import org.json.JSONException;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -13,13 +15,15 @@ import static java.lang.Math.max;
 public class Proportion {
 
     private static final int MIN_PROPORTIONS_FOR_INCREMENT = 5;
-    // Donors suggeriti basati sull'ecosistema Apache
+
     private static final List<String> DONORS = List.of("AVRO", "SYNCOPE", "CAMEL", "ZOOKEEPER");
 
-    // Soglie per filtrare proportion anomale
     private static final double MIN_PROPORTION = 0.0;
     private static final double MAX_PROPORTION = 10.0;
+
     private static final int MIN_CONSISTENT_TICKETS = 5;
+
+    private static Double cachedColdStart = null;
 
     private final List<Double> proportionList = new ArrayList<>();
     private double totalProportion = 0.0;
@@ -29,53 +33,47 @@ public class Proportion {
             return new ArrayList<>();
         }
 
-        // Ordine cronologico necessario per Proportion_Incremental
         tickets.sort(Comparator.comparing(Ticket::getResolutionDate));
 
         for (Ticket t : tickets) {
-            if (t.getOpeningVersion() == null || t.getFixedVersion() == null) {
-                continue;
-            }
+            if (t == null || t.getOpeningVersion() == null || t.getFixedVersion() == null) continue;
 
-            // Se IV è già noto (training set), impariamo P
             if (t.hasIV()) {
                 addProportion(t);
                 continue;
             }
 
-            // Se IV manca, lo stimiamo
-            // Usa ColdStart se pochi dati (<5), altrimenti Incremental (media storica)
             double p = (proportionList.size() < MIN_PROPORTIONS_FOR_INCREMENT)
                     ? coldStart(t.getResolutionDate())
                     : increment();
 
-            int estIV = obtainIV(p, t);
+            int estIVIndex = obtainIV(p, t);
+            estIVIndex = Math.max(1, Math.min(estIVIndex, versions.size()));
 
-            // Applica IV con validazione range, fallback su OV se stima invalida
-            if (estIV >= 1 && estIV <= versions.size()) {
-                t.setInjectedVersion(versions.get(estIV - 1));
-            } else {
-                t.setInjectedVersion(t.getOpeningVersion());
-            }
+            t.setInjectedVersion(versions.get(estIVIndex - 1));
         }
+
         return tickets;
     }
 
-    private void addProportion(Ticket ticket) {
-        int ov = ticket.getOpeningVersion().getIndex();
-        int fv = ticket.getFixedVersion().getIndex();
-        int iv = ticket.getInjectedVersion().getIndex();
+    private void addProportion(Ticket t) {
+        Double p = computeTicketProportion(t);
+        if (p == null || isOutlier(p)) return;
+        proportionList.add(p);
+        totalProportion += p;
+    }
 
-        if (iv > ov) return; // Dato inconsistente
+    private static Double computeTicketProportion(Ticket t) {
+        if (t.getInjectedVersion() == null || t.getOpeningVersion() == null || t.getFixedVersion() == null) return null;
 
-        // Formula: P = (FV - IV) / (FV - OV)
-        double denom = (ov == fv) ? 1.0 : (double) (fv - ov);
-        double p = (fv - iv) / denom;
+        int iv = t.getInjectedVersion().getIndex();
+        int ov = t.getOpeningVersion().getIndex();
+        int fv = t.getFixedVersion().getIndex();
 
-        if (!isOutlier(p)) {
-            proportionList.add(p);
-            totalProportion += p;
-        }
+        if (fv < ov || ov < iv) return null;
+
+        if (fv == ov) return (double) (fv - iv);
+        return (double) (fv - iv) / (double) (fv - ov);
     }
 
     private double increment() {
@@ -83,50 +81,53 @@ public class Proportion {
     }
 
     private double coldStart(LocalDate resolutionDate) {
-        List<Double> donorMeans = new ArrayList<>();
+        if (cachedColdStart != null) return cachedColdStart;
 
+        List<Double> donorMeans = new ArrayList<>();
         for (String project : DONORS) {
             try {
-                JiraRetriever jiraRetriever = new JiraRetriever(project);
-                List<Version> versionList = jiraRetriever.retrieveVersions();
-                List<Ticket> ticketList = jiraRetriever.retrieveTickets(versionList);
+                JiraRetriever jr = new JiraRetriever(project);
+                List<Version> v = jr.retrieveVersions();
+                List<Ticket> tickets = jr.retrieveTickets(v);
 
-                List<Double> validProportions = new ArrayList<>();
-
-                // Calcola media P per il donatore usando solo ticket validi e antecedenti
-                for (Ticket t : ticketList) {
-                    if (t.hasIV() && t.getResolutionDate() != null && !t.getResolutionDate().isAfter(resolutionDate)) {
-                        int ov = t.getOpeningVersion().getIndex();
-                        int fv = t.getFixedVersion().getIndex();
-                        int iv = t.getInjectedVersion().getIndex();
-
-                        if (iv > ov) continue;
-
-                        double denom = (ov == fv) ? 1.0 : (double) (fv - ov);
-                        double p = (fv - iv) / denom;
-
-                        if (!isOutlier(p)) validProportions.add(p);
-                    }
+                List<Double> ps = new ArrayList<>();
+                for (Ticket t : tickets) {
+                    if (!t.hasIV()) continue;
+                    Double p = computeTicketProportion(t);
+                    if (p == null) continue;
+                    if (!isOutlierStatic(p)) ps.add(p);
                 }
 
-                if (validProportions.size() >= MIN_CONSISTENT_TICKETS) {
-                    double sum = validProportions.stream().mapToDouble(Double::doubleValue).sum();
-                    donorMeans.add(sum / validProportions.size());
+                if (ps.size() >= MIN_CONSISTENT_TICKETS) {
+                    donorMeans.add(mean(ps));
                 }
-
-            } catch (Exception e) {
-                // Ignora donatore in caso di errore
+            } catch (IOException | JSONException e) {
+                // ignore
             }
         }
 
-        return donorMeans.isEmpty() ? 0.5 : calculateMedian(donorMeans);
+        cachedColdStart = donorMeans.isEmpty() ? 0.5 : median(donorMeans);
+        return cachedColdStart;
     }
 
-    private int obtainIV(double proportion, Ticket ticket) {
+    private static double mean(List<Double> values) {
+        double s = 0.0;
+        for (double v : values) s += v;
+        return s / (double) values.size();
+    }
+
+    private static double median(List<Double> values) {
+        values.sort(Double::compareTo);
+        int n = values.size();
+        return (n % 2 == 1)
+                ? values.get(n / 2)
+                : (values.get(n / 2 - 1) + values.get(n / 2)) / 2.0;
+    }
+
+    int obtainIV(double proportion, Ticket ticket) {
         int ov = ticket.getOpeningVersion().getIndex();
         int fv = ticket.getFixedVersion().getIndex();
 
-        // Formula inversa: IV = FV - P * (FV - OV)
         int estimatedIV;
         if (ov == fv) {
             estimatedIV = max(1, (int) Math.floor(fv - proportion));
@@ -134,20 +135,14 @@ public class Proportion {
             estimatedIV = max(1, (int) Math.floor(fv - proportion * (fv - ov)));
         }
 
-        // Vincolo: IV non può essere successivo a OV
         return Math.min(ov, estimatedIV);
     }
 
     private boolean isOutlier(double p) {
-        return p < MIN_PROPORTION || p > MAX_PROPORTION || Double.isNaN(p) || Double.isInfinite(p);
+        return isOutlierStatic(p);
     }
 
-    private double calculateMedian(List<Double> values) {
-        if (values.isEmpty()) return 0.5;
-        values.sort(Double::compareTo);
-        int n = values.size();
-        return (n % 2 == 1)
-                ? values.get(n / 2)
-                : (values.get(n / 2 - 1) + values.get(n / 2)) / 2.0;
+    private static boolean isOutlierStatic(double p) {
+        return p < MIN_PROPORTION || p > MAX_PROPORTION || Double.isNaN(p) || Double.isInfinite(p);
     }
 }
