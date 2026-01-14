@@ -1,9 +1,12 @@
 package org.example.controller;
 
+import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseProblemException;
+import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -32,25 +35,20 @@ import java.util.stream.Collectors;
 /**
  * Recupera informazioni dal repository Git e calcola le metriche richieste
  * per ogni metodo Java in ogni Version.
- *
- * Metriche calcolate:
- *  - LOC
- *  - Cyclomatic complexity (decision points + 1)
- *  - Nesting depth
- *  - Numero di code smells (via PMD)
- *  - Parameter count
- *  - Authors
- *  - maxChurn
- *  - AvgChurn
- *  - totalStmtAdded / totalStmtDeleted
- *  - hasFixHistory
- *  - buggy (labeling basato su IV/FV e commit di fix)
  */
 public class GitRetriever {
 
     private static final String JAVA_EXTENSION = ".java";
     private static final String TEST_DIR_FRAGMENT = "/test/";
     private static final double ANALYSIS_FRACTION = 0.5; // Prima porzione di release da usare per l'analisi
+
+    // Regole di esclusione versioni (warning + skip)
+    // - Se la versione non ha commit associati → warning + esclusione dall'analisi
+    // - Se la versione produce un numero di metodi drasticamente inferiore alla baseline → warning + esclusione dall'analisi
+    private static final int MIN_METHODS_ABS = 200;
+    private static final int MIN_BASELINE_FOR_RATIO = 1000;
+    private static final int BASELINE_WINDOW = 5;
+    private static final double LOW_METHOD_RATIO = 0.20;
 
     private final String projectName;
     private final List<Version> versionList; // lista completa delle versioni
@@ -59,6 +57,9 @@ public class GitRetriever {
 
     private final Repository repository;
     private final Git git;
+
+    /** Parser tollerante (usa ParseResult invece di eccezioni). */
+    private final JavaParser javaParser;
 
     /** Tutti i commit del repository, ordinati cronologicamente. */
     private final List<RevCommit> allCommits = new ArrayList<>();
@@ -78,8 +79,12 @@ public class GitRetriever {
         this.versionList = (versionList != null) ? versionList : new ArrayList<>();
         this.ticketList = (ticketList != null) ? ticketList : new ArrayList<>();
 
+        // Parser config piÃ¹ permissiva (riduce i casi di file scartati)
         ParserConfiguration parserConfiguration = new ParserConfiguration();
+        parserConfiguration.setLanguageLevel(ParserConfiguration.LanguageLevel.BLEEDING_EDGE);
+
         StaticJavaParser.setConfiguration(parserConfiguration);
+        this.javaParser = new JavaParser(parserConfiguration);
 
         String pathName = "repos/" + projectName.toLowerCase() + "Clone";
         File dir = new File(pathName);
@@ -101,12 +106,9 @@ public class GitRetriever {
     }
 
     /* =========================================================
-       =                 COMMIT → VERSION                       =
+       =                 COMMIT â†’ VERSION                       =
        ========================================================= */
 
-    /**
-     * Popola per ogni Version la commitList e la mappa commitToVersion.
-     */
     public void associateCommitToVersion() throws GitAPIException, IOException {
         if (versionList == null || versionList.isEmpty()) {
             return;
@@ -141,44 +143,70 @@ public class GitRetriever {
         }
     }
 
-    /**
-     * Popola {@code analysisVersionList} selezionando solo la prima porzione
-     * (in termini di indice/versione) delle release che hanno almeno un commit.
-     * L'idea è la stessa di {@code setReleaseListForAnalysis} in {@code GitDataExtractor},
-     * ma applicata al modello {@link Version} di questo progetto.
-     */
-    private void prepareAnalysisVersionList(double fraction) {
+    private void prepareAnalysisVersionList() {
         analysisVersionList.clear();
-        if (versionList == null || versionList.isEmpty()) {
-            return;
-        }
+        if (versionList == null || versionList.isEmpty()) return;
 
-        // Consideriamo solo le versioni che hanno effettivamente dei commit associati
-        List<Version> candidates = versionList.stream()
-                .filter(v -> v.getCommitList() != null && !v.getCommitList().isEmpty())
+        // Trova l'indice massimo della fixed version tra i ticket (se presente).
+        int maxFixedVersionIndex = ticketList.stream()
+                .filter(Objects::nonNull)
+                .map(Ticket::getFixedVersion)
+                .filter(Objects::nonNull)
+                .mapToInt(Version::getIndex)
+                .max()
+                .orElse(0);
+
+        // Considera le versioni fino alla max fixed version (se definita), altrimenti tutte.
+        List<Version> ordered = versionList.stream()
+                .filter(Objects::nonNull)
+                .filter(v -> maxFixedVersionIndex == 0 || v.getIndex() <= maxFixedVersionIndex)
                 .sorted(Comparator.comparingInt(Version::getIndex))
                 .collect(Collectors.toList());
 
-        if (candidates.isEmpty()) {
-            return;
+        if (ordered.isEmpty()) {
+            ordered = versionList.stream()
+                    .filter(Objects::nonNull)
+                    .sorted(Comparator.comparingInt(Version::getIndex))
+                    .collect(Collectors.toList());
         }
 
-        int numToConsider = (int) Math.ceil(candidates.size() * fraction);
-        if (numToConsider == 0 && !candidates.isEmpty()) {
-            numToConsider = 1;
+        // Costruisce la lista dei candidati con commit, ma stampa warning per le versioni senza commit.
+        List<Version> candidatesWithCommits = new ArrayList<>();
+        for (Version v : ordered) {
+            List<RevCommit> commits = (v != null) ? v.getCommitList() : null;
+            if (commits == null || commits.isEmpty()) {
+                warnSkipVersion(v, "0 commit associati alla release (baseline/milestone o bucket temporale vuoto)");
+                continue;
+            }
+            candidatesWithCommits.add(v);
         }
 
-        analysisVersionList.addAll(candidates.subList(0, numToConsider));
+        if (candidatesWithCommits.isEmpty()) {
+            // Fallback: prova a prendere tutte le versioni con commit senza vincolo su maxFixedVersionIndex
+            for (Version v : versionList.stream()
+                    .filter(Objects::nonNull)
+                    .sorted(Comparator.comparingInt(Version::getIndex))
+                    .collect(Collectors.toList())) {
+
+                List<RevCommit> commits = v.getCommitList();
+                if (commits == null || commits.isEmpty()) {
+                    warnSkipVersion(v, "0 commit associati alla release (fallback)");
+                    continue;
+                }
+                candidatesWithCommits.add(v);
+            }
+        }
+
+        int numToConsider = (int) Math.ceil(candidatesWithCommits.size() * GitRetriever.ANALYSIS_FRACTION);
+        if (numToConsider == 0 && !candidatesWithCommits.isEmpty()) numToConsider = 1;
+
+        analysisVersionList.addAll(candidatesWithCommits.subList(0, numToConsider));
     }
 
     /* =========================================================
-       =                 COMMIT → TICKET                        =
+       =                 COMMIT â†’ TICKET                        =
        ========================================================= */
 
-    /**
-     * Associa i commit ai ticket cercando pattern PROJECT-XXX
-     * nei messaggi di commit e rispettando le date del ticket.
-     */
     void associateCommitToTicket(List<Ticket> tickets) throws GitAPIException, IOException {
         if (tickets == null || tickets.isEmpty()) {
             return;
@@ -189,7 +217,6 @@ public class GitRetriever {
         Map<String, Ticket> byKey = new LinkedHashMap<>();
         LocalDate minC = null, maxR = null;
 
-        // tolleranza per mismatch Jira/Git (timezone, fix commit dopo resolutiondate, ecc.)
         final int DATE_SLACK_DAYS = 3;
 
         for (Ticket t : tickets) {
@@ -210,7 +237,6 @@ public class GitRetriever {
                         : maxR;
             }
 
-            // reset commit associati
             t.setAssociatedCommits(new ArrayList<>());
         }
 
@@ -222,9 +248,8 @@ public class GitRetriever {
 
         Iterable<RevCommit> log = git.log().add(repository.resolve("HEAD")).call();
         for (RevCommit c : log) {
-            if (c.getParentCount() == 0) continue; // root
+            if (c.getParentCount() == 0) continue;
 
-            // NB: includiamo anche i merge commit (prima venivano scartati)
             String msg = Optional.ofNullable(c.getFullMessage()).orElse("");
 
             LocalDate d = Instant.ofEpochSecond(c.getCommitTime())
@@ -249,11 +274,7 @@ public class GitRetriever {
                 t.getAssociatedCommits().add(c);
             }
         }
-
-        // NOTA: non eliminiamo più i ticket senza commit: servono comunque per Proportion
-        // (e riducono bias/instabilità temporale).
     }
-
 
     private String safeTicketKey(Ticket t) {
         return (t.getKey() != null) ? t.getKey().trim() : null;
@@ -263,62 +284,78 @@ public class GitRetriever {
        =              PIPELINE PRINCIPALE                       =
        ========================================================= */
 
-    /**
-     * Esegue l'intera pipeline:
-     *  - associa commit → version e commit → ticket
-     *  - estrae tutti i metodi Java dalle versioni
-     *  - calcola metriche statiche
-     *  - calcola metriche di processo (churn, autori, revisioni)
-     *  - calcola hasFixHistory
-     *  - esegue il labeling buggy
-     *
-     * @return lista dei Method con Metrics e label popolati
-     */
     public List<Method> extractMethodsAndMetrics() throws IOException, GitAPIException {
-        // Associa commit -> versioni (su tutte le release disponibili)
         associateCommitToVersion();
-
-        // Seleziona solo la prima porzione di release per l'analisi (es. 50%)
-        prepareAnalysisVersionList(ANALYSIS_FRACTION);
-
-        // Associa i commit ai ticket (usa l'intera storia del repository)
+        prepareAnalysisVersionList();
         associateCommitToTicket(this.ticketList);
 
         List<Method> allMethods = new ArrayList<>();
         Map<String, List<Method>> methodsByFqn = new HashMap<>();
 
-        // Estrazione metodi e metriche statiche solo per le versioni selezionate
+        // Baseline dinamica: usiamo la mediana degli ultimi BASELINE_WINDOW conteggi accettati
+        // per identificare versioni con un numero di metodi anomalo (troppo basso).
+        List<Integer> acceptedMethodCounts = new ArrayList<>();
+
         for (Version version : analysisVersionList) {
             List<RevCommit> versionCommits = version.getCommitList();
             if (versionCommits == null || versionCommits.isEmpty()) {
+                // In teoria già filtrato in prepareAnalysisVersionList(), ma manteniamo robustezza.
+                warnSkipVersion(version, "0 commit associati alla release");
                 continue;
             }
 
-            versionCommits.sort(Comparator.comparingInt(RevCommit::getCommitTime));
-            RevCommit lastCommit = versionCommits.get(versionCommits.size() - 1);
+            // In associateCommitToVersion() la lista è già ordinata per commitTime.
+            RevCommit snapshotCommit = versionCommits.get(versionCommits.size() - 1);
+
+            // Estrazione in strutture temporanee: se la versione è outlier, non facciamo merge.
+            List<Method> tmpMethods = new ArrayList<>();
+            Map<String, List<Method>> tmpByFqn = new HashMap<>();
 
             try (TreeWalk treeWalk = new TreeWalk(repository)) {
-                treeWalk.addTree(lastCommit.getTree());
+                treeWalk.addTree(snapshotCommit.getTree());
                 treeWalk.setRecursive(true);
 
                 while (treeWalk.next()) {
                     String path = treeWalk.getPathString();
-                    if (path.endsWith(JAVA_EXTENSION) && !path.contains(TEST_DIR_FRAGMENT)) {
-                        processJavaFile(treeWalk, version, path, allMethods, methodsByFqn);
+                    if (!path.endsWith(JAVA_EXTENSION) || path.contains(TEST_DIR_FRAGMENT)) {
+                        continue;
                     }
+                    processJavaFile(treeWalk, version, path, tmpMethods, tmpByFqn);
                 }
             }
+
+            int extractedCount = tmpMethods.size();
+            if (shouldSkipByMethodCount(extractedCount, acceptedMethodCounts)) {
+                String baselineStr = acceptedMethodCounts.isEmpty()
+                        ? "n/a"
+                        : String.valueOf(medianOfLast(acceptedMethodCounts, BASELINE_WINDOW));
+
+                warnSkipVersion(
+                        version,
+                        String.format(
+                                "metodi estratti=%d (baseline mediana=%s). Versione esclusa dall'analisi.",
+                                extractedCount,
+                                baselineStr
+                        )
+                );
+                continue;
+            }
+
+            // Versione accettata: merge in strutture globali
+            allMethods.addAll(tmpMethods);
+            for (Map.Entry<String, List<Method>> e : tmpByFqn.entrySet()) {
+                methodsByFqn
+                        .computeIfAbsent(e.getKey(), k -> new ArrayList<>(e.getValue().size()))
+                        .addAll(e.getValue());
+            }
+
+            acceptedMethodCounts.add(extractedCount);
         }
 
-        // Metriche di processo (churn, autori, ecc.) sui commit già caricati
-        List<RevCommit> sortedCommits = new ArrayList<>(allCommits);
-        sortedCommits.sort(Comparator.comparingInt(RevCommit::getCommitTime));
-        metricsCalc.addProcessMetrics(allMethods, methodsByFqn, sortedCommits);
+        // allCommits è già ordinata cronologicamente da loadAllCommits()
+        metricsCalc.addProcessMetrics(allMethods, methodsByFqn, allCommits);
 
-        // hasFixHistory
         metricsCalc.calculateHasFixHistory(allMethods);
-
-        // labeling buggy
         metricsCalc.setMethodBuggyness(allMethods);
 
         return allMethods;
@@ -341,10 +378,18 @@ public class GitRetriever {
             fileContent = out.toString(StandardCharsets.UTF_8);
         }
 
+        fileContent = sanitizeFileContent(fileContent);
+
         Map<Integer, Integer> codeSmellsByLine = metricsCalc.calculateCodeSmellsByLine(fileContent);
 
+        // Parsing tollerante: se c'Ã¨ un AST parziale lo usiamo comunque
         try {
-            CompilationUnit cu = StaticJavaParser.parse(fileContent);
+            ParseResult<CompilationUnit> pr = javaParser.parse(fileContent);
+            if (pr.getResult().isEmpty()) return;
+
+            CompilationUnit cu = pr.getResult().get();
+
+            // 1) Metodi
             for (MethodDeclaration md : cu.findAll(MethodDeclaration.class)) {
                 String signature = metricsCalc.buildMethodSignature(md);
                 String fqn = filePath + "/" + signature;
@@ -355,9 +400,79 @@ public class GitRetriever {
                 allMethods.add(method);
                 methodsByFqn.computeIfAbsent(fqn, k -> new ArrayList<>()).add(method);
             }
+
+            // 2) Costruttori (nuovo: prima erano persi)
+            for (ConstructorDeclaration cd : cu.findAll(ConstructorDeclaration.class)) {
+                String signature = metricsCalc.buildConstructorSignature(cd);
+                String fqn = filePath + "/" + signature;
+
+                Method ctor = new Method(fqn, version);
+                metricsCalc.computeStaticMetricsForConstructor(ctor, cd, codeSmellsByLine);
+
+                allMethods.add(ctor);
+                methodsByFqn.computeIfAbsent(fqn, k -> new ArrayList<>()).add(ctor);
+            }
+
         } catch (ParseProblemException | StackOverflowError e) {
-            // file non parsabile, lo ignoriamo
+            // Se proprio fallisce tutto, ignora il file (ma ora succede molto meno)
         }
+    }
+
+    private String sanitizeFileContent(String s) {
+        if (s == null) return "";
+        // BOM UTF-8
+        if (!s.isEmpty() && s.charAt(0) == '\uFEFF') {
+            s = s.substring(1);
+        }
+        // caratteri NUL (a volte presenti in file â€œsporchiâ€)
+        s = s.replace("\u0000", "");
+        return s;
+    }
+
+    /* =========================================================
+       =   FILTRI ANALISI: WARNING + ESCLUSIONE VERSIONI        =
+       ========================================================= */
+
+    private void warnSkipVersion(Version v, String reason) {
+        String name = (v != null && v.getName() != null) ? v.getName() : "<unknown>";
+        int idx = (v != null) ? v.getIndex() : -1;
+        System.err.printf("[WARN] [%s] Versione %d (%s) esclusa dall'analisi: %s%n",
+                projectName, idx, name, reason);
+    }
+
+    private boolean shouldSkipByMethodCount(int extractedCount, List<Integer> acceptedCounts) {
+        // Se non estraiamo nulla, è sempre un problema (versione vuota o snapshot non valido).
+        if (extractedCount <= 0) return true;
+
+        // Se non abbiamo ancora una baseline, evitiamo di scartare: non sappiamo "quanto" dovrebbe essere grande.
+        if (acceptedCounts == null || acceptedCounts.isEmpty()) return false;
+
+        int baseline = medianOfLast(acceptedCounts, BASELINE_WINDOW);
+
+        // Applichiamo la regola relativa solo quando la baseline è sufficientemente grande.
+        if (baseline < MIN_BASELINE_FOR_RATIO) return false;
+
+        int threshold = Math.max(MIN_METHODS_ABS, (int) Math.floor(baseline * LOW_METHOD_RATIO));
+        return extractedCount < threshold;
+    }
+
+    private int medianOfLast(List<Integer> values, int lastN) {
+        if (values == null || values.isEmpty() || lastN <= 0) return 0;
+
+        int n = Math.min(lastN, values.size());
+        int start = values.size() - n;
+
+        int[] buf = new int[n];
+        for (int i = 0; i < n; i++) {
+            buf[i] = values.get(start + i);
+        }
+        Arrays.sort(buf);
+
+        if ((n & 1) == 1) {
+            return buf[n / 2];
+        }
+        // n pari: media dei due centrali (int division ok)
+        return (buf[(n / 2) - 1] + buf[n / 2]) / 2;
     }
 
     /* =========================================================

@@ -14,17 +14,16 @@ public class JiraUtils {
 
 
     public static Version getReleaseAfterOrEqualDate(LocalDate specificDate, List<Version> versionList) {
+        if (specificDate == null || versionList == null || versionList.isEmpty()) return null;
 
-        //sorting the releases by their date
-        versionList.sort(Comparator.comparing(Version::getDate));
-
-        //the first release which has a date after or equal to the one given is returned
-        for (Version version : versionList) {
-            if (!version.getDate().isBefore(specificDate)) {
-                return version;
-            }
+        int lo = 0, hi = versionList.size() - 1;
+        while (lo <= hi) {
+            int mid = (lo + hi) >>> 1;
+            LocalDate d = versionList.get(mid).getDate();
+            if (d.isBefore(specificDate)) lo = mid + 1;
+            else hi = mid - 1;
         }
-        return null;
+        return (lo < versionList.size()) ? versionList.get(lo) : null;
     }
 
 

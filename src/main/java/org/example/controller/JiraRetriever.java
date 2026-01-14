@@ -16,7 +16,7 @@ import java.util.List;
 import static org.example.utilities.JsonUtilities.readJsonFromUrl;
 
 public class JiraRetriever {
-    private String projectName;
+    private final String projectName;
 
     public JiraRetriever(String projectName) {
         this.projectName = projectName;
@@ -51,30 +51,34 @@ public class JiraRetriever {
 
     public List<Ticket> retrieveTickets(List<Version> versionList) {
         List<Ticket> retrievedTickets = new ArrayList<>();
-        int i = 0, total;
 
-        do {
-            // Paginazione: scarica 1000 ticket alla volta
-            int j = i + 1000;
+        final int pageSize = 1000;
+        int startAt = 0;
+        int total = Integer.MAX_VALUE;
+
+        while (startAt < total) {
             String url = "https://issues.apache.org/jira/rest/api/2/search?jql=" +
                     "project%3D%22" + projectName + "%22%20AND%20" +
                     "issuetype%3DBug%20AND%20" +
                     "(status%3DClosed%20OR%20status%3DResolved)%20AND%20" +
-                    "resolution%3DFixed&fields=key,resolutiondate,versions,created&startAt=" + i + "&maxResults=" + j;
+                    "resolution%3DFixed" +
+                    "&fields=key,resolutiondate,versions,created" +
+                    "&startAt=" + startAt +
+                    "&maxResults=" + pageSize;
 
             try {
                 JSONObject json = readJsonFromUrl(url);
                 JSONArray issues = json.getJSONArray("issues");
                 total = json.getInt("total");
 
-                for (; i < total && i < j; i++) {
-                    JSONObject o = issues.getJSONObject(i % 1000);
+                for (int k = 0; k < issues.length(); k++) {
+                    JSONObject o = issues.getJSONObject(k);
                     String key = o.getString("key");
 
-                    String created = o.getJSONObject("fields").optString("created", null);
-                    String resolved = o.getJSONObject("fields").optString("resolutiondate", null);
+                    JSONObject fields = o.getJSONObject("fields");
+                    String created = fields.optString("created", null);
+                    String resolved = fields.optString("resolutiondate", null);
 
-                    // 1. Scarta ticket senza date fondamentali
                     if (created == null || resolved == null) continue;
 
                     LocalDate creation = LocalDate.parse(created.substring(0, 10));
@@ -83,53 +87,35 @@ public class JiraRetriever {
                     Version ov = JiraUtils.getReleaseAfterOrEqualDate(creation, versionList);
                     Version fv = JiraUtils.getReleaseAfterOrEqualDate(resolution, versionList);
 
-                    // 2. Scarta ticket se OV o FV non sono state trovate nella lista delle release
                     if (ov == null || fv == null) continue;
 
-                    // 3. Controllo di coerenza base: Il ticket non può essere risolto prima di essere aperto
-                    // Timeline violata: OV > FV
-                    if (ov.getDate().isAfter(fv.getDate())) continue;
+                    // Se vuoi escludere ticket "pre-release" (prima della prima release),
+                    // usa l'indice (non confronti String).
+                    if (ov.getIndex() == 1) continue;
 
-                    // Gestione Affected Versions (AV)
-                    JSONArray affectedVersionList = o.getJSONObject("fields").getJSONArray("versions");
-                    List<Version> av = JiraUtils.getAffectedVersions(affectedVersionList, versionList);
+                    // Sanity: una fix non può stare prima della opening
+                    if (fv.getIndex() <= ov.getIndex()) continue;
 
-                    // 4. Controllo di coerenza sulle Affected Versions (allineato al reference)
-                    // Se AV non vuota, allora la prima AV deve essere STRICTLY prima di OV,
-                    // e OV non deve essere dopo FV.
-                    if (!av.isEmpty()) {
-                        Version firstAV = av.getFirst();
-                        if (firstAV != null && firstAV.getDate() != null && ov.getDate() != null) {
-                            if (!firstAV.getDate().isBefore(ov.getDate())) {
-                                continue;
-                            }
-                        }
-                        if (ov.getDate().isAfter(fv.getDate())) {
-                            continue;
-                        }
-                    }
+                    JSONArray avArray = fields.optJSONArray("versions");
+                    List<Version> av = (avArray != null)
+                            ? JiraUtils.getAffectedVersions(avArray, versionList)
+                            : new ArrayList<>();
 
-                    Ticket t = new Ticket();
-                    t.setKey(key);
-                    t.setCreationDate(creation);
-                    t.setResolutionDate(resolution);
+                    Ticket t = new Ticket(key, creation, resolution, av);
                     t.setOpeningVersion(ov);
                     t.setFixedVersion(fv);
-                    t.setAffectedVersions(av);
-                    t.setInjectedVersionTemp();
-                    t.setAssociatedCommits(new ArrayList<>());
+                    t.setInjectedVersionTemp(); // se AV presenti prende la prima AV :contentReference[oaicite:1]{index=1}
 
-                    if (ov.getId() != versionList.getFirst().getId()) {
-                        retrievedTickets.add(t);
-                    }
+                    retrievedTickets.add(t);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                total = i;
-            }
-        } while (i < total);
 
-        // Ordina per data di risoluzione (utile per processare cronologicamente)
+                startAt += issues.length();
+            } catch (IOException | JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        // utile per Proportion: difetti ordinati per fix date (come nel paper)
         retrievedTickets.sort(Comparator.comparing(Ticket::getResolutionDate));
         return retrievedTickets;
     }

@@ -69,9 +69,9 @@ public class DatasetDiagnostics {
 
         // CRITICAL THRESHOLD
         if (buggyPercentage < 5.0) {
-            writer.write("\n⚠️  CRITICAL: Buggy class < 5% - Extreme imbalance!\n");
+            writer.write("\nCRITICAL: Buggy class < 5% - Extreme imbalance!\n");
         } else if (buggyPercentage < 10.0) {
-            writer.write("\n⚠️  WARNING: Buggy class < 10% - High imbalance\n");
+            writer.write("\n WARNING: Buggy class < 10% - High imbalance\n");
         }
 
         writer.write("\n");
@@ -116,7 +116,7 @@ public class DatasetDiagnostics {
                 (ticketsWithCommits * 100.0) / Math.max(1, tickets.size())));
 
         if (coveragePercentage < 10.0) {
-            writer.write("\n⚠️  CRITICAL: < 10% of methods ever labeled buggy!\n");
+            writer.write("\nCRITICAL: < 10% of methods ever labeled buggy!\n");
             writer.write("    This suggests:\n");
             writer.write("    - Very few fix commits found\n");
             writer.write("    - Poor commit-ticket linking\n");
@@ -144,17 +144,28 @@ public class DatasetDiagnostics {
                         Collectors.counting()
                 ));
 
-        writer.write("Version | Total Methods | Buggy Methods | Buggy %\n");
-        writer.write("--------|---------------|---------------|--------\n");
+        writer.write("Version | Commits | Total Methods | Buggy Methods | Buggy %\n");
+        writer.write("--------|---------|---------------|---------------|--------\n");
 
         for (Version v : versions) {
             int idx = v.getIndex();
+            int numCommits = (v.getCommitList() != null) ? v.getCommitList().size() : 0;
             long total = totalByVersion.getOrDefault(idx, 0L);
             long buggy = buggyByVersion.getOrDefault(idx, 0L);
             double percentage = total > 0 ? (buggy * 100.0 / total) : 0.0;
 
-            writer.write(String.format("%-7d | %-13d | %-13d | %.2f%%\n",
-                    idx, total, buggy, percentage));
+            writer.write(String.format("%-7d | %-7d | %-13d | %-13d | %.2f%%\n",
+                    idx, numCommits, total, buggy, percentage));
+        }
+
+        // Check for versions with NO commits
+        long versionsWithNoCommits = versions.stream()
+                .filter(v -> v.getCommitList() == null || v.getCommitList().isEmpty())
+                .count();
+
+        if (versionsWithNoCommits > 0) {
+            writer.write(String.format("\n[INFO] %d/%d versions have ZERO commits (no Git history)\n",
+                    versionsWithNoCommits, versions.size()));
         }
 
         // Check for versions with NO buggy methods
@@ -163,7 +174,7 @@ public class DatasetDiagnostics {
                 .count();
 
         if (versionsWithNoBugs > versions.size() / 2) {
-            writer.write(String.format("\n⚠️  WARNING: %d/%d versions have ZERO buggy methods\n",
+            writer.write(String.format("\nWARNING: %d/%d versions have ZERO buggy methods\n",
                     versionsWithNoBugs, versions.size()));
         }
 
@@ -185,7 +196,7 @@ public class DatasetDiagnostics {
                 .collect(Collectors.toList());
 
         if (buggyMethods.isEmpty()) {
-            writer.write("⚠️  CRITICAL: NO buggy methods to analyze!\n\n");
+            writer.write(" CRITICAL: NO buggy methods to analyze!\n\n");
             return;
         }
 
@@ -226,7 +237,7 @@ public class DatasetDiagnostics {
                 .orElse(0.0);
 
         double ratio = cleanAvg > 0 ? buggyAvg / cleanAvg : 0.0;
-        String discriminative = (ratio > 1.5 || ratio < 0.67) ? "YES ✓" : "NO ✗";
+        String discriminative = (ratio > 1.5 || ratio < 0.67) ? "YES âœ“" : "NO âœ—";
 
         writer.write(String.format("%-16s | %9.2f | %9.2f | %5.2f | %s\n",
                 name, buggyAvg, cleanAvg, ratio, discriminative));
@@ -265,7 +276,7 @@ public class DatasetDiagnostics {
                 (methodsWithFixHistory * 100.0) / methods.size()));
 
         if (methodsWithHistory < methods.size() * 0.3) {
-            writer.write("\n⚠️  WARNING: < 30% of methods have revision history\n");
+            writer.write("\n WARNING: < 30% of methods have revision history\n");
             writer.write("    Process metrics will be mostly zeros!\n");
         }
 
@@ -299,7 +310,7 @@ public class DatasetDiagnostics {
         }
 
         if (proportions.isEmpty()) {
-            writer.write("⚠️  NO valid proportions calculated!\n\n");
+            writer.write("NO valid proportions calculated!\n\n");
             return;
         }
 
@@ -315,15 +326,15 @@ public class DatasetDiagnostics {
         writer.write(String.format("Std deviation: %.3f\n", stdP));
 
         if (stdP > 2.0) {
-            writer.write("\n⚠️  WARNING: High variance in proportion values\n");
+            writer.write("\nWARNING: High variance in proportion values\n");
             writer.write("    This suggests inconsistent bug lifecycle\n");
         }
 
         if (avgP > 3.0) {
-            writer.write("\n⚠️  WARNING: Average proportion > 3.0\n");
+            writer.write("\nWARNING: Average proportion > 3.0\n");
             writer.write("    IVs might be pushed too far back\n");
-            writer.write("    → Too many methods labeled as buggy\n");
-            writer.write("    → Many false positives expected\n");
+            writer.write("     Too many methods labeled as buggy\n");
+            writer.write("     Many false positives expected\n");
         }
 
         writer.write("\n");
