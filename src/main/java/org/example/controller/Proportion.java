@@ -12,18 +12,22 @@ import java.util.List;
 
 import static java.lang.Math.max;
 
+/**
+ * Proportion (reference-like) con le tue richieste:
+ * - stima IV SOLO quando IV è null
+ * - FIX outlier: se OV==FV e IV è null => IV = OV (evita backshift sulla release precedente)
+ * - cold start filtrato per resolutionDate (donor consistent tickets)
+ */
 public class Proportion {
 
     private static final int MIN_PROPORTIONS_FOR_INCREMENT = 5;
 
-    private static final List<String> DONORS = List.of("AVRO", "SYNCOPE", "CAMEL", "ZOOKEEPER");
+    // Donor (reference)
+    private static final List<String> DONORS = List.of("AVRO", "SYNCOPE", "STORM", "ZOOKEEPER");
 
     private static final double MIN_PROPORTION = 0.0;
     private static final double MAX_PROPORTION = 10.0;
-
     private static final int MIN_CONSISTENT_TICKETS = 5;
-
-    private static Double cachedColdStart = null;
 
     private final List<Double> proportionList = new ArrayList<>();
     private double totalProportion = 0.0;
@@ -33,24 +37,46 @@ public class Proportion {
             return new ArrayList<>();
         }
 
-        tickets.sort(Comparator.comparing(Ticket::getResolutionDate));
+        tickets.sort(Comparator.comparing(
+                Ticket::getResolutionDate,
+                Comparator.nullsLast(Comparator.naturalOrder())
+        ));
 
         for (Ticket t : tickets) {
-            if (t == null || t.getOpeningVersion() == null || t.getFixedVersion() == null) continue;
-
-            if (t.hasIV()) {
-                addProportion(t);
+            if (t == null || t.getOpeningVersion() == null || t.getFixedVersion() == null) {
                 continue;
             }
 
-            double p = (proportionList.size() < MIN_PROPORTIONS_FOR_INCREMENT)
-                    ? coldStart(t.getResolutionDate())
-                    : increment();
+            // Guard: se IV presente ma incoerente (può capitare per dati sporchi), azzera e stima
+            if (t.hasIV() && computeTicketProportion(t) == null) {
+                t.setInjectedVersion(null);
+            }
 
-            int estIVIndex = obtainIV(p, t);
-            estIVIndex = Math.max(1, Math.min(estIVIndex, versions.size()));
+            // Stima SOLO quando IV è null
+            if (!t.hasIV()) {
+                int ov = t.getOpeningVersion().getIndex();
+                int fv = t.getFixedVersion().getIndex();
 
-            t.setInjectedVersion(versions.get(estIVIndex - 1));
+                // FIX outlier: se OV == FV e IV è sconosciuta, scelta neutra => IV = OV
+                // (evita che fv - p spinga indietro e marchi massivamente la release precedente)
+                if (ov == fv) {
+                    t.setInjectedVersion(t.getOpeningVersion());
+                    continue;
+                }
+
+                double p = (proportionList.size() < MIN_PROPORTIONS_FOR_INCREMENT)
+                        ? coldStart(t.getResolutionDate())
+                        : increment();
+
+                int estIVIndex = obtainIV(p, t);
+                estIVIndex = Math.max(1, Math.min(estIVIndex, versions.size()));
+
+                t.setInjectedVersion(versions.get(estIVIndex - 1));
+                continue;
+            }
+
+            // Ticket con IV già nota: aggiorna storico proporzioni
+            addProportion(t);
         }
 
         return tickets;
@@ -59,20 +85,28 @@ public class Proportion {
     private void addProportion(Ticket t) {
         Double p = computeTicketProportion(t);
         if (p == null || isOutlier(p)) return;
+
         proportionList.add(p);
         totalProportion += p;
     }
 
     private static Double computeTicketProportion(Ticket t) {
-        if (t.getInjectedVersion() == null || t.getOpeningVersion() == null || t.getFixedVersion() == null) return null;
+        if (t.getInjectedVersion() == null || t.getOpeningVersion() == null || t.getFixedVersion() == null) {
+            return null;
+        }
 
         int iv = t.getInjectedVersion().getIndex();
         int ov = t.getOpeningVersion().getIndex();
         int fv = t.getFixedVersion().getIndex();
 
-        if (fv < ov || ov < iv) return null;
+        // lifecycle coerente: IV <= OV <= FV
+        if (fv < ov || iv > ov) return null;
 
-        if (fv == ov) return (double) (fv - iv);
+        // come reference: evita div-by-zero (equivalente a denominatore=1)
+        if (fv == ov) {
+            return (double) (fv - iv);
+        }
+
         return (double) (fv - iv) / (double) (fv - ov);
     }
 
@@ -81,18 +115,23 @@ public class Proportion {
     }
 
     private double coldStart(LocalDate resolutionDate) {
-        if (cachedColdStart != null) return cachedColdStart;
-
         List<Double> donorMeans = new ArrayList<>();
+
         for (String project : DONORS) {
             try {
                 JiraRetriever jr = new JiraRetriever(project);
-                List<Version> v = jr.retrieveVersions();
-                List<Ticket> tickets = jr.retrieveTickets(v);
+                List<Version> versions = jr.retrieveVersions();
+                List<Ticket> tickets = jr.retrieveTickets(versions);
 
                 List<Double> ps = new ArrayList<>();
                 for (Ticket t : tickets) {
-                    if (!t.hasIV()) continue;
+                    if (t == null) continue;
+                    if (!t.hasIV()) continue; // donor: usa solo IV note (seed)
+                    if (t.getResolutionDate() == null) continue;
+
+                    // Reference-like: solo ticket risolti prima/alla stessa data
+                    if (resolutionDate != null && t.getResolutionDate().isAfter(resolutionDate)) continue;
+
                     Double p = computeTicketProportion(t);
                     if (p == null) continue;
                     if (!isOutlierStatic(p)) ps.add(p);
@@ -102,12 +141,11 @@ public class Proportion {
                     donorMeans.add(mean(ps));
                 }
             } catch (IOException | JSONException e) {
-                // ignore
+                // ignore donor failures
             }
         }
 
-        cachedColdStart = donorMeans.isEmpty() ? 0.5 : median(donorMeans);
-        return cachedColdStart;
+        return donorMeans.isEmpty() ? 0.5 : median(donorMeans);
     }
 
     private static double mean(List<Double> values) {
@@ -128,13 +166,14 @@ public class Proportion {
         int ov = ticket.getOpeningVersion().getIndex();
         int fv = ticket.getFixedVersion().getIndex();
 
-        int estimatedIV;
+        // FIX: niente backshift quando OV==FV
         if (ov == fv) {
-            estimatedIV = max(1, (int) Math.floor(fv - proportion));
-        } else {
-            estimatedIV = max(1, (int) Math.floor(fv - proportion * (fv - ov)));
+            return ov;
         }
 
+        int estimatedIV = max(1, (int) Math.floor(fv - proportion * (fv - ov)));
+
+        // IV non può essere dopo OV
         return Math.min(ov, estimatedIV);
     }
 

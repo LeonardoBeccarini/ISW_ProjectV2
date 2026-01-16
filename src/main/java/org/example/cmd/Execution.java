@@ -35,11 +35,13 @@ public class Execution {
             // 4) Stampa quanti metodi sono stati estratti
             System.out.println("Metodi estratti: " + methods.size());
 
-            DatasetDiagnostics.analyzeLabelingQuality(projectName, methods, finalTicketList, versionList);
+            List<Version> analysisVersions = gitRetriever.getAnalysisVersions();
 
-            // 5) Esportazione CSV (versioni, commit, ticket, dataset completo)
-            CsvExporter.exportAll(projectName, versionList, finalTicketList, methods);
-            System.out.println("CSV esportati in output/csv/" + projectName.toUpperCase());
+            DatasetDiagnostics.analyzeLabelingQuality(projectName, methods, finalTicketList, analysisVersions);
+
+        // Esportazione CSV coerente col dataset: solo versioni davvero analizzate
+            CsvExporter.exportAll(projectName, analysisVersions, finalTicketList, methods);
+
 
             // 6) Predizione
             WekaProcessor wekaProcessor = new WekaProcessor(projectName, methods);

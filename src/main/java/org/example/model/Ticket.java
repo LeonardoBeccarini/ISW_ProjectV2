@@ -25,9 +25,10 @@ public class Ticket {
     public Ticket() {
     }
 
-    public boolean hasIV(){
+    public boolean hasIV() {
         return injectedVersion != null;
     }
+
     public String getKey() {
         return key;
     }
@@ -64,11 +65,42 @@ public class Ticket {
         return affectedVersions;
     }
 
+    /**
+     * Imposta una IV "temporanea" a partire dalla prima AV, solo se coerente.
+     *
+     * Regola (option 2): se la IV candidata non è valida rispetto a OV/FV,
+     * lasciamo IV=null così Proportion farà la stima.
+     */
     public void setInjectedVersionTemp() {
-        if (affectedVersions != null && !affectedVersions.isEmpty()) {
-            this.injectedVersion = affectedVersions.getFirst();
-        } else {
-            this.injectedVersion = null;
+        // default: nessuna IV nota
+        this.injectedVersion = null;
+
+        if (affectedVersions == null || affectedVersions.isEmpty()) {
+            return;
+        }
+
+        Version candidate = affectedVersions.getFirst();
+        if (candidate == null) {
+            return;
+        }
+
+        // senza OV/FV non possiamo validare -> forziamo la stima
+        if (openingVersion == null || fixedVersion == null) {
+            return;
+        }
+
+        int iv = candidate.getIndex();
+        int ov = openingVersion.getIndex();
+        int fv = fixedVersion.getIndex();
+
+        // indici non inizializzati? meglio stimare.
+        if (iv <= 0 || ov <= 0 || fv <= 0) {
+            return;
+        }
+
+        // coerenza minima: IV deve essere <= OV e <= FV (FV può essere == OV)
+        if (iv <= ov && iv <= fv) {
+            this.injectedVersion = candidate;
         }
     }
 

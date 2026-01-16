@@ -56,17 +56,21 @@ public final class CsvExporter {
         Path baseDir = Paths.get("output", "csv", projectName.toUpperCase());
         Files.createDirectories(baseDir);
 
-        exportVersions(baseDir.resolve("versions.csv"), versions);
-        exportCommits(baseDir.resolve("commits.csv"), versions, tickets);
-        exportTickets(baseDir.resolve("tickets.csv"), tickets);
-        exportDataset(baseDir.resolve("dataset.csv"), methods);
+        // NEW: indici contigui di export (1..N) per la lista di versioni passata
+        Map<Version, Integer> exportIndexMap = buildExportIndexMap(versions);
+
+        exportVersions(baseDir.resolve("versions.csv"), versions, exportIndexMap);
+        exportCommits(baseDir.resolve("commits.csv"), versions, tickets, exportIndexMap);
+        exportTickets(baseDir.resolve("tickets.csv"), tickets, exportIndexMap);
+        exportDataset(baseDir.resolve("dataset.csv"), methods, exportIndexMap);
     }
 
     // ================================
     //            VERSIONS
     // ================================
     private static void exportVersions(Path file,
-                                       List<Version> versions) throws IOException {
+                                       List<Version> versions,
+                                       Map<Version, Integer> exportIndexMap) throws IOException {
 
         try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
             writer.write("Index,Id,Name,Date,NumCommits");
@@ -76,10 +80,19 @@ public final class CsvExporter {
                 return;
             }
 
+            // Scriviamo in ordine di exportIndex (contiguo)
+            List<Version> sorted = new ArrayList<>();
             for (Version v : versions) {
-                if (v == null) continue;
+                if (v != null) sorted.add(v);
+            }
+            sorted.sort(Comparator
+                    .comparing(Version::getDate, Comparator.nullsLast(Comparator.naturalOrder()))
+                    .thenComparing(v -> nullSafe(v.getName()))
+                    .thenComparing(v -> nullSafe(v.getId())));
 
-                int index = v.getIndex();
+            for (Version v : sorted) {
+                int index = exportIndexOf(v, exportIndexMap);
+
                 String id = nullSafe(v.getId());
                 String name = nullSafe(v.getName());
                 String date = formatDate(v.getDate());
@@ -100,7 +113,8 @@ public final class CsvExporter {
     // ================================
     private static void exportCommits(Path file,
                                       List<Version> versions,
-                                      List<Ticket> tickets) throws IOException {
+                                      List<Ticket> tickets,
+                                      Map<Version, Integer> exportIndexMap) throws IOException {
 
         try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
             writer.write("Hash,AuthorName,AuthorEmail,Date,VersionIndex,VersionName,TicketKeys,ShortMessage");
@@ -113,10 +127,20 @@ public final class CsvExporter {
             // Per evitare duplicati nel caso un commit compaia in più liste
             Set<String> seenHashes = new HashSet<>();
 
+            // Ordine per data versione (coerente con versions.csv)
+            List<Version> sorted = new ArrayList<>();
             for (Version v : versions) {
-                if (v == null || v.getCommitList() == null) {
-                    continue;
-                }
+                if (v != null) sorted.add(v);
+            }
+            sorted.sort(Comparator
+                    .comparing(Version::getDate, Comparator.nullsLast(Comparator.naturalOrder()))
+                    .thenComparing(v -> nullSafe(v.getName()))
+                    .thenComparing(v -> nullSafe(v.getId())));
+
+            for (Version v : sorted) {
+                if (v.getCommitList() == null) continue;
+
+                int vIdx = exportIndexOf(v, exportIndexMap);
 
                 for (RevCommit c : v.getCommitList()) {
                     if (c == null) continue;
@@ -141,7 +165,7 @@ public final class CsvExporter {
                             escapeCsv(authorName) + "," +
                             escapeCsv(authorEmail) + "," +
                             escapeCsv(date) + "," +
-                            v.getIndex() + "," +
+                            vIdx + "," +
                             escapeCsv(nullSafe(v.getName())) + "," +
                             escapeCsv(ticketKeys) + "," +
                             escapeCsv(shortMsg));
@@ -174,7 +198,8 @@ public final class CsvExporter {
     //             TICKETS
     // ================================
     private static void exportTickets(Path file,
-                                      List<Ticket> tickets) throws IOException {
+                                      List<Ticket> tickets,
+                                      Map<Version, Integer> exportIndexMap) throws IOException {
 
         try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
             writer.write("Key,CreationDate,ResolutionDate," +
@@ -200,13 +225,13 @@ public final class CsvExporter {
                 Version fv = t.getFixedVersion();
                 Version iv = t.getInjectedVersion();
 
-                int ovIndex = (ov != null) ? ov.getIndex() : -1;
+                int ovIndex = exportIndexOf(ov, exportIndexMap);
                 String ovName = (ov != null) ? nullSafe(ov.getName()) : "";
 
-                int fvIndex = (fv != null) ? fv.getIndex() : -1;
+                int fvIndex = exportIndexOf(fv, exportIndexMap);
                 String fvName = (fv != null) ? nullSafe(fv.getName()) : "";
 
-                int ivIndex = (iv != null) ? iv.getIndex() : -1;
+                int ivIndex = exportIndexOf(iv, exportIndexMap);
                 String ivName = (iv != null) ? nullSafe(iv.getName()) : "";
 
                 List<Version> affected = t.getAffectedVersions();
@@ -215,7 +240,7 @@ public final class CsvExporter {
                 if (affected != null && !affected.isEmpty()) {
                     affectedIndices = affected.stream()
                             .filter(Objects::nonNull)
-                            .map(v -> Integer.toString(v.getIndex()))
+                            .map(v -> Integer.toString(exportIndexOf(v, exportIndexMap)))
                             .collect(Collectors.joining("|"));
                     affectedNames = affected.stream()
                             .filter(Objects::nonNull)
@@ -255,7 +280,8 @@ public final class CsvExporter {
      * HasFixHistory,Buggy,BodyHash
      */
     private static void exportDataset(Path file,
-                                      List<Method> methods) throws IOException {
+                                      List<Method> methods,
+                                      Map<Version, Integer> exportIndexMap) throws IOException {
 
         try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
 
@@ -285,17 +311,20 @@ public final class CsvExporter {
                 return;
             }
 
-            // Ordine deterministico: versione -> FQN
+            // Ordine deterministico: exportIndex versione -> FQN
             List<Method> sorted = new ArrayList<>(methods);
             sorted.sort(Comparator
-                    .comparingInt((Method m) -> (m.getVersion() != null) ? m.getVersion().getIndex() : Integer.MAX_VALUE)
+                    .comparingInt((Method m) -> {
+                        int idx = exportIndexOf(m.getVersion(), exportIndexMap);
+                        return (idx >= 0) ? idx : Integer.MAX_VALUE;
+                    })
                     .thenComparing(m -> nullSafe(m.getFullyQualifiedName())));
 
             for (Method m : sorted) {
                 if (m == null) continue;
 
                 Version v = m.getVersion();
-                int versionIndex = (v != null) ? v.getIndex() : -1;
+                int versionIndex = exportIndexOf(v, exportIndexMap);
                 String versionName = (v != null) ? nullSafe(v.getName()) : "";
 
                 String methodFqn = nullSafe(m.getFullyQualifiedName());
@@ -365,6 +394,37 @@ public final class CsvExporter {
     // ================================
     //        HELPER / UTILITIES
     // ================================
+    private static Map<Version, Integer> buildExportIndexMap(List<Version> versions) {
+        IdentityHashMap<Version, Integer> map = new IdentityHashMap<>();
+        if (versions == null) return map;
+
+        List<Version> sorted = new ArrayList<>();
+        for (Version v : versions) {
+            if (v != null) sorted.add(v);
+        }
+
+        sorted.sort(Comparator
+                .comparing(Version::getDate, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(v -> nullSafe(v.getName()))
+                .thenComparing(v -> nullSafe(v.getId())));
+
+        int idx = 1;
+        for (Version v : sorted) {
+            map.put(v, idx++);
+        }
+        return map;
+    }
+
+    /**
+     * Ritorna l'indice contiguo (export) se la Version è presente nella lista esportata,
+     * altrimenti -1 (così non produciamo riferimenti a indici inesistenti in versions.csv).
+     */
+    private static int exportIndexOf(Version v, Map<Version, Integer> exportIndexMap) {
+        if (v == null || exportIndexMap == null) return -1;
+        Integer mapped = exportIndexMap.get(v);
+        return (mapped != null) ? mapped : -1;
+    }
+
     private static String nullSafe(String s) {
         return (s == null) ? "" : s;
     }

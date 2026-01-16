@@ -105,8 +105,13 @@ public class GitRetriever {
         this.metricsCalc = new MetricsCalc(this.repository, this.commitToVersion, this.ticketList);
     }
 
+    public List<Version> getAnalysisVersions() {
+        return Collections.unmodifiableList(analysisVersionList);
+    }
+
+
     /* =========================================================
-       =                 COMMIT â†’ VERSION                       =
+       =                 COMMIT --> VERSION                       =
        ========================================================= */
 
     public void associateCommitToVersion() throws GitAPIException, IOException {
@@ -289,6 +294,11 @@ public class GitRetriever {
         prepareAnalysisVersionList();
         associateCommitToTicket(this.ticketList);
 
+        // analysisVersionList deve rappresentare SOLO le versioni davvero usate nel dataset:
+        // quindi iteriamo su una copia e poi ricostruiamo analysisVersionList con le versioni accettate.
+        List<Version> candidates = new ArrayList<>(analysisVersionList);
+        analysisVersionList.clear();
+
         List<Method> allMethods = new ArrayList<>();
         Map<String, List<Method>> methodsByFqn = new HashMap<>();
 
@@ -296,7 +306,7 @@ public class GitRetriever {
         // per identificare versioni con un numero di metodi anomalo (troppo basso).
         List<Integer> acceptedMethodCounts = new ArrayList<>();
 
-        for (Version version : analysisVersionList) {
+        for (Version version : candidates) {
             List<RevCommit> versionCommits = version.getCommitList();
             if (versionCommits == null || versionCommits.isEmpty()) {
                 // In teoria già filtrato in prepareAnalysisVersionList(), ma manteniamo robustezza.
@@ -326,7 +336,7 @@ public class GitRetriever {
 
             int extractedCount = tmpMethods.size();
             if (shouldSkipByMethodCount(extractedCount, acceptedMethodCounts)) {
-                String baselineStr = acceptedMethodCounts.isEmpty()
+                String baselineStr = acceptedMethodCounts.size() < BASELINE_WINDOW
                         ? "n/a"
                         : String.valueOf(medianOfLast(acceptedMethodCounts, BASELINE_WINDOW));
 
@@ -341,7 +351,10 @@ public class GitRetriever {
                 continue;
             }
 
-            // Versione accettata: merge in strutture globali
+            // Versione accettata: ora è davvero "in analisi"
+            analysisVersionList.add(version);
+
+            // merge in strutture globali
             allMethods.addAll(tmpMethods);
             for (Map.Entry<String, List<Method>> e : tmpByFqn.entrySet()) {
                 methodsByFqn
@@ -360,6 +373,7 @@ public class GitRetriever {
 
         return allMethods;
     }
+
 
     /* =========================================================
        =        ESTRAZIONE METRICHE STATICHE PER FILE           =
@@ -444,8 +458,8 @@ public class GitRetriever {
         // Se non estraiamo nulla, è sempre un problema (versione vuota o snapshot non valido).
         if (extractedCount <= 0) return true;
 
-        // Se non abbiamo ancora una baseline, evitiamo di scartare: non sappiamo "quanto" dovrebbe essere grande.
-        if (acceptedCounts == null || acceptedCounts.isEmpty()) return false;
+        // Finché non ho abbastanza storia, NON scarto per ratio: evita di eliminare release piccole ma valide (es. STORM v2/v5).
+        if (acceptedCounts == null || acceptedCounts.size() < BASELINE_WINDOW) return false;
 
         int baseline = medianOfLast(acceptedCounts, BASELINE_WINDOW);
 
@@ -455,6 +469,7 @@ public class GitRetriever {
         int threshold = Math.max(MIN_METHODS_ABS, (int) Math.floor(baseline * LOW_METHOD_RATIO));
         return extractedCount < threshold;
     }
+
 
     private int medianOfLast(List<Integer> values, int lastN) {
         if (values == null || values.isEmpty() || lastN <= 0) return 0;

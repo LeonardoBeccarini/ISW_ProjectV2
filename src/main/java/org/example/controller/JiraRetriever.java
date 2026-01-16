@@ -30,23 +30,34 @@ public class JiraRetriever {
 
         for (int i = 0; i < versions.length(); i++) {
             JSONObject vj = versions.getJSONObject(i);
-            if (!vj.optBoolean("released", false)) continue;
-            if (!vj.has("releaseDate")) continue;
+            if (!vj.has("releaseDate") || !vj.has("name")) continue;
 
-            String name = vj.optString("name", "");
-            String id   = vj.optString("id", name);
-            LocalDate date = LocalDate.parse(vj.getString("releaseDate"));
+            String name = vj.getString("name");
+            if (name == null || name.isBlank()) continue;
+
+            String id = vj.optString("id", name);
+
+            String releaseDateStr = vj.optString("releaseDate", null);
+            if (releaseDateStr == null || releaseDateStr.isBlank()) continue;
+
+            LocalDate date;
+            try {
+                date = LocalDate.parse(releaseDateStr);
+            } catch (Exception ex) {
+                continue; // data malformata
+            }
+
             out.add(new Version(id, name, date));
         }
 
-        // Ordina dalla più vecchia alla più recente
         out.sort(Comparator.comparing(Version::getDate));
-        int j=0;
-        for(Version v:out){
+        int j = 0;
+        for (Version v : out) {
             v.setIndex(++j);
         }
         return out;
     }
+
 
 
     public List<Ticket> retrieveTickets(List<Version> versionList) {
@@ -89,12 +100,8 @@ public class JiraRetriever {
 
                     if (ov == null || fv == null) continue;
 
-                    // Se vuoi escludere ticket "pre-release" (prima della prima release),
-                    // usa l'indice (non confronti String).
-                    if (ov.getIndex() == 1) continue;
-
-                    // Sanity: una fix non può stare prima della opening
-                    if (fv.getIndex() <= ov.getIndex()) continue;
+                    // Sanity: una fix non può stare prima della opening (FV == OV ammesso)
+                    if (fv.getIndex() < ov.getIndex()) continue;
 
                     JSONArray avArray = fields.optJSONArray("versions");
                     List<Version> av = (avArray != null)
@@ -104,7 +111,7 @@ public class JiraRetriever {
                     Ticket t = new Ticket(key, creation, resolution, av);
                     t.setOpeningVersion(ov);
                     t.setFixedVersion(fv);
-                    t.setInjectedVersionTemp(); // se AV presenti prende la prima AV :contentReference[oaicite:1]{index=1}
+                    t.setInjectedVersionTemp();
 
                     retrievedTickets.add(t);
                 }
@@ -115,7 +122,6 @@ public class JiraRetriever {
             }
         }
 
-        // utile per Proportion: difetti ordinati per fix date (come nel paper)
         retrievedTickets.sort(Comparator.comparing(Ticket::getResolutionDate));
         return retrievedTickets;
     }

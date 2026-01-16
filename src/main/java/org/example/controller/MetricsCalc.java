@@ -332,88 +332,167 @@ public class MetricsCalc {
         }
     }
 
-    /* =========================================================
-       =                     LABELING BUGGY                     =
-       ========================================================= */
+   /* =========================================================
+   =                     LABELING BUGGY                     =
+   ========================================================= */
 
-    public void setMethodBuggyness(List<Method> allMethods) throws IOException {
+    /**
+     * Reference-like labeling:
+     * - IV dal ticket
+     * - FV dalla release del commit di fix (qui: commitToVersion)
+     * - per ciascun fix commit: diff col parent
+     * - per ciascun diff: usa SOLO newPath
+     * - parse SOLO MethodDeclaration nel file nuovo
+     * - se metodo nuovo o hash corpo diverso => metodo “toccato dal fix”
+     * - label su intervallo [IV, FV)
+     */
+    public void setMethodBuggyness(List<Method> allProjectMethods) {
         if (ticketList == null || ticketList.isEmpty()) {
             return;
         }
+        if (allProjectMethods == null || allProjectMethods.isEmpty()) {
+            return;
+        }
 
-        Map<String, List<Method>> methodsByFqn = allMethods.stream()
-                .collect(Collectors.groupingBy(Method::getFullyQualifiedName));
-
+        // Itera su ogni ticket considerato come bug
         for (Ticket ticket : ticketList) {
             Version injectedVersion = ticket.getInjectedVersion();
-            Version fixedVersion = ticket.getFixedVersion();
-            if (injectedVersion == null || fixedVersion == null) {
-                continue;
-            }
+            if (injectedVersion == null) continue;
 
+            // Itera sui commit che hanno risolto questo bug
             List<RevCommit> fixCommits = ticket.getAssociatedCommits();
-            if (fixCommits == null || fixCommits.isEmpty()) {
-                continue;
-            }
+            if (fixCommits == null || fixCommits.isEmpty()) continue;
 
             for (RevCommit fixCommit : fixCommits) {
-                if (fixCommit.getParentCount() == 0) continue;
+                processSingleFixCommit(fixCommit, injectedVersion, allProjectMethods);
+            }
+        }
+    }
 
-                RevCommit parent = fixCommit.getParent(0);
-                List<DiffEntry> diffs = getDiffEntries(parent, fixCommit);
+    /**
+     * Analizza un singolo commit di fix per trovare i metodi che ha modificato.
+     * FV è ricavata dalla release del commit (come nella reference),
+     * ma qui usiamo commitToVersion (mappa costruita in GitRetriever).
+     */
+    private void processSingleFixCommit(RevCommit fixCommit,
+                                        Version injectedVersion,
+                                        List<Method> allProjectMethods) {
+        Version fixedVersion = commitToVersion.get(fixCommit.getName());
+        if (fixedVersion == null) return;
 
-                Map<String, String> oldFileContents = getFileContents(diffs, true);
-                Map<String, String> newFileContents = getFileContents(diffs, false);
+        try {
+            if (fixCommit.getParentCount() == 0) return;
+            RevCommit parentOfFix = fixCommit.getParent(0);
 
-                for (DiffEntry diff : diffs) {
-                    String filePath = diff.getNewPath();
-                    if (!filePath.endsWith(JAVA_EXTENSION) || filePath.contains(TEST_DIR_FRAGMENT)) {
-                        continue;
-                    }
+            // Ottiene la lista dei file modificati nel commit di fix
+            // (qui aggiungiamo detect renames nel DiffFormatter)
+            List<DiffEntry> diffs = getDiffEntries(parentOfFix, fixCommit);
 
-                    String newContent = newFileContents.getOrDefault(filePath, "");
-                    String oldContent = oldFileContents.getOrDefault(diff.getOldPath(), "");
+            Map<String, String> newFileContentsInFix = getFileContents(diffs, false);
+            Map<String, String> oldFileContentsInFix = getFileContents(diffs, true);
 
-                    Map<String, CallableDeclaration<?>> newCallables = parseCallables(newContent);
-                    Map<String, CallableDeclaration<?>> oldCallables = parseCallables(oldContent);
+            for (DiffEntry diff : diffs) {
+                processDiffForBuggyness(
+                        diff,
+                        newFileContentsInFix,
+                        oldFileContentsInFix,
+                        injectedVersion,
+                        fixedVersion,
+                        allProjectMethods
+                );
+            }
+        } catch (IOException e) {
+            // come reference: se un commit “rompe”, lo saltiamo senza bloccare la pipeline
+            System.err.println("[WARN] Error parsing fix commit " + fixCommit.getName() + ": " + e.getMessage());
+        }
+    }
 
-                    for (Map.Entry<String, CallableDeclaration<?>> entry : newCallables.entrySet()) {
-                        String signature = entry.getKey();
-                        CallableDeclaration<?> newCd = entry.getValue();
-                        CallableDeclaration<?> oldCd = oldCallables.get(signature);
+    /**
+     * Analizza un singolo file modificato da un commit di fix.
+     * Identifica quali metodi nel file sono stati aggiunti o cambiati
+     * e li passa alla funzione finale di labeling.
+     *
+     * Reference: usa SOLO diff.getNewPath().
+     */
+    private void processDiffForBuggyness(DiffEntry diff,
+                                         Map<String, String> newFileContents,
+                                         Map<String, String> oldFileContents,
+                                         Version injectedVersion,
+                                         Version fixedVersion,
+                                         List<Method> allProjectMethods) {
 
-                        String newHash = calculateBodyHash(newCd);
-                        String oldHash = (oldCd != null) ? calculateBodyHash(oldCd) : null;
+        String filePath = diff.getNewPath();
+        if (filePath == null || DiffEntry.DEV_NULL.equals(filePath)) return;
 
-                        if (oldCd == null || !newHash.equals(oldHash)) {
-                            String fqn = filePath + "/" + signature;
-                            labelBuggyMethods(fqn, injectedVersion, fixedVersion, methodsByFqn);
-                        }
-                    }
+        if (!filePath.endsWith(JAVA_EXTENSION) || filePath.contains(TEST_DIR_FRAGMENT)) return;
+
+        String newContent = newFileContents.getOrDefault(filePath, "");
+        Map<String, MethodDeclaration> newMethodsInFix = parseMethodsForBuggyness(newContent);
+
+        String oldContent = oldFileContents.getOrDefault(diff.getOldPath(), "");
+        Map<String, MethodDeclaration> oldMethodsInFix = parseMethodsForBuggyness(oldContent);
+
+        for (Map.Entry<String, MethodDeclaration> newMethodEntry : newMethodsInFix.entrySet()) {
+            String signature = newMethodEntry.getKey();
+            MethodDeclaration newMd = newMethodEntry.getValue();
+            MethodDeclaration oldMd = oldMethodsInFix.get(signature);
+
+            // Confronta l'hash del corpo per determinare se il metodo è cambiato
+            String newHash = calculateBodyHash(newMd);
+            String oldHash = calculateBodyHash(oldMd);
+
+            // Se il metodo è nuovo o il corpo è cambiato rispetto alla versione precedente, allora è stato toccato dal fix
+            if (oldMd == null || !newHash.equals(oldHash)) {
+                String fqn = filePath + "/" + signature;
+                labelBuggyMethods(fqn, injectedVersion, fixedVersion, allProjectMethods);
+            }
+        }
+    }
+
+    /**
+     * Metodo ausiliario per etichettare le istanze di un metodo come buggy.
+     * Reference: scan lineare su tutti i metodi del progetto, intervallo [IV, FV).
+     */
+    private void labelBuggyMethods(String fixedMethodFQN,
+                                   Version injectedVersion,
+                                   Version fixedVersion,
+                                   List<Method> allProjectMethods) {
+
+        int iv = injectedVersion.getIndex();
+        int fv = fixedVersion.getIndex();
+
+        for (Method projectMethod : allProjectMethods) {
+            if (projectMethod.getFullyQualifiedName().equals(fixedMethodFQN)) {
+                int mid = projectMethod.getVersion().getIndex();
+                if (mid >= iv && mid < fv) {
+                    projectMethod.setBuggy(true);
                 }
             }
         }
     }
 
-    private void labelBuggyMethods(String fixedMethodFqn,
-                                   Version injectedVersion,
-                                   Version fixedVersion,
-                                   Map<String, List<Method>> methodsByFqn) {
+    /**
+     * Parsing "reference-like": SOLO MethodDeclaration e firma coerente col tuo dataset
+     * (usa buildMethodSignature(md), che è la stessa usata in GitRetriever).
+     */
+    private Map<String, MethodDeclaration> parseMethodsForBuggyness(String content) {
+        Map<String, MethodDeclaration> methods = new HashMap<>();
+        if (content == null || content.isEmpty()) return methods;
 
-        List<Method> methods = methodsByFqn.get(fixedMethodFqn);
-        if (methods == null || methods.isEmpty()) {
-            return;
-        }
+        content = sanitizeFileContent(content);
 
-        int ivIndex = injectedVersion.getIndex();
-        int fvIndex = fixedVersion.getIndex();
+        try {
+            ParseResult<CompilationUnit> pr = javaParser.parse(content);
+            if (pr.getResult().isEmpty()) return methods;
 
-        for (Method method : methods) {
-            int methodIndex = method.getVersion().getIndex();
-            if (methodIndex >= ivIndex && methodIndex < fvIndex) {
-                method.setBuggy(true);
+            CompilationUnit cu = pr.getResult().get();
+            for (MethodDeclaration md : cu.findAll(MethodDeclaration.class)) {
+                methods.put(buildMethodSignature(md), md);
             }
+        } catch (Exception ignored) {
+            // reference-like: ignora errori di parsing
         }
+        return methods;
     }
 
     /* =========================================================
@@ -426,12 +505,13 @@ public class MetricsCalc {
             df.setDiffComparator(RawTextComparator.DEFAULT);
             df.setContext(0);
 
-            // D: rename/move robusto
+            //detect renames/moves
             df.setDetectRenames(true);
 
             return df.scan(parent.getTree(), commit.getTree());
         }
     }
+
 
     private Map<String, String> getFileContents(List<DiffEntry> diffs, boolean useOldPath) throws IOException {
         Map<String, String> contents = new HashMap<>();
