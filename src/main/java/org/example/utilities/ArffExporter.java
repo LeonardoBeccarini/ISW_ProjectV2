@@ -17,7 +17,6 @@ import java.util.List;
 /**
  * Utility per costruire (e opzionalmente salvare) un dataset WEKA
  * a partire dalla lista di Method.
- *
  * NOTA IMPORTANTE (allineamento al progetto reference):
  * - Il dataset NON include VersionIndex come feature.
  * - La classe è nominale {no, yes} con attributo "IsBuggy".
@@ -31,7 +30,6 @@ public final class ArffExporter {
 
     /**
      * Converte la lista di metodi in un oggetto Instances WEKA.
-     *
      * Feature (ordine reference):
      *  0  LOC
      *  1  NumParameters

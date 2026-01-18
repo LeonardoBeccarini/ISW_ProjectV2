@@ -172,7 +172,7 @@ public class GitRetriever {
             ordered = versionList.stream()
                     .filter(Objects::nonNull)
                     .sorted(Comparator.comparingInt(Version::getIndex))
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         // Costruisce la lista dei candidati con commit, ma stampa warning per le versioni senza commit.
@@ -191,7 +191,7 @@ public class GitRetriever {
             for (Version v : versionList.stream()
                     .filter(Objects::nonNull)
                     .sorted(Comparator.comparingInt(Version::getIndex))
-                    .collect(Collectors.toList())) {
+                    .toList()) {
 
                 List<RevCommit> commits = v.getCommitList();
                 if (commits == null || commits.isEmpty()) {
@@ -315,7 +315,7 @@ public class GitRetriever {
             }
 
             // In associateCommitToVersion() la lista è già ordinata per commitTime.
-            RevCommit snapshotCommit = versionCommits.get(versionCommits.size() - 1);
+            RevCommit snapshotCommit = versionCommits.getLast();
 
             // Estrazione in strutture temporanee: se la versione è outlier, non facciamo merge.
             List<Method> tmpMethods = new ArrayList<>();
@@ -338,7 +338,7 @@ public class GitRetriever {
             if (shouldSkipByMethodCount(extractedCount, acceptedMethodCounts)) {
                 String baselineStr = acceptedMethodCounts.size() < BASELINE_WINDOW
                         ? "n/a"
-                        : String.valueOf(medianOfLast(acceptedMethodCounts, BASELINE_WINDOW));
+                        : String.valueOf(medianOfLast(acceptedMethodCounts));
 
                 warnSkipVersion(
                         version,
@@ -455,26 +455,27 @@ public class GitRetriever {
     }
 
     private boolean shouldSkipByMethodCount(int extractedCount, List<Integer> acceptedCounts) {
-        // Se non estraiamo nulla, è sempre un problema (versione vuota o snapshot non valido).
-        if (extractedCount <= 0) return true;
+        int hardMin = hardMinMethodsForProject();
 
-        // Finché non ho abbastanza storia, NON scarto per ratio: evita di eliminare release piccole ma valide (es. STORM v2/v5).
+        // Hard floor: se sotto soglia, la versione è inutilizzabile (v2/v5 di STORM)
+        if (extractedCount < hardMin) return true;
+
+        // Finché non ho abbastanza storia, NON scarto per ratio
         if (acceptedCounts == null || acceptedCounts.size() < BASELINE_WINDOW) return false;
 
-        int baseline = medianOfLast(acceptedCounts, BASELINE_WINDOW);
+        int baseline = medianOfLast(acceptedCounts);
 
-        // Applichiamo la regola relativa solo quando la baseline è sufficientemente grande.
         if (baseline < MIN_BASELINE_FOR_RATIO) return false;
 
-        int threshold = Math.max(MIN_METHODS_ABS, (int) Math.floor(baseline * LOW_METHOD_RATIO));
+        int threshold = Math.max(hardMin, (int) Math.floor(baseline * LOW_METHOD_RATIO));
         return extractedCount < threshold;
     }
 
 
-    private int medianOfLast(List<Integer> values, int lastN) {
-        if (values == null || values.isEmpty() || lastN <= 0) return 0;
+    private int medianOfLast(List<Integer> values) {
+        if (values == null || values.isEmpty() || GitRetriever.BASELINE_WINDOW <= 0) return 0;
 
-        int n = Math.min(lastN, values.size());
+        int n = Math.min(GitRetriever.BASELINE_WINDOW, values.size());
         int start = values.size() - n;
 
         int[] buf = new int[n];
@@ -488,6 +489,16 @@ public class GitRetriever {
         }
         // n pari: media dei due centrali (int division ok)
         return (buf[(n / 2) - 1] + buf[n / 2]) / 2;
+    }
+
+
+
+    private int hardMinMethodsForProject() {
+        // STORM: tipicamente migliaia di metodi per release, quindi 1000 è conservativo ma elimina v2/v5
+        if ("STORM".equalsIgnoreCase(projectName)) return 1000;
+
+        // default: usa la soglia già presente nel progetto (o un valore basso)
+        return MIN_METHODS_ABS;
     }
 
     /* =========================================================

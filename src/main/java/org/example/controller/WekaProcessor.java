@@ -495,4 +495,107 @@ public class WekaProcessor {
             LOGGER.log(Level.SEVERE, "Could not write evaluation CSV files", e);
         }
     }
+    /* =========================================================
+       =                    FOR 'WHAT IF' ANALYSIS                        =
+       ========================================================= */
+
+    public static final class ModelSpec {
+        public final String classifier;
+        public final String featureSelection;
+        public final String sampling;
+        public final String costSensitive;
+
+        public ModelSpec(String classifier, String featureSelection, String sampling, String costSensitive) {
+            this.classifier = classifier;
+            this.featureSelection = featureSelection;
+            this.sampling = sampling;
+            this.costSensitive = costSensitive;
+        }
+
+        @Override
+        public String toString() {
+            return classifier + " | FS=" + featureSelection + " | Sampling=" + sampling + " | Cost=" + costSensitive;
+        }
+    }
+
+    public static ModelSpec pickBestSpec(List<org.example.model.ClassifierEvaluation> evals) {
+        if (evals == null || evals.isEmpty()) {
+            return new ModelSpec("RandomForest", FS_NONE, SAMPLING_NONE, COST_NONE);
+        }
+
+        record Agg(double aucSum, int aucN, double mccSum, int mccN) {}
+        java.util.Map<String, Agg> m = new java.util.HashMap<>();
+
+        for (org.example.model.ClassifierEvaluation e : evals) {
+            String key = String.join("|",
+                    nz(e.getClassifier()),
+                    nz(e.getFeatureSelection()),
+                    nz(e.getSampling()),
+                    nz(e.getCostSensitive())
+            );
+
+            Agg a = m.getOrDefault(key, new Agg(0, 0, 0, 0));
+            double auc = parseOrNaN(e.getAuc());
+            double mcc = parseOrNaN(e.getMcc());
+
+            double aucSum = a.aucSum + (Double.isNaN(auc) ? 0 : auc);
+            int aucN = a.aucN + (Double.isNaN(auc) ? 0 : 1);
+
+            double mccSum = a.mccSum + (Double.isNaN(mcc) ? 0 : mcc);
+            int mccN = a.mccN + (Double.isNaN(mcc) ? 0 : 1);
+
+            m.put(key, new Agg(aucSum, aucN, mccSum, mccN));
+        }
+
+        String bestKey = null;
+        double bestScore = Double.NEGATIVE_INFINITY;
+
+        for (var ent : m.entrySet()) {
+            Agg a = ent.getValue();
+            double meanAuc = (a.aucN > 0) ? (a.aucSum / a.aucN) : Double.NaN;
+            double meanMcc = (a.mccN > 0) ? (a.mccSum / a.mccN) : Double.NaN;
+
+            double score = !Double.isNaN(meanAuc) ? meanAuc
+                    : (!Double.isNaN(meanMcc) ? meanMcc : Double.NEGATIVE_INFINITY);
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestKey = ent.getKey();
+            }
+        }
+
+        if (bestKey == null) return new ModelSpec("RandomForest", FS_NONE, SAMPLING_NONE, COST_NONE);
+
+        String[] p = bestKey.split("\\|", -1);
+        return new ModelSpec(p[0], p[1], p[2], p[3]);
+    }
+
+    public weka.classifiers.Classifier buildClassifier(weka.core.Instances training, ModelSpec spec) throws Exception {
+        weka.classifiers.Classifier base;
+        switch (spec.classifier) {
+            case "NaiveBayes" -> base = createNaiveBayes();
+            case "IBk" -> base = createIBk();
+            default -> base = createRandomForest();
+        }
+
+        weka.classifiers.Classifier model = base;
+
+        boolean fs = FS_BEST_FIRST.equals(spec.featureSelection);
+        boolean smote = SAMPLING_SMOTE.equals(spec.sampling);
+        boolean cs = COST_SENSITIVE.equals(spec.costSensitive);
+
+        if (fs && smote) model = wrapWithFeatureSelectionAndSmote(training, model);
+        else if (fs) model = wrapWithFeatureSelection(model);
+        else if (smote) model = wrapWithSmote(training, model);
+
+        if (cs) model = wrapWithCostSensitive(model);
+
+        return model;
+    }
+
+    private static String nz(String s) { return (s == null) ? "" : s; }
+    private static double parseOrNaN(String s) {
+        try { return Double.parseDouble(s); } catch (Exception ex) { return Double.NaN; }
+    }
+
 }
