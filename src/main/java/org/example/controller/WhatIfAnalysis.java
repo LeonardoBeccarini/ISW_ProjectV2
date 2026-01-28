@@ -19,7 +19,7 @@ import java.util.*;
  * What-If analysis (method-level) allineata al report:
  * - ExpectedDefectsSum(X) = Σ P(buggy="yes") su X
  * - Riduzione attesa = ExpectedDefectsSum(B+) - ExpectedDefectsSum(B)
- *
+ * <p>
  * Patch principali:
  * 1) Parser CSV eval robusto (MODEL/BALANCING... + legacy Classifier/Sampling...)
  * 2) Niente clamp a 1.0 sul refactor factor (AFTER/BEFORE)
@@ -29,10 +29,10 @@ import java.util.*;
 public class WhatIfAnalysis {
 
     private static final String COL_VERSION_INDEX = "VersionIndex";
-    private static final String COL_VERSION_NAME  = "VersionName";
-    private static final String COL_METHOD_FQN    = "MethodFQN";
-    private static final String COL_BODY_HASH     = "BodyHash";
-    private static final String COL_BUGGY         = "Buggy";
+    private static final String COL_VERSION_NAME = "VersionName";
+    private static final String COL_METHOD_FQN = "MethodFQN";
+    private static final String COL_BODY_HASH = "BodyHash";
+    private static final String COL_BUGGY = "Buggy";
 
     private static final double DEFAULT_TOP_QUANTILE_FOR_BPLUS = 0.75; // top 25%
     private static final double EPS = 1e-9;
@@ -51,29 +51,30 @@ public class WhatIfAnalysis {
 
     public void execute() throws Exception {
         Path projectCsvDir = Paths.get("output", "csv", projectName);
-        Path datasetPath   = projectCsvDir.resolve("dataset.csv");
-        Path evalPath      = projectCsvDir.resolve("weka_walkforward.csv");
-        Path refPath       = projectCsvDir.resolve("refactor_metrics_" + baseMethodName + ".csv");
+        Path datasetPath = projectCsvDir.resolve("dataset.csv");
+        Path evalPath = projectCsvDir.resolve("weka_walkforward.csv");
+        Path refPath = projectCsvDir.resolve("refactor_metrics_" + baseMethodName + ".csv");
 
         if (!Files.exists(datasetPath)) throw new FileNotFoundException("Missing dataset: " + datasetPath);
-        if (!Files.exists(evalPath))    throw new FileNotFoundException("Missing evaluations: " + evalPath);
-        if (!Files.exists(refPath))     throw new FileNotFoundException("Missing refactor metrics: " + refPath);
+        if (!Files.exists(evalPath)) throw new FileNotFoundException("Missing evaluations: " + evalPath);
+        if (!Files.exists(refPath)) throw new FileNotFoundException("Missing refactor metrics: " + refPath);
 
         // --- Load raw dataset (keeps VersionIndex for temporal split)
         Instances raw = loadCsvAsInstances(datasetPath);
         if (raw.isEmpty()) throw new IllegalStateException("Dataset is empty: " + datasetPath);
 
         Attribute versionAttr = raw.attribute(COL_VERSION_INDEX);
-        Attribute buggyAttr   = raw.attribute(COL_BUGGY);
+        Attribute buggyAttr = raw.attribute(COL_BUGGY);
         if (versionAttr == null) throw new IllegalArgumentException("Dataset missing column: " + COL_VERSION_INDEX);
-        if (buggyAttr == null)   throw new IllegalArgumentException("Dataset missing column: " + COL_BUGGY);
+        if (buggyAttr == null) throw new IllegalArgumentException("Dataset missing column: " + COL_BUGGY);
 
         int latestVersion = findMaxInt(raw, versionAttr);
-        if (latestVersion < 2) throw new IllegalStateException("Not enough releases for what-if (latestVersion=" + latestVersion + ")");
+        if (latestVersion < 2)
+            throw new IllegalStateException("Not enough releases for what-if (latestVersion=" + latestVersion + ")");
 
         // Temporal split: train = all releases < latest, test(A_latest) = latest
         Instances trainRaw = new Instances(raw, 0);
-        Instances testRaw  = new Instances(raw, 0);
+        Instances testRaw = new Instances(raw, 0);
         for (int i = 0; i < raw.numInstances(); i++) {
             Instance inst = raw.instance(i);
             int v = (int) Math.round(inst.value(versionAttr));
@@ -94,15 +95,17 @@ public class WhatIfAnalysis {
 
         // Ensure class is last and set classIndex
         ensureClassIsLastAndSet(train, COL_BUGGY);
-        ensureClassIsLastAndSet(test,  COL_BUGGY);
+        ensureClassIsLastAndSet(test, COL_BUGGY);
 
         // Read refactor delta (BEFORE vs AFTER) for actionableFeature
         RefactorDelta delta = readRefactorDelta(refPath, actionableFeature);
 
         // Build B+, B, C from TEST (latest release)
         Attribute aFeatAttr = test.attribute(actionableFeature);
-        if (aFeatAttr == null) throw new IllegalArgumentException("Actionable feature not found in dataset: " + actionableFeature);
-        if (!aFeatAttr.isNumeric()) throw new IllegalArgumentException("Actionable feature is not numeric: " + actionableFeature);
+        if (aFeatAttr == null)
+            throw new IllegalArgumentException("Actionable feature not found in dataset: " + actionableFeature);
+        if (!aFeatAttr.isNumeric())
+            throw new IllegalArgumentException("Actionable feature is not numeric: " + actionableFeature);
 
         int aFeatIndex = aFeatAttr.index();
 
@@ -110,7 +113,7 @@ public class WhatIfAnalysis {
         double threshold = chooseBPlusThreshold(test, actionableFeature, DEFAULT_TOP_QUANTILE_FOR_BPLUS);
 
         Instances bPlus = new Instances(test, 0);
-        Instances c     = new Instances(test, 0);
+        Instances c = new Instances(test, 0);
 
         for (int i = 0; i < test.numInstances(); i++) {
             Instance src = test.instance(i);
@@ -139,7 +142,7 @@ public class WhatIfAnalysis {
         Instances trainN = applyTrainedFilter(norm, train);
 
         Filter normCopyA = Filter.makeCopy(norm);
-        Instances testN  = applyTrainedFilter(normCopyA, test);
+        Instances testN = applyTrainedFilter(normCopyA, test);
 
         Filter normCopyBPlus = Filter.makeCopy(norm);
         Instances bPlusN = applyTrainedFilter(normCopyBPlus, bPlus);
@@ -160,10 +163,10 @@ public class WhatIfAnalysis {
         int posIndex = positiveClassIndex(trainN, "yes");
 
         // Evaluate datasets
-        Result rA     = evaluateDataset("A_latest", testN,  model, posIndex);
-        Result rBPlus = evaluateDataset("B_plus",   bPlusN, model, posIndex);
-        Result rB     = evaluateDataset("B",        bN,     model, posIndex);
-        Result rC     = evaluateDataset("C",        cN,     model, posIndex);
+        Result rA = evaluateDataset("A_latest", testN, model, posIndex);
+        Result rBPlus = evaluateDataset("B_plus", bPlusN, model, posIndex);
+        Result rB = evaluateDataset("B", bN, model, posIndex);
+        Result rC = evaluateDataset("C", cN, model, posIndex);
 
         // Probabilistic reduction (report-style)
         double deltaExpectedProb = rBPlus.expectedDefectsSum - rB.expectedDefectsSum;
@@ -178,10 +181,10 @@ public class WhatIfAnalysis {
         Files.createDirectories(outDir);
 
         // Save intermediate datasets (for inspection)
-        saveInstancesAsCsv(testN,  outDir.resolve("A_latest.csv"));
+        saveInstancesAsCsv(testN, outDir.resolve("A_latest.csv"));
         saveInstancesAsCsv(bPlusN, outDir.resolve("B_plus.csv"));
-        saveInstancesAsCsv(bN,     outDir.resolve("B.csv"));
-        saveInstancesAsCsv(cN,     outDir.resolve("C.csv"));
+        saveInstancesAsCsv(bN, outDir.resolve("B.csv"));
+        saveInstancesAsCsv(cN, outDir.resolve("C.csv"));
 
         // Save results
         Path resCsv = outDir.resolve("whatif_results.csv");
@@ -501,13 +504,13 @@ public class WhatIfAnalysis {
         }
 
         // Required columns (your exact format)
-        int iIter  = requireIdx(idx, "WF_ITER");
+        int iIter = requireIdx(idx, "WF_ITER");
         int iModel = requireIdx(idx, "MODEL");
-        int iFs    = requireIdx(idx, "FEATURE_SELECTION");
-        int iBal   = requireIdx(idx, "BALANCING");
-        int iCost  = requireIdx(idx, "COST_SENSITIVE");
-        int iAuc   = requireIdx(idx, "AUC");
-        int iMcc   = requireIdx(idx, "MCC");
+        int iFs = requireIdx(idx, "FEATURE_SELECTION");
+        int iBal = requireIdx(idx, "BALANCING");
+        int iCost = requireIdx(idx, "COST_SENSITIVE");
+        int iAuc = requireIdx(idx, "AUC");
+        int iMcc = requireIdx(idx, "MCC");
 
         // Optional (not needed by pickBestSpec, but harmless if present)
         int iProj = idx.getOrDefault("PROJ", -1);
@@ -621,7 +624,7 @@ public class WhatIfAnalysis {
             double v = parseDoubleOrNaN(p[iFeat]);
 
             if ("BEFORE".equalsIgnoreCase(tag)) before = v;
-            if ("AFTER".equalsIgnoreCase(tag))  after = v;
+            if ("AFTER".equalsIgnoreCase(tag)) after = v;
         }
 
         if (before == null || after == null || Double.isNaN(before) || Double.isNaN(after)) {
@@ -642,7 +645,11 @@ public class WhatIfAnalysis {
     }
 
     private static double parseDoubleOrNaN(String s) {
-        try { return Double.parseDouble(s.trim()); } catch (Exception e) { return Double.NaN; }
+        try {
+            return Double.parseDouble(s.trim());
+        } catch (Exception e) {
+            return Double.NaN;
+        }
     }
 
     private static String[] splitCsvLine(String line) {
@@ -699,10 +706,10 @@ public class WhatIfAnalysis {
         try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(out.toFile()), StandardCharsets.UTF_8))) {
 
             pw.println(String.join(",",
-                    "Project","AFeature","AFMethod","BClassifier",
-                    "RefBefore","RefAfter","RefFactor",
-                    "BPlusThreshold","Dataset",
-                    "N","ActualBuggy",
+                    "Project", "AFeature", "AFMethod", "BClassifier",
+                    "RefBefore", "RefAfter", "RefFactor",
+                    "BPlusThreshold", "Dataset",
+                    "N", "ActualBuggy",
                     "ExpectedDefectsSum_Prob",
                     "EstimatedBuggy_Threshold05",
                     "EstimatedBuggy_Classify",
@@ -790,25 +797,5 @@ public class WhatIfAnalysis {
         // auxiliary
         int estimatedBuggyThreshold05;
         int estimatedBuggyClassify;
-    }
-
-    /* =========================================================
-       =                        Demo main                      =
-       ========================================================= */
-
-    public static void main(String[] args) {
-        // Usage:
-        //   args[0] = PROJECT (uppercase, e.g. BOOKKEEPER)
-        //   args[1] = AFeature (e.g. NumBranches)
-        //   args[2] = baseMethodName (e.g. dispatchReceivedMessagesToSubscribers)
-        try {
-            if (args.length < 3) {
-                System.err.println("Usage: WhatIfAnalysis <PROJECT> <AFeature> <baseMethodName>");
-                return;
-            }
-            new WhatIfAnalysis(args[0], args[1], args[2]).execute();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

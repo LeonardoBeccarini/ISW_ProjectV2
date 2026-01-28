@@ -26,10 +26,8 @@ public class Execution {
             List<Method> methods = gitRetriever.extractMethodsAndMetrics();
             System.out.println("Metodi estratti: " + methods.size());
 
-            List<Version> analysisVersions = gitRetriever.getAnalysisVersions();
-            DatasetDiagnostics.analyzeLabelingQuality(projectName, methods, finalTicketList, analysisVersions);
-
-            CsvExporter.exportAll(projectName, analysisVersions, finalTicketList, methods);
+            DatasetDiagnostics.analyzeLabelingQuality(projectName, methods, finalTicketList, versionList);
+            CsvExporter.exportAll(projectName, versionList, finalTicketList, methods);
 
             WekaProcessor wekaProcessor = new WekaProcessor(projectName, methods);
             List<ClassifierEvaluation> evaluations = wekaProcessor.runPredictionPipeline();
