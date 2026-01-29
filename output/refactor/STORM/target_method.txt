@@ -1,0 +1,28 @@
+=== TARGET SELECTOR OUTPUT ===
+Project: STORM
+LatestVersionIndex: 16
+LatestVersionName: 1.0.5
+AFeature: NESTING_DEPTH (csv=NestingDepth)
+AFeatureValue: 16.0
+MethodFQN: external/storm-jdbc/src/main/java/org/apache/storm/jdbc/common/JdbcClient.java/JdbcClient#select(String,List)
+LOC: 60
+
+Row snapshot (dataset.csv):
+VersionIndex: 16
+VersionName: 1.0.5
+MethodFQN: external/storm-jdbc/src/main/java/org/apache/storm/jdbc/common/JdbcClient.java/JdbcClient#select(String,List)
+LOC: 60
+NumParameters: 2
+NumBranches: 16
+NestingDepth: 16
+NumCodeSmells: 2
+NumLocalVariables: 12
+NumRevisions: 25
+NumAuthors: 14
+TotalStmtAdded: 456
+TotalStmtDeleted: 6
+MaxChurn: 54
+AvgChurn: 18.48
+HasFixHistory: 1
+Buggy: no
+BodyHash: 330bc6d03537f2513864be46408c28666703272a228a786523916ec455628f71

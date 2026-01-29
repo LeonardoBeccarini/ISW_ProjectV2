@@ -1,0 +1,1128 @@
+Hash,AuthorName,AuthorEmail,Date,VersionIndex,VersionName,TicketKeys,ShortMessage
+9ea37773fa07e8e1c16e654020ae34c3d6564963,Benjamin Reed,breed@apache.org,2011-03-30,1,4.0.0,,added top level directories
+c1c8bef6125cb70ed2da68e92bb49e45f4ea64a9,Benjamin Reed,breed@apache.org,2011-03-30,1,4.0.0,,ZOOKEEPER-1038. Move bookkeeper and hedwig code in subversion
+e988271acee2c217209d5c7f52c07f6211257e97,Benjamin Reed,breed@apache.org,2011-03-31,1,4.0.0,,got bookkeper work with maven
+30c326643938bb3df6b35515e714622d98772352,Benjamin Reed,breed@apache.org,2011-04-08,1,4.0.0,,more fixing of the build (ivankelly via breed)
+8ee32a8ab80dcd51f7846972d92b7c9e83d99862,Flavio Paiva Junqueira,fpj@apache.org,2011-05-20,1,4.0.0,BOOKKEEPER-19,BOOKKEEPER-19: BookKeeper doesn't support more than 2Gig of memory (ivan via fpj)
+9ea30d361649e13f28efb05ea2155cf765267a2f,Ivan Brendan Kelly,ivank@apache.org,2011-05-25,1,4.0.0,BOOKKEEPER-1,BOOKKEEPER-1: Static variable makes tests fail (fpj via ivank)
+266b1c2744a35b9379ba5e7023322a2450b91090,Ivan Brendan Kelly,ivank@apache.org,2011-05-25,1,4.0.0,BOOKKEEPER-1,BOOKKEEPER-1: Static variable makes tests fail (fpj via ivank) [CHANGES.txt]
+267ed95a2ae2ef1a8f6a3166b217d86a28166391,Flavio Paiva Junqueira,fpj@apache.org,2011-06-06,1,4.0.0,BOOKKEEPER-22,BOOKKEEPER-22: Exception in LedgerCache causes addEntry request to fail (fpj via fpj)
+d20cb28943e80c1d39cca5916f459651e29dd573,Benjamin Reed,breed@apache.org,2011-06-28,1,4.0.0,,initial setup for hedwig and bookkeeper doc
+00f25f5622e69f063202f7bd46f09ad1d708983d,Flavio Paiva Junqueira,fpj@apache.org,2011-07-07,1,4.0.0,BOOKKEEPER-5,BOOKKEEPER-5: Issue with Netty in BookKeeper (fpj and ivank via fpj)
+45aeb04735d120d3aa9a0110becf3ba2d7ef6afc,Flavio Paiva Junqueira,fpj@apache.org,2011-07-12,1,4.0.0,,BOOKKEEPER-30: Test are too noisy (ivank via fpj)
+74397e3e20b2cd3e3c920f00be7f044cf548e076,Ivan Brendan Kelly,ivank@apache.org,2011-07-28,1,4.0.0,,BOOKKEEPER-11: Read from open ledger (fpj via ivank)
+3e9d596480537e45a23e591a1daabddffd2b15bf,Flavio Paiva Junqueira,fpj@apache.org,2011-07-30,1,4.0.0,BOOKKEEPER-27,BOOKKEEPER-27: mvn site failed with unresolved dependencies (ivank via fpj)
+de1c3b26a1162fb545c91d9cef4eed435c662a66,Ivan Brendan Kelly,ivank@apache.org,2011-08-10,1,4.0.0,BOOKKEEPER-29,BOOKKEEPER-29: BookieRecoveryTest fails intermittently (fpj via ivank)
+0910d6cd7ffb1a7b78ab91a327715e936a3eb9e5,Flavio Paiva Junqueira,fpj@apache.org,2011-08-11,1,4.0.0,,BOOKKEEPER-33: Add length and offset parameter to addEntry (ivank via fpj)
+40b13a6b7db9d2da337dce0c7084d8c87c4d6b06,Flavio Paiva Junqueira,fpj@apache.org,2011-08-11,1,4.0.0,BOOKKEEPER-29,"BOOKKEEPER-29: BookieRecoveryTest fails intermittently (ivank, fpj via fpj)"
+a772663c8e7051396bac5bae5b4ba7bc7ec75e78,Benjamin Reed,breed@apache.org,2011-08-23,1,4.0.0,BOOKKEEPER-43,BOOKKEEPER-43: NullPointException when releasing topic
+a01067bb2003e6836acc638b734581844eb08324,Benjamin Reed,breed@apache.org,2011-08-23,1,4.0.0,BOOKKEEPER-38,BOOKKEEPER-38: Bookie Server doesn't exit when its zookeeper session is expired. So the process is hang there.
+5095045d969a5fb4b7849cce89e3fa24ee830320,Benjamin Reed,breed@apache.org,2011-08-23,1,4.0.0,,BOOKKEEPER-44: Reuse publish channel to default server to avoid too many connect requests to default server when lots of producers came in same time
+c30c309bf95a6ba145d33326af73253fb835b1b4,Benjamin Reed,breed@apache.org,2011-08-23,1,4.0.0,BOOKKEEPER-38,forgot to add test from BOOKKEEPER-38
+ad96c00dcd01ee310c63f78211c6b66c8c874e05,Ivan Brendan Kelly,ivank@apache.org,2011-08-29,1,4.0.0,BOOKKEEPER-58,BOOKKEEPER-58: Changes introduced in BK-38 cause BookieClientTest to hang indefinitely. (ivank)
+da1df6bcf4f3a1cc2ed4d3798764e855555ab8f8,Ivan Brendan Kelly,ivank@apache.org,2011-08-29,1,4.0.0,BOOKKEEPER-18,"BOOKKEEPER-18: maven build is unstable (morel, ivank via ivank)"
+afdd3dd1e7e06f97e29ff5bcaa2001f81f6d9210,Ivan Brendan Kelly,ivank@apache.org,2011-08-30,1,4.0.0,BOOKKEEPER-28,BOOKKEEPER-28: Create useful startup scripts for bookkeeper and hedwig (ivank)
+675efc92fdb7c88ff9b871ba2ccf56974f769544,Ivan Brendan Kelly,ivank@apache.org,2011-08-30,1,4.0.0,BOOKKEEPER-51,BOOKKEEPER-51: NullPointException at FIFODeliveryManager#deliveryPtrs (xulei via ivank)
+360174f12df9b853e4f3b65631c4063e150beb8f,Ivan Brendan Kelly,ivank@apache.org,2011-08-30,1,4.0.0,BOOKKEEPER-52,BOOKKEEPER-52: Message sequence confuse due to the subscribeMsgQueue@SubscribeResponseHandler (xulei via ivank)
+28377803242f8514fcdf17f7a808aa756fa158b9,Ivan Brendan Kelly,ivank@apache.org,2011-08-31,1,4.0.0,BOOKKEEPER-57,BOOKKEEPER-57: NullPointException at bookie.zk@EntryLogger (xulei via ivank)
+79ea05a3cbcc953bd86f024eb4143e4b85fcd8f1,Ivan Brendan Kelly,ivank@apache.org,2011-09-05,1,4.0.0,BOOKKEEPER-63,BOOKKEEPER-63: Hedwig PubSubServer must wait for its Zookeeper client to be connected upon startup (morel via ivank)
+ba9ebc213c14aa5d16a26f2e0601a39ac5888e10,Flavio Paiva Junqueira,fpj@apache.org,2011-09-05,1,4.0.0,,BOOKKEEPER-26: Indentation is all messed up in the BookKeeper code (ivank via fpj)
+6823a35ceafcaf3d8802a8e502883d3d07e891f7,Flavio Paiva Junqueira,fpj@apache.org,2011-09-16,1,4.0.0,BOOKKEEPER-59,BOOKKEEPER-59: Race condition in netty code allocates and orphans resources (BK-5 revisited) (ivank via fpj)
+06eea6791177f3d9dcb116ceccff2f6c3f619a39,Flavio Paiva Junqueira,fpj@apache.org,2011-10-06,1,4.0.0,,BOOKKEEPER-41: Generation of packages for distribution (ivank via fpj)
+9639b64a1296f937a7b2704de671a38deb31007b,Benjamin Reed,breed@apache.org,2011-10-07,1,4.0.0,BOOKKEEPER-61,  BOOKKEEPER-61: BufferedChannel read endless when the remaining bytes of file is less than the capacity of read buffer
+c980c700d1313911903df3d4c3d48cf8da441827,Ivan Brendan Kelly,ivank@apache.org,2011-10-17,1,4.0.0,BOOKKEEPER-65,BOOKKEEPER-65: fix dependencies on incompatible versions of netty (mmorel via ivank)
+2f2f6c66da80e1f2e8a0f7661e91bcd0898d6289,Ivan Brendan Kelly,ivank@apache.org,2011-10-18,1,4.0.0,BOOKKEEPER-68,BOOKKEEPER-68: Conditional setData (fpj via ivank)
+2c91d144a7e283c09e90b3065aa6fb352e177083,Benjamin Reed,breed@apache.org,2011-10-18,1,4.0.0,BOOKKEEPER-86|BOOKKEEPER-68,BOOKKEEPER-86: bookkeeper-benchmark fails to compile after BOOKKEEPER-68
+d05e52ce5a6bf8b0076685ccec03f5ab91b2b32d,Benjamin Reed,breed@apache.org,2011-10-19,1,4.0.0,,missing CHANGE.txt entry for BOOKKEEPER-61 (commit 1180266)
+477eb1053f5c1bff1c0037fb0d6a02b468148682,Benjamin Reed,breed@apache.org,2011-10-23,1,4.0.0,,BOOKKEEPER-84: Add versioning for ZK metadata
+4f09c6b4af38b51d259d8a6068806f7f22cc1847,Ivan Brendan Kelly,ivank@apache.org,2011-10-24,1,4.0.0,BOOKKEEPER-88,BOOKKEEPER-88: derby doesn't like - in the topic names (breed via ivank)
+45f2edbb1c3233309f6498e581e4cdcd87dcb70a,Ivan Brendan Kelly,ivank@apache.org,2011-10-25,1,4.0.0,BOOKKEEPER-92,BOOKKEEPER-92: using wrong context object in readLastConfirmedComplete callback (Sijie Guo via ivank)
+d6465cad801b4ee89b77d1beec6acc371f8ddb6c,Ivan Brendan Kelly,ivank@apache.org,2011-10-26,1,4.0.0,BOOKKEEPER-94,BOOKKEEPER-94: Double callbacks in readLastConfirmedOp which fails readLastConfirmed operation even received enough valid responses. (Sijie Guo via ivank)
+c898d53ab269fbd64cb00919808c7bb0c52c53a6,Ivan Brendan Kelly,ivank@apache.org,2011-10-27,1,4.0.0,,BOOKKEEPER-83: Added versioning and flags to the bookie protocol (ivank)
+68bdab655445f80314a0d2531e60e3b2e4d8fa17,Ivan Brendan Kelly,ivank@apache.org,2011-10-27,1,4.0.0,,BOOKKEEPER-89: Bookkeeper API changes for initial Bookkeeper release (ivank)
+d1823db0509fe49b0ce8140c620e4c5100427407,Ivan Brendan Kelly,ivank@apache.org,2011-10-27,1,4.0.0,BOOKKEEPER-93,BOOKKEEPER-93: bookkeeper doesn't work correctly on OpenLedgerNoRecovery (Sijie Guo via ivank)
+ea616470cfbd129bb03098698a562e1b8dd8ecc4,Ivan Brendan Kelly,ivank@apache.org,2011-10-27,1,4.0.0,BOOKKEEPER-100,BOOKKEEPER-100: Some hedwig tests have build errors (dferro via ivank)
+dc5f5d223502b8bc9ef6bc3706f3bbea975e757e,Ivan Brendan Kelly,ivank@apache.org,2011-10-28,1,4.0.0,BOOKKEEPER-71,BOOKKEEPER-71: hedwig c++ client does not build . (ivank)
+978c0e13dd5896494f306ec2afed026caa9993b0,Ivan Brendan Kelly,ivank@apache.org,2011-11-04,1,4.0.0,,BOOKKEEPER-103: ledgerId and entryId is parsed wrong when addEntry (Sijie Guo via ivank)
+e7184063b0fa20fbbb9802863143a11183858656,Ivan Brendan Kelly,ivank@apache.org,2011-11-04,1,4.0.0,,BOOKKEEPER-102: Make bookkeeper use ZK from temporary repo (ivank)
+c17dfb9aa2aeb6d3d1c6fa934dc9ef15bf6b5bc2,Ivan Brendan Kelly,ivank@apache.org,2011-11-04,1,4.0.0,BOOKKEEPER-50,BOOKKEEPER-50: NullPointException at LedgerDescriptor#cmpMasterKey (Sijie Guo via ivank)
+2ea2fd09f2bbbea18e183c8af8e82e81eee9fe79,Ivan Brendan Kelly,ivank@apache.org,2011-11-08,1,4.0.0,BOOKKEEPER-107,BOOKKEEPER-107: memory leak in HostAddress of hedwig c++ client (Sijie Guo via ivank)
+6e3b195d16ef4b24618d7bb13b3eede6b9126e74,Ivan Brendan Kelly,ivank@apache.org,2011-11-08,1,4.0.0,BOOKKEEPER-80,BOOKKEEPER-80: subscription msg queue race condition in hedwig c++ client (Sijie Guo via ivank)
+cc467bd5880c2879e6c0355469d51759f89bbabc,Flavio Paiva Junqueira,fpj@apache.org,2011-11-11,1,4.0.0,,BOOKKEEPER-82: support journal rolling (Sijie Guo via fpj)
+75dbf699b90dd01b0dd44e4bdda60e7176b3ee12,Flavio Paiva Junqueira,fpj@apache.org,2011-11-15,1,4.0.0,BOOKKEEPER-106,BOOKKEEPER-106: recoveryBookieData can select a recovery bookie which is already in the ledgers ensemble
+64411b9af4eede947f0cf0fd46da4d3170ec18e4,Flavio Paiva Junqueira,fpj@apache.org,2011-11-15,1,4.0.0,BOOKKEEPER-106,BOOKKEEPER-106:	recoveryBookieData can select a recovery bookie which is already in the ledgers ensemble (forgot to edit CHANGES.txt)
+4d9f0c0ebe8614e0190c5df5bbd68c6fa1c05180,Ivan Brendan Kelly,ivank@apache.org,2011-11-16,1,4.0.0,,BOOKKEEPER-101 : Add Fencing to Bookkeeper (ivank)
+4be547c861f024e48a7b0074effb8c26ff0a97fc,Ivan Brendan Kelly,ivank@apache.org,2011-11-16,1,4.0.0,,BOOKKEEPER-104: Add versioning between bookie and its filesystem layout (ivank)
+b83d00086a263af5b51e3e061170934c53447976,Flavio Paiva Junqueira,fpj@apache.org,2011-11-17,1,4.0.0,,BOOKKEEPER-109: Add documentation to describe how bookies flushes data (Sijie Guo via fpj)
+304bf8fe61bd545072d09c7089d8b92fc3c2f1d3,Flavio Paiva Junqueira,fpj@apache.org,2011-11-17,1,4.0.0,BOOKKEEPER-81,BOOKKEEPER-81: disk space of garbage collected entry logger files isn't reclaimed util process quit (Sijie Guo via fpj)
+3969ff71a1865b5b8c32b60ac529999c6de71ab8,Flavio Paiva Junqueira,fpj@apache.org,2011-11-17,1,4.0.0,,BOOKKEEPER-91: Bookkeeper and hedwig clients should not use log4j directly (ivank via fpj)
+03e03c2b4a0eb0266cad4eb5e34099100629425e,Flavio Paiva Junqueira,fpj@apache.org,2011-11-17,1,4.0.0,BOOKKEEPER-87,BOOKKEEPER-87: TestHedwigHub exhausts direct buffer memory with netty 3.2.4.Final (ivank via fpj)
+e14618559769b7f3fa68360a4571a84392e162e3,Flavio Paiva Junqueira,fpj@apache.org,2011-11-17,1,4.0.0,,BOOKKEEPER-90: Hedwig API changes for initial Bookkeeper release (ivank via fpj)
+4049d4c2b115f81008ef7a3920fd9153ced2f53c,Ivan Brendan Kelly,ivank@apache.org,2011-11-18,1,4.0.0,,BOOKKEEPER-108: add configuration support for BK (Sijie via ivank)
+4afc000c193174857925f357a32950ab743490bc,Ivan Brendan Kelly,ivank@apache.org,2011-11-18,1,4.0.0,BOOKKEEPER-69,"BOOKKEEPER-69: ServerRedirectLoopException when a machine (hosts bookie server & hub server) reboot, which is caused by race condition of topic manager (Sijie, ivank via ivank)"
+d33f843a67ad8bc73367259c78170c0bfab24cdc,Ivan Brendan Kelly,ivank@apache.org,2011-11-18,1,4.0.0,BOOKKEEPER-115,BOOKKEEPER-115: LocalBookKeeper fails after BOOKKEEPER-108 (ivank)
+aed845b574b88abc825634d3c860dcfd40351fb8,Ivan Brendan Kelly,ivank@apache.org,2011-11-18,1,4.0.0,,BOOKKEEPER-114: add a shutdown hook to shut down bookie server safely. (Sijie via ivank)
+1bcbc47bcc6394b0c6fdeb73203aab59eab0fee5,Ivan Brendan Kelly,ivank@apache.org,2011-11-21,1,4.0.0,BOOKKEEPER-79,BOOKKEEPER-79: randomly startDelivery/stopDelivery will core dump in c++ hedwig client (Sijie Guo via ivank)
+e110067476eb55289d6dd86a94a6a1b0ab1a2ad8,Ivan Brendan Kelly,ivank@apache.org,2011-11-28,1,4.0.0,BOOKKEEPER-118,BOOKKEEPER-118: Hedwig client doesn't kill and remove old subscription channel after redirection. (Sijie Guo via ivank)
+9daeb60bc274a425b9e90ed50d3454a6bfb3cf31,Ivan Brendan Kelly,ivank@apache.org,2011-11-28,1,4.0.0,,BOOKKEEPER-117: Support multi threads in hedwig cpp client to leverage multi-core hardware (Sijie Guo via ivank)
+d5d73a8591369458c075034b8111f0dfabc2916d,Flavio Paiva Junqueira,fpj@apache.org,2011-11-28,1,4.0.0,BOOKKEEPER-119,BOOKKEEPER-119: Keys in configuration have inconsistent style (ivank via fpj)
+3af9f38fc3b53c40751904972384ecb9a4e9fb44,Ivan Brendan Kelly,ivank@apache.org,2011-11-28,1,4.0.0,BOOKKEEPER-39,"BOOKKEEPER-39: Bookie server failed to restart because of too many ledgers (more than ~50,000 ledgers) (Sijie via ivank)"
+924fb834de0ae926ea075385c47dd29f8dd804a3,Benjamin Reed,breed@apache.org,2011-11-28,1,4.0.0,BOOKKEEPER-53,BOOKKEEPER-53: race condition of outstandingMsgSet@SubscribeResponseHandler
+c323c003687319d20eb7539c0e85a9cf3a4a6d08,Ivan Brendan Kelly,ivank@apache.org,2011-11-29,1,4.0.0,BOOKKEEPER-124,BOOKKEEPER-124: build has RAT failures (ivank)
+504867718d934b66dfa4df8edc55c9c888aa3d42,Ivan Brendan Kelly,ivank@apache.org,2011-11-29,1,4.0.0,BOOKKEEPER-125,BOOKKEEPER-125: log4j still used in some places (ivank)
+da088187d80bf0b935aad14c1a4aa73e4920378f,Ivan Brendan Kelly,ivank@apache.org,2011-11-29,1,4.0.0,BOOKKEEPER-62,BOOKKEEPER-62: Bookie can not start when encountering corrupted records (breed via ivank)
+8b6f36788cb4614d506e0e526475592cd8fbeb6a,Ivan Brendan Kelly,ivank@apache.org,2011-11-29,1,4.0.0,,BOOKKEEPER-121: Review Hedwig client documentation (breed via ivank)
+aa1d8296672a1a29fdc3de630f5995c0d1a21429,Ivan Brendan Kelly,ivank@apache.org,2011-11-29,1,4.0.0,BOOKKEEPER-127,BOOKKEEPER-127: Make poms use official zookeeper 3.4.0 (ivank)
+e3b52e82ccccf4807100db0950609ec7ede8378c,Ivan Brendan Kelly,ivank@apache.org,2011-11-29,1,4.0.0,,BOOKKEEPER-120: Review BookKeeper client documentation (ivank)
+544f4b5c0480bb383134fe6e26c2fe0e0a6c8b11,Ivan Brendan Kelly,ivank@apache.org,2011-11-29,1,4.0.0,,BOOKKEEPER-122: Review BookKeeper server documentation (fpj & ivank)
+86040b51874dcb40d1693593942d975c8327e919,Ivan Brendan Kelly,ivank@apache.org,2011-11-29,1,4.0.0,,BOOKKEEPER-122: Review BookKeeper server documentation (fpj & ivank) [Forgot to add 2 files]
+49aa4df144abcd6b117ac376b71ac70a5af946b7,Ivan Brendan Kelly,ivank@apache.org,2011-11-29,1,4.0.0,,BOOKKEEPER-111: Document bookie recovery feature (ivank)
+fa78ba95d4e6ccff5ebb734e6036b11c802b3030,Ivan Brendan Kelly,ivank@apache.org,2011-11-30,1,4.0.0,BOOKKEEPER-128,BOOKKEEPER-128: pom and script modifications required for generating release packages (ivank)
+92e69b331797ea6a4eb4d46b668360e6c7bb9bd4,Ivan Brendan Kelly,ivank@apache.org,2011-11-30,1,4.0.0,BOOKKEEPER-129,BOOKKEEPER-129: ZK_TIMEOUT typo in client/server configuration (Sijie via ivank)
+12840c3e9e85ac400597d26663b19277c41987a7,Ivan Brendan Kelly,ivank@apache.org,2011-11-30,1,4.0.0,,BOOKKEEPER-130: Add developer KEYS file to svn (ivank)
+f2e9d4ca08e6ce254c61e0a27a04a7b2f95c6642,Ivan Brendan Kelly,ivank@apache.org,2011-11-30,1,4.0.0,,Cleanup of CHANGES.txt before cutting 4.0.0 branch
+814f0ab6b4d43a35992e995c8abd804326ec633b,Ivan Brendan Kelly,ivank@apache.org,2011-11-30,1,4.0.0,,Preparing for release 4.0.0
+5b90ba75a5cfa13a77297fd488024cd05ce07420,Ivan Brendan Kelly,ivank@apache.org,2011-11-30,1,4.0.0,,Fixing CHANGES.txt for new trunk
+9794cc0c6d8531c1a6540db660e55add2469d019,Ivan Brendan Kelly,ivank@apache.org,2011-11-30,1,4.0.0,,Bumping version number for trunk: 4.0.0 -> 4.1.0
+3bc2bdb0d0f38b004fa95a58e8b02104005c663b,Ivan Brendan Kelly,ivank@apache.org,2011-11-30,1,4.0.0,BOOKKEEPER-66,BOOKKEEPER-66: use IPv4 for builds (mmorel via ivank)
+63b032331f28fe434ea37d7cb2e515609298b7ed,Ivan Brendan Kelly,ivank@apache.org,2011-11-30,1,4.0.0,,BOOKKEEPER-132: Sign artifacts before deploying to maven (ivank)
+86844d7303f62a8e2361ca56d83ba2d47e5c77b8,Ivan Brendan Kelly,ivank@apache.org,2011-12-01,1,4.0.0,BOOKKEEPER-131,BOOKKEEPER-131: Fix zookeeper test dependency (ivank)
+dcfe4bcc5123eb70a5366bbf3b4931d8d23f9e48,Ivan Brendan Kelly,ivank@apache.org,2011-12-01,1,4.0.0,BOOKKEEPER-134,BOOKKEEPER-134: Delete superfluous lib directories (ivank)
+213db5d6a6d55b5b093776a4c54fa5c8ffed5f0d,Ivan Brendan Kelly,ivank@apache.org,2011-12-02,1,4.0.0,,Reverting BOOKKEEPER-130: Add developer KEYS file to svn (ivank) 
+d006007ccf86f924d0773e267675a52e98314710,Ivan Brendan Kelly,ivank@apache.org,2011-12-02,1,4.0.0,BOOKKEEPER-138,BOOKKEEPER-138: NOTICE.txt is invalid (ivank)
+1c90beb59a6aa94f18ca6b5ca1f94a0db5e0cc14,Ivan Brendan Kelly,ivank@apache.org,2011-12-02,1,4.0.0,BOOKKEEPER-139,BOOKKEEPER-139: Binary packages do not carry NOTICE.txt (ivank)
+9eb549d4c308963af0be3288a59b0c4c39cbb5e6,Ivan Brendan Kelly,ivank@apache.org,2011-12-16,2,4.1.0,BOOKKEEPER-142,"BOOKKEEPER-142: Parsing last log id is wrong, which may make entry log files overwritten (Sijie Gou via ivank)"
+015097021c1a2d2860643fda7fcb3e8a0d191442,Ivan Brendan Kelly,ivank@apache.org,2011-12-16,2,4.1.0,,BOOKKEEPER-141: Run extracting ledger id from entry log files in GC thread to speed up bookie restart (Sijie Gou via ivank)
+8f755ed13f193ad6491fdca1794d834f3d3d4dcc,Ivan Brendan Kelly,ivank@apache.org,2011-12-21,2,4.1.0,BOOKKEEPER-140,BOOKKEEPER-140: Hub server doesn't subscribe remote region correctly when a region is down. (Sijie Gou via ivank)
+0975f069d90748eb43fcec7622d3961b0446ea28,Ivan Brendan Kelly,ivank@apache.org,2011-12-22,2,4.1.0,BOOKKEEPER-133,BOOKKEEPER-133: Hub server should update subscription state to zookeeper when losing topic or shutting down (Sijie Gou via ivank)
+e32715ad96558a9941910dd6ae91fc1c646baeb6,Flavio Paiva Junqueira,fpj@apache.org,2012-01-11,2,4.1.0,BOOKKEEPER-148,BOOKKEEPER-148: Jenkins build is failing (ivank via fpj)
+0d43f404ea145a35d46371967975f9590649a033,Ivan Brendan Kelly,ivank@apache.org,2012-01-13,2,4.1.0,BOOKKEEPER-40,BOOKKEEPER-40: BookieClientTest fails intermittantly (fpj via ivank)
+c7c8af741a2f532b554dcdabf85237c23ea14aaa,Ivan Brendan Kelly,ivank@apache.org,2012-01-17,2,4.1.0,BOOKKEEPER-150,BOOKKEEPER-150: Entry is lost when recovering a ledger with not enough bookies. (Sijie Guo via ivank)
+cdcfbb52cbf8f0e6f17d56d7185cf0d04c9c856b,Ivan Brendan Kelly,ivank@apache.org,2012-01-18,2,4.1.0,,BOOKKEEPER-95: extends zookeeper JMX to monitor and manage bookie server (Sijie Guo via ivank)
+f56e596d70c66dac170008ffbe19489eee05be08,Ivan Brendan Kelly,ivank@apache.org,2012-01-18,2,4.1.0,BOOKKEEPER-153,BOOKKEEPER-153: Ledger can't be opened or closed due to zero-length metadata (Sijie Guo via ivank)
+7e12629ed7a2006e4805dac0e5c006324a52d5db,Ivan Brendan Kelly,ivank@apache.org,2012-02-01,2,4.1.0,,BOOKKEEPER-23: Timeout requests (ivank)
+5a7f4991610ad60d277830b72dc5d890c63a0f07,Ivan Brendan Kelly,ivank@apache.org,2012-02-01,2,4.1.0,,BOOKKEEPER-98: collect add/read statistics on bookie server (Sijie Guo via ivank)
+d5fc00dc6b0a888b68131b7dff7309687c96d07e,Ivan Brendan Kelly,ivank@apache.org,2012-02-01,2,4.1.0,,Removing file accidentally added in r1239096
+835d963cb26d0a5d5b1cc79a0faf185b49673d16,Flavio Paiva Junqueira,fpj@apache.org,2012-02-01,2,4.1.0,,"BOOKKEEPER-157. For small packets, increasing number of bookies actually degrades performance. (ivank via fpj)"
+cfe3e650b69b2b599dd5b2f27f2164af38c7a2be,Ivan Brendan Kelly,ivank@apache.org,2012-02-07,2,4.1.0,BOOKKEEPER-161,"BOOKKEEPER-161: PerChannelBookieClient tries to reuse HashedWheelTimer, throws Exception (ivank)"
+3272204448bf210d03377ba822d01419ad197a17,Ivan Brendan Kelly,ivank@apache.org,2012-02-08,2,4.1.0,BOOKKEEPER-167,BOOKKEEPER-167: PerChannelBookieClient doesn't use ClientConfiguration (Sijie Guo via ivank)
+bd2efa12f1f63afa90723ce405caebafb4afd6be,Ivan Brendan Kelly,ivank@apache.org,2012-02-08,2,4.1.0,BOOKKEEPER-156,BOOKKEEPER-156: BookieJournalRollingTest failing (Sijie Guo via ivank)
+a3c9c953db49bc1ec3d72f01212e6cbcd58cc5d3,Ivan Brendan Kelly,ivank@apache.org,2012-02-08,2,4.1.0,,BOOKKEEPER-77: Add a console client for hedwig (Sijie Guo via ivank)
+beca5951f73cb9c39be10a4166a90dee9fff3c1c,Ivan Brendan Kelly,ivank@apache.org,2012-02-08,2,4.1.0,,BOOKKEEPER-165: Add versioning support for journal files (ivank)
+c65d6ada34215ee3a5466c495d565d745857c435,Ivan Brendan Kelly,ivank@apache.org,2012-02-09,2,4.1.0,BOOKKEEPER-137,BOOKKEEPER-137: Do not create Ledger index files until absolutely necessary. (ivank)
+29a472598083e522645f918ec602dd91d800f0d5,Flavio Paiva Junqueira,fpj@apache.org,2012-02-13,2,4.1.0,BOOKKEEPER-162,BOOKKEEPER-162: LedgerHandle.readLastConfirmed does not work (fpj)
+5a3b29d05abd71c6e5d1b3045abafd434db15f24,Ivan Brendan Kelly,ivank@apache.org,2012-02-13,2,4.1.0,BOOKKEEPER-152,BOOKKEEPER-152: Can't recover a ledger whose current ensemble contain failed bookie. (ivank)
+3defe9e5110472da995789b5ae14c286f58f1293,Sijie Guo,sijie@apache.org,2012-02-15,2,4.1.0,BOOKKEEPER-171,BOOKKEEPER-171: ServerConfiguration can't use more than one directory for ledgers
+633a23b3a20b27a551328be2efe5f057be3c99e2,Flavio Paiva Junqueira,fpj@apache.org,2012-02-15,2,4.1.0,BOOKKEEPER-170,BOOKKEEPER-170: Bookie constructor starts a number of threads. (ivank via fpj)
+bad375aa35a2c17c466d2be7481e7d16220d59b0,Ivan Brendan Kelly,ivank@apache.org,2012-02-17,2,4.1.0,BOOKKEEPER-169,BOOKKEEPER-169: bookie hangs on reading header when encountering partial header index file (sijie via ivank)
+014bcd501c14141facd0e3eb4bb488ccba3a2b7d,Ivan Brendan Kelly,ivank@apache.org,2012-02-17,2,4.1.0,BOOKKEEPER-174,BOOKKEEPER-174: Bookie can't start when replaying entries whose ledger were deleted and garbage collected. (sijie via ivank)
+110d36673bcc393853aaab4bb423d785daa947c7,Flavio Paiva Junqueira,fpj@apache.org,2012-02-24,2,4.1.0,,BOOKKEEPER-172: Upgrade framework for filesystem layouts (ivank via fpj)
+9523193456992a2edd36106120a8a9f246af6995,Ivan Brendan Kelly,ivank@apache.org,2012-02-24,2,4.1.0,BOOKKEEPER-177,BOOKKEEPER-177: Index file is lost or some index pages aren't flushed. (sijie via ivank)
+2ec70d4dbf2266b17bdb99975f974f30afa65593,Ivan Brendan Kelly,ivank@apache.org,2012-02-24,2,4.1.0,,BOOKKEEPER-178: Delay ledger directory creation until the ledger index file was created (sijie via ivank)
+9366322bfe3461a44a8b0444e66cd774ea1ac7d8,Ivan Brendan Kelly,ivank@apache.org,2012-02-24,2,4.1.0,BOOKKEEPER-113,BOOKKEEPER-113: NPE In BookKeeper test (fpj via ivank)
+76818a6aadd4aa40a45aca6f5b0acba79cd42515,Ivan Brendan Kelly,ivank@apache.org,2012-03-01,2,4.1.0,BOOKKEEPER-74,BOOKKEEPER-74: Bookkeeper Persistence Manager should give up topic on error (sijie via ivank)
+431554da9e2598c73edfbaf671e87cfd9ae94716,Flavio Paiva Junqueira,fpj@apache.org,2012-03-01,2,4.1.0,BOOKKEEPER-176,BOOKKEEPER-176: HierarchicalBookieFailureTest Hung (ivank via fpj)
+e911559291b6ae9aa310a695fb4174796921ac81,Ivan Brendan Kelly,ivank@apache.org,2012-03-08,2,4.1.0,,BOOKKEEPER-160: bookie server needs to do compaction over entry log files to reclaim disk space (sijie via ivank)
+cb8296636b961253f9586f535db285bfafa54a8a,Ivan Brendan Kelly,ivank@apache.org,2012-03-08,2,4.1.0,BOOKKEEPER-180,BOOKKEEPER-180: bookie server doesn't quit when running out of disk space (sijie via ivank)
+028a6d5360637417141f7f819a404e8e71117f9b,Flavio Paiva Junqueira,fpj@apache.org,2012-03-09,2,4.1.0,,BOOKKEEPER-158: Move latest benchmarking code into trunk (ivank via fpj)
+8207445ea25bef37e3369e749913acc0d597d9b2,Ivan Brendan Kelly,ivank@apache.org,2012-03-09,2,4.1.0,,Set benchmark script to executable (BOOKKEEPER-158)
+c6cc7cca3a85603c8e935ba6d06fbf3d8d7a7eb5,Sijie Guo,sijie@apache.org,2012-03-13,2,4.1.0,BOOKKEEPER-163,BOOKKEEPER-163: Prevent incorrect NoSuchLedgerException for readLastConfirmed. (ivank via sijie)
+fd5bb2bce8585ef49ba01d853241a4ee36d487e2,Ivan Brendan Kelly,ivank@apache.org,2012-03-14,2,4.1.0,,BOOKKEEPER-168: Message bounding on subscriptions (ivank)
+e8a1dec3fbea9b2f8c59c32e2f189d60c1864688,Ivan Brendan Kelly,ivank@apache.org,2012-03-14,2,4.1.0,,BOOKKEEPER-185: Remove bookkeeper-server dependency on hadoop-common (ivank)
+a4bded985ca1346a17ee0dcf08fe9dcd570dcfb7,Ivan Brendan Kelly,ivank@apache.org,2012-03-15,2,4.1.0,BOOKKEEPER-184,BOOKKEEPER-184: CompactionTest failing on Jenkins (sijie via ivank)
+33bef6356dfcf14928314e14c20ae73de80bdf99,Ivan Brendan Kelly,ivank@apache.org,2012-03-16,2,4.1.0,BOOKKEEPER-182,BOOKKEEPER-182: Entry log file is overwritten when fail to read lastLogId. (sijie via ivank)
+0663029788d504f38e98fd79e625a466bb4780c9,Ivan Brendan Kelly,ivank@apache.org,2012-03-19,2,4.1.0,,BOOKKEEPER-96: extends zookeeper JMX to monitor and manage hedwig server (sijie via ivank)
+3abac4eb86d64286d057d73024a177ef300283b0,Sijie Guo,sijie@apache.org,2012-03-19,2,4.1.0,BOOKKEEPER-186,BOOKKEEPER-186: Bookkeeper throttling - permits is not released when read has failed from all replicas (Rakesh R via sijie)
+841e7dc187b17e6cf4c437fc211f9e285191dd7c,Ivan Brendan Kelly,ivank@apache.org,2012-03-20,2,4.1.0,,BOOKKEEPER-187: Create well defined interface for LedgerCache (ivank)
+7199719beebe79325a93ef57a1140c2ed50c26e9,Ivan Brendan Kelly,ivank@apache.org,2012-03-20,2,4.1.0,,BOOKKEEPER-175: Bookie code is very coupled (ivank)
+f3a404e4e6b0d0c2a0b2a83d38cdedaff0683e68,Sijie Guo,sijie@apache.org,2012-03-21,2,4.1.0,BOOKKEEPER-188,BOOKKEEPER-188: Garbage collection code is in the wrong place (ivank via sijie)
+3d32544c0b2b1cd5b184531846a451f518486c7d,Sijie Guo,sijie@apache.org,2012-03-21,2,4.1.0,BOOKKEEPER-189,BOOKKEEPER-189: AbstractZkLedgerManager doesn't disregard cookies (ivank via sijie)
+6d56d60831a63fe9520ce156686d0cb1142e44f5,Ivan Brendan Kelly,ivank@apache.org,2012-03-28,2,4.1.0,BOOKKEEPER-195,"BOOKKEEPER-195: HierarchicalLedgerManager doesn't consider idgen as a ""specialNode"" (ivank)"
+c805430253c6e6bb4341ad51b406ceabeafcd4e8,Ivan Brendan Kelly,ivank@apache.org,2012-03-29,2,4.1.0,,BOOKKEEPER-97: collect pub/sub/consume statistics on hub server (sijie via ivank)
+48304c7c07513a15d26cb61f311c9f4b998fd8fc,Ivan Brendan Kelly,ivank@apache.org,2012-03-29,2,4.1.0,BOOKKEEPER-190,BOOKKEEPER-190: Add entries would fail when number of open ledgers reaches more than openFileLimit. (sijie via ivank)
+83e8672a10fab050a5bbcc1beeb9a210c1b2b90b,Ivan Brendan Kelly,ivank@apache.org,2012-03-29,2,4.1.0,BOOKKEEPER-194,BOOKKEEPER-194: Get correct latency for addEntry operations for JMX. (sijie via ivank)
+4b32e049dca4a1a8eea4bfb2325aee2de629b132,Ivan Brendan Kelly,ivank@apache.org,2012-03-30,2,4.1.0,BOOKKEEPER-166,BOOKKEEPER-166: Bookie will not recover its journal if the length prefix of an entry is truncated (ivank)
+30c68b0bebff1e0a012dd81e8f05ebbf83b4ff5f,Sijie Guo,sijie@apache.org,2012-03-31,2,4.1.0,BOOKKEEPER-193,"BOOKKEEPER-193: Ledger is garbage collected by mistake. (sijie, ivank via sijie)"
+235bc1fec4d60567d113202b44f6fb4c1616d1ce,Sijie Guo,sijie@apache.org,2012-03-31,2,4.1.0,BOOKKEEPER-198,BOOKKEEPER-198: replaying entries of deleted ledgers would exhaust ledger cache. (sijie)
+682a23fb23c8de7756d5ef226fd6e97dd8d4e561,Sijie Guo,sijie@apache.org,2012-03-31,2,4.1.0,BOOKKEEPER-112,BOOKKEEPER-112: Bookie Recovery on an open ledger will cause LedgerHandle#close on that ledger to fail (sijie)
+47244dd77fb291ec95d5da4c96751ea92bc2d516,Ivan Brendan Kelly,ivank@apache.org,2012-04-02,2,4.1.0,BOOKKEEPER-135,BOOKKEEPER-135: Fencing does not check the ledger masterPasswd (ivank)
+f694716e289c448ab89cab5fa81ea0946f9d9193,Flavio Paiva Junqueira,fpj@apache.org,2012-04-03,2,4.1.0,BOOKKEEPER-207,BOOKKEEPER-207: BenchBookie doesn't run correctly (ivank via fpj)
+8f02fb64ec9612af8422f23ed7908d7f6ccf5332,Flavio Paiva Junqueira,fpj@apache.org,2012-04-09,2,4.1.0,BOOKKEEPER-212,BOOKKEEPER-212: Bookie stops responding when creating and deleting many ledgers (sijie via fpj)
+df5789843b6624ebda9c6e839458cdfbc3ed7d84,Sijie Guo,sijie@apache.org,2012-04-10,2,4.1.0,BOOKKEEPER-211,BOOKKEEPER-211: Bookie fails to to start (sijie)
+22bb0534ceebb3e9044b727177146fc220683b81,Flavio Paiva Junqueira,fpj@apache.org,2012-04-10,2,4.1.0,,BOOKKEEPER-200: Fix format and comments (fpj)
+8a1ad4c3208ad0e5b546ab8e5738132698fa56f5,Sijie Guo,sijie@apache.org,2012-04-16,2,4.1.0,BOOKKEEPER-197,BOOKKEEPER-197: HedwigConsole uses the same file to load bookkeeper client config and hub server config (sijie)
+3d834bd3798f22a43dc434d4b809a5c22731da38,Ivan Brendan Kelly,ivank@apache.org,2012-04-16,2,4.1.0,BOOKKEEPER-216,BOOKKEEPER-216: Bookie doesn't exit with right exit code (sijie via ivank)
+4a94ce1d8184f5f38def015d80777a8113b96690,Ivan Brendan Kelly,ivank@apache.org,2012-04-17,2,4.1.0,,BOOKKEEPER-196: Define interface between bookie and ledger storage (ivank)
+cf846eb5f57af19f68ccad42edda7551c852041d,Sijie Guo,sijie@apache.org,2012-04-17,2,4.1.0,,BOOKKEEPER-218: Provide journal manager to manage journal related operations (sijie)
+b5c0791d38a093936016a7989c35363063cdb202,Sijie Guo,sijie@apache.org,2012-04-19,2,4.1.0,BOOKKEEPER-213,BOOKKEEPER-213: PerChannelBookieClient calls the wrong errorOut function when encountering an exception (Aniruddha via sijie)
+57a62a1c3ce151e1354a2a4ed212e9e8965928bf,Ivan Brendan Kelly,ivank@apache.org,2012-04-20,2,4.1.0,,BOOKKEEPER-168: Message bounding on subscriptions (ivank) [missing test]
+2f25ef611dd2c8ea2c94b48af09f183d74b6167e,Flavio Paiva Junqueira,fpj@apache.org,2012-04-20,2,4.1.0,BOOKKEEPER-173,BOOKKEEPER-173: Uncontrolled number of threads in bookkeeper (sijie via fpj)
+4e9ee8d75582a66f3e11d78dea280afbb864db7e,Ivan Brendan Kelly,ivank@apache.org,2012-04-24,2,4.1.0,BOOKKEEPER-56,BOOKKEEPER-56: Race condition of message handler in connection recovery in Hedwig client (sijie & Gavin Li via ivank)
+7f9005baadbbf312db857be6c3d3c095fe800c54,Ivan Brendan Kelly,ivank@apache.org,2012-04-24,2,4.1.0,BOOKKEEPER-217,BOOKKEEPER-217: NPE in hedwig client when enable DEBUG (sijie via ivank)
+f7c1ad57ead301df4d3326b5d8c8950964387fa9,Sijie Guo,sijie@apache.org,2012-04-28,2,4.1.0,BOOKKEEPER-56,BOOKKEEPER-56: Race condition of message handler in connection recovery in Hedwig client (added AlreadyStartDeliveryException file missed in r1329883) (sijie & Gavin Li via ivank)
+6d50e72732aa741d3a620c4b3ec04593c68f1b62,Sijie Guo,sijie@apache.org,2012-04-28,2,4.1.0,BOOKKEEPER-231,BOOKKEEPER-231: ZKUtil.killServer not closing the FileTxnSnapLog from ZK. (Uma Maheswara Rao G via sijie)
+268bdb8c6b5f642967329a99ec1dce5ba0af46d7,Ivan Brendan Kelly,ivank@apache.org,2012-05-04,2,4.1.0,,BOOKKEEPER-228: Fix the bugs in BK benchmark (umamaheswararao via ivank)
+6fc326ebd647afbbcc0beab6764b5d3748e50088,Ivan Brendan Kelly,ivank@apache.org,2012-05-07,2,4.1.0,BOOKKEEPER-232,BOOKKEEPER-232: AsyncBK tests failing (umamaheswararao via ivank)
+a7d658179db3226dc33d53f4d25afd64ea90c061,Flavio Paiva Junqueira,fpj@apache.org,2012-05-08,2,4.1.0,BOOKKEEPER-229,BOOKKEEPER-229: Deleted entry log files would be garbage collected again and again. (sijie via fpj)
+36a4a4190c342d7b3a1d5859c545ca1fc1b713cf,Flavio Paiva Junqueira,fpj@apache.org,2012-05-09,2,4.1.0,,BOOKKEEPER-241: Add documentation for bookie entry log compaction (sijie via fpj)
+3e224c4b6d4a0d9317060f7fe0d3519fccc68f5a,Ivan Brendan Kelly,ivank@apache.org,2012-05-09,2,4.1.0,BOOKKEEPER-215,BOOKKEEPER-215: Deadlock occurs under high load (sijie via ivank)
+9efe73998fe1ee72ffae95f3e1b1e65884019710,Ivan Brendan Kelly,ivank@apache.org,2012-05-09,2,4.1.0,BOOKKEEPER-242,BOOKKEEPER-242: Bookkeeper not able to connect other zookeeper when shutdown the zookeeper server where the BK has connected. (sijie & rakeshr via ivank)
+47ee081e6796ec84c774167dca67c3fd3ceda170,Ivan Brendan Kelly,ivank@apache.org,2012-05-09,2,4.1.0,BOOKKEEPER-234,"BOOKKEEPER-234: EntryLogger will throw NPE, if any dir does not exist or IO Errors. (umamaheswararao via ivank)"
+d368d86e287ef982fa70e069001e30124ee22b48,Flavio Paiva Junqueira,fpj@apache.org,2012-05-09,2,4.1.0,BOOKKEEPER-235,BOOKKEEPER-235: Bad syncing in entrylogger degrades performance for many concurrent ledgers (ivank via fpj)
+5f25edeba1cbf5de489e1f5a3070188f0163b51b,Flavio Paiva Junqueira,fpj@apache.org,2012-05-09,2,4.1.0,,BOOKKEEPER-236: Benchmarking improvements from latest round of benchmarking (ivank via fpj)
+c32edf860040ebba19c6c57d226b12cd487a00d2,Ivan Brendan Kelly,ivank@apache.org,2012-05-10,2,4.1.0,BOOKKEEPER-245,BOOKKEEPER-245: Intermittent failures in PersistanceManager tests (ivank)
+3a2fdc683eb7c8881e4ce9608bb1d7c3548e27d4,Ivan Brendan Kelly,ivank@apache.org,2012-05-10,2,4.1.0,,BOOKKEEPER-224: Fix findbugs in bookkeeper-server component (ivank)
+eaf6cf985ae7ca4a4f62da2de3ecb569ccc5d3f7,Ivan Brendan Kelly,ivank@apache.org,2012-05-15,2,4.1.0,,BOOKKEEPER-145: Put notice and license file for distributed binaries in SVN (ivank)
+ba0ab04216f94411bae27a52670c9c8b4da03476,Ivan Brendan Kelly,ivank@apache.org,2012-05-15,2,4.1.0,BOOKKEEPER-209,BOOKKEEPER-209: Typo in ServerConfiguration for READAHEAD_ENABLED (ivank)
+132849503c0547d4d89d50cd14f700302b391ee2,Ivan Brendan Kelly,ivank@apache.org,2012-05-17,2,4.1.0,,BOOKKEEPER-224: Fix findbugs in bookkeeper-server component [missing changes] (ivank)
+f05021f1e9e8461182f082b9ab7819b71703655c,Ivan Brendan Kelly,ivank@apache.org,2012-05-17,2,4.1.0,,BOOKKEEPER-254: Bump zookeeper version in poms (ivank)
+73dc3481846fdc0c97944c6a7c6ce0cef17ee938,Ivan Brendan Kelly,ivank@apache.org,2012-05-17,2,4.1.0,BOOKKEEPER-72,BOOKKEEPER-72: Fix warnings issued by FindBugs (ivank)
+1c2141183dd3422c85314b64e7b538c8faacd283,Ivan Brendan Kelly,ivank@apache.org,2012-05-17,2,4.1.0,,BOOKKEEPER-238: Add log4j.properties in conf/ for bin packages (ivank)
+24e7fb03f6c9e3666aa83cc174b5088926eae3d1,Ivan Brendan Kelly,ivank@apache.org,2012-05-17,2,4.1.0,,BOOKKEEPER-251: Noise error message printed when scanning entry log files those have been garbage collected. (sijie via ivank)
+67cbcdd7a2d1668c9bba0d45d6ea3235e4bd11e3,Sijie Guo,sijie@apache.org,2012-05-24,2,4.1.0,BOOKKEEPER-263,BOOKKEEPER-263: ZK ledgers root path is hard coded (Aniruddha via sijie)
+c59b7b8a285e5d4da72aea1232a29f31610c2306,Ivan Brendan Kelly,ivank@apache.org,2012-05-25,2,4.1.0,BOOKKEEPER-146,BOOKKEEPER-146: TestConcurrentTopicAcquisition sometimes hangs (ivank)
+7ed489997c11c891f91b9fe0659c803a87d57489,Ivan Brendan Kelly,ivank@apache.org,2012-05-25,2,4.1.0,,BOOKKEEPER-266: Review versioning documentation (ivank)
+cc28541520136968edd3258861e88c5433c5e154,Flavio Paiva Junqueira,fpj@apache.org,2012-05-25,2,4.1.0,,BOOKKEEPER-265: Review JMX documentation (sijie via fpj)
+a1eac18799ddc640bd42e6c038a31e1e26769056,Flavio Paiva Junqueira,fpj@apache.org,2012-05-25,2,4.1.0,BOOKKEEPER-260,BOOKKEEPER-260: Define constant for -1 (invalid entry id) (ivank via fpj)
+1dde3e5191e51a6f648c0d16b14ecc1e02fcff0a,Sijie Guo,sijie@apache.org,2012-05-26,2,4.1.0,BOOKKEEPER-258,BOOKKEEPER-258: CompactionTest failed (ivank via sijie)
+bfd09dd0bb5cb2d786d0f413f2c6bc8243d06d54,Flavio Paiva Junqueira,fpj@apache.org,2012-05-29,2,4.1.0,,BOOKKEEPER-269: Review documentation for hedwig console client (sijie via fpj)
+0cb40cf90f13eedd54392ec954feadf8df28dede,Flavio Paiva Junqueira,fpj@apache.org,2012-05-29,2,4.1.0,,BOOKKEEPER-270: Review documentation on bookie cookie (ivank via fpj)
+f97ac5b415294aafb7e788c3569636882fa7ee4c,Flavio Paiva Junqueira,fpj@apache.org,2012-05-29,2,4.1.0,,BOOKKEEPER-270: Review documentation on bookie cookie (ivank via fpj)
+887546e7937db1c45e42b7ca49b3c82d790adca9,Flavio Paiva Junqueira,fpj@apache.org,2012-05-29,2,4.1.0,,BOOKKEEPER-271: Review documentation for message bounding (ivank via fpj)
+d68727ddd09dc0646af2748c3531e8844fdcaaf4,Ivan Brendan Kelly,ivank@apache.org,2012-05-30,2,4.1.0,BOOKKEEPER-273,BOOKKEEPER-273: LedgerHandle.deleteLedger() should be idempotent (Matteo Merli via ivank)
+687de61ce5077451957307a37c2feecdfb1ed8b5,Sijie Guo,sijie@apache.org,2012-05-31,2,4.1.0,,Preparing for release 4.1.0
+586873a6163021a3c1b218b20f4f9c4ebc921af3,Sijie Guo,sijie@apache.org,2012-05-31,2,4.1.0,,Bump version number to 4.2.0
+10b9c5b40bcb66690f6a25330500610c8b296779,Sijie Guo,sijie@apache.org,2012-06-05,2,4.1.0,BOOKKEEPER-281,BOOKKEEPER-281: BKClient is failing when zkclient connection delays (ivank via sijie)
+a788614f5c73b0ab2c18f73d9eff7a858229a94e,Sijie Guo,sijie@apache.org,2012-06-05,2,4.1.0,BOOKKEEPER-279,BOOKKEEPER-279: LocalBookKeeper is failing intermittently due to zkclient connection establishment delay (Rakesh R via sijie)
+27b6dd6a40f3e4721a29ea2030d96994869a8260,Sijie Guo,sijie@apache.org,2012-06-05,2,4.1.0,BOOKKEEPER-285,"BOOKKEEPER-285: TestZkSubscriptionManager quits due to NPE, so other tests are not run in hedwig server. (sijie)"
+25552d910c5d32307bda64cc3ae022e607850b7c,Sijie Guo,sijie@apache.org,2012-06-05,2,4.1.0,BOOKKEEPER-286,BOOKKEEPER-286: Compilation warning (ivank via sijie)
+d5caab3aae143352f2d8c3faea71dce11fdb6b45,Sijie Guo,sijie@apache.org,2012-06-06,2,4.1.0,BOOKKEEPER-287,BOOKKEEPER-287: NoSuchElementException in LedgerCacheImpl (sijie)
+0a3ea6222061e4ba504cdf8ab8937ab26f71b5a9,Sijie Guo,sijie@apache.org,2012-06-07,2,4.1.0,BOOKKEEPER-288,BOOKKEEPER-288: NOTICE files don't have the correct year (ivank via sijie)
+2f5024bbc720f2159efa67eed7a9f21d208a134b,Sijie Guo,sijie@apache.org,2012-06-07,2,4.1.0,,update release date for release 4.1.0
+863f32a8ed33a5be3c9c622fb1c701bf3b48a2e0,Ivan Brendan Kelly,ivank@apache.org,2012-06-12,2,4.1.0,,BOOKKEEPER-289: mvn clean doesn't remove test output files (sijie via ivank)
+aa7f37c6095f61e89a290fc608fd14a50bc7b0e0,Ivan Brendan Kelly,ivank@apache.org,2012-06-12,2,4.1.0,BOOKKEEPER-274,BOOKKEEPER-274: Hedwig cpp client library should not link to cppunit which is just used for test. (sijie via ivank)
+a2cd9899405ef7313a50e87a370aecef543ae4eb,Ivan Brendan Kelly,ivank@apache.org,2012-06-13,2,4.1.0,,BOOKKEEPER-183: Provide tools to read/check data files in bookie server (sijie via ivank)
+9472fae8739be41301847b1c8e31954f376997e6,Ivan Brendan Kelly,ivank@apache.org,2012-06-18,3,4.1.1,BOOKKEEPER-298,BOOKKEEPER-298: We run with preferIPv4Stack in the scripts but not in the tests (ivank)
+297eb745440443eea1a8217c89299abf8d18fc3f,Ivan Brendan Kelly,ivank@apache.org,2012-06-19,3,4.1.1,,BOOKKEEPER-203: improve ledger manager interface to remove zookeeper dependency on metadata operations. (sijie via ivank)
+18728877881a23d2639eb650d47b7c41bbccd9ca,Ivan Brendan Kelly,ivank@apache.org,2012-06-19,3,4.1.1,BOOKKEEPER-292,BOOKKEEPER-292: Test backward compatibility automatically between versions. (ivank)
+d193780cc404c2e3694c82385d7f422accc416f3,Sijie Guo,sijie@apache.org,2012-06-27,3,4.1.1,BOOKKEEPER-307,BOOKKEEPER-307: BookieShell introduces 4 findbugs warnings (ivank via sijie)
+744edf07394472d3146e57831592a69d5a86616c,Ivan Brendan Kelly,ivank@apache.org,2012-06-27,3,4.1.1,BOOKKEEPER-303,BOOKKEEPER-303: LedgerMetadata should serialized using protobufs (ivank)
+4d15e5675c0394cb910e54c9b0d9743e98fb64c7,Ivan Brendan Kelly,ivank@apache.org,2012-06-28,3,4.1.1,BOOKKEEPER-302,BOOKKEEPER-302: No more messages delivered when hub server scans messages over two ledgers. (sijie via ivank)
+441bf650859bc96a49b667961a19afd936b67e4c,Ivan Brendan Kelly,ivank@apache.org,2012-06-28,3,4.1.1,BOOKKEEPER-322,BOOKKEEPER-322: New protobufs generates findbugs errors (ivank)
+de432058b7e7c026fcf0b69b1e20bcf9ae1b1de2,Ivan Brendan Kelly,ivank@apache.org,2012-06-29,3,4.1.1,BOOKKEEPER-280,BOOKKEEPER-280: LedgerHandle.addEntry() should return an entryId (mmerli via ivank)
+18f5927a2bd0f423197a2da49ddd5733cdccb651,Ivan Brendan Kelly,ivank@apache.org,2012-07-04,3,4.1.1,,BOOKKEEPER-320: Let hedwig cpp client could publish messages using Message object instead of string. (jiannan via ivank)
+763479b6f94fd4827ee28e9f698cfa9a31095061,Ivan Brendan Kelly,ivank@apache.org,2012-07-04,3,4.1.1,BOOKKEEPER-324,BOOKKEEPER-324: Flakeyness in LedgerCreateDeleteTest (ivank)
+6b249579f1cdf4e9fb940b0bf54b8d55a1ab38b2,Sijie Guo,sijie@apache.org,2012-07-05,3,4.1.1,,BOOKKEEPER-318: Spelling mistake in MultiCallback log message. (surendra via sijie)
+db71147d9df0ad9efa697275e934330d21c99a88,Sijie Guo,sijie@apache.org,2012-07-05,3,4.1.1,BOOKKEEPER-296,BOOKKEEPER-296: It's better provide stop script for bookie (nijel via sijie)
+09e5d180231f5307a58a89d0c89169bca890bddf,Ivan Brendan Kelly,ivank@apache.org,2012-07-05,3,4.1.1,BOOKKEEPER-294,BOOKKEEPER-294: Not able to start the bookkeeper before the ZK session timeout. (rakeshr via ivank)
+fbcc0b583fd698cfa9ca232f4be5b0d584bb3ee5,Sijie Guo,sijie@apache.org,2012-07-09,3,4.1.1,,BOOKKEEPER-328: Bookie DeathWatcher is missing thread name (Rakesh via sijie)
+c2efd0a48c5d1ea4edd7bf33c69a7e5270942eb4,Ivan Brendan Kelly,ivank@apache.org,2012-07-11,3,4.1.1,,BOOKKEEPER-250: Need a ledger manager like interface to manage metadata operations in Hedwig (sijie via ivank)
+0e06ddeb7e47bd8794fd378629602e41ea4a1fd9,Ivan Brendan Kelly,ivank@apache.org,2012-07-11,3,4.1.1,BOOKKEEPER-329,BOOKKEEPER-329: provide stop scripts for hub server (sijie via ivank)
+51ca99b871ebf85738c82cb1f86eb7de223a44b2,Sijie Guo,sijie@apache.org,2012-07-16,3,4.1.1,,BOOKKEEPER-310: Changes in hedwig server to support JMS spec (ivank via sijie)
+e60f542937a51dd3bb05b770a989478625c734af,Sijie Guo,sijie@apache.org,2012-07-17,3,4.1.1,BOOKKEEPER-306,BOOKKEEPER-306: Change C++ client to use gtest for testing (ivank via sijie) (fix wrong entry in CHANGES.txt)
+f13b9f4e26fe9b213837d1e68596b55f74163070,Sijie Guo,sijie@apache.org,2012-07-18,3,4.1.1,,BOOKKEEPER-2: bookkeeper does not put enough meta-data in to do recovery properly (ivank via sijie)
+df619306ca4c6dd9eba94cbc5ce159e43a5b9ee5,Flavio Paiva Junqueira,fpj@apache.org,2012-07-23,3,4.1.1,BOOKKEEPER-327,BOOKKEEPER-327: System.currentTimeMillis usage in BookKeeper (uma via fpj)
+051320f212b2a6263d2d95db780db62911b9c0f6,Sijie Guo,sijie@apache.org,2012-07-26,3,4.1.1,BOOKKEEPER-349,"BOOKKEEPER-349: Entry logger should close all the chennels which are there in Map, instead of closing only current channel. (umamaheswararao via sijie)"
+6e33b2519f98f08faa248056e9e017dd8ba8de90,Sijie Guo,sijie@apache.org,2012-07-26,3,4.1.1,,BOOKKEEPER-317: Exceptions for replication (ivank via sijie)
+3de1c6668a60999230f446011ca27fa7629b4465,Sijie Guo,sijie@apache.org,2012-07-26,3,4.1.1,BOOKKEEPER-330,BOOKKEEPER-330: System.currentTimeMillis usage in Hedwig (uma via sijie)
+46a2663a842c6d256c73fba1bd12eb70559c115e,Flavio Paiva Junqueira,fpj@apache.org,2012-07-27,3,4.1.1,BOOKKEEPER-352,BOOKKEEPER-352: Should not use static ServerStats/BKStats instance in TestServerStats/TestBKStats (sijie via fpj)
+0092518bb3e345de2113f29450c9e1557cfc8020,Sijie Guo,sijie@apache.org,2012-07-30,3,4.1.1,,BOOKKEEPER-331: Let hedwig support returning message seq id for publish requests. (Mridul via sijie)
+4088f7ac7b700588a935485b0a9723a36cc995f3,Ivan Brendan Kelly,ivank@apache.org,2012-08-03,3,4.1.1,BOOKKEEPER-343,BOOKKEEPER-343: Failed to register hedwig JMX beans in test cases (sijie via ivank)
+41b399cd2a4c85fa0b077f0a7749f5cca4e9c423,Ivan Brendan Kelly,ivank@apache.org,2012-08-06,3,4.1.1,,BOOKKEEPER-339: Let hedwig cpp client support returning message seq id for publish requests. (sijie via ivank)
+4d9f3d32a063975303f42a7108cbd4892062ab89,Ivan Brendan Kelly,ivank@apache.org,2012-08-06,3,4.1.1,,BOOKKEEPER-259: Create a topic manager using versioned write for leader election (sijie via ivank)
+5c59fa532fa44a1803e1d986181c58c1b00f0a4c,Ivan Brendan Kelly,ivank@apache.org,2012-08-06,3,4.1.1,,BOOKKEEPER-340: Test backward compatibility for hedwig between different versions. (sijie via ivank)
+ec17d0be6a1a655a40ae4e56abff3e121f7d6f20,Ivan Brendan Kelly,ivank@apache.org,2012-08-09,3,4.1.1,,"BOOKKEEPER-191: Hub server should change ledger to write, so consumed messages have chance to be garbage collected. (sijie via ivank)"
+391f9246890b416398e48886fe5ed3c4d2e866ab,Ivan Brendan Kelly,ivank@apache.org,2012-08-13,3,4.1.1,BOOKKEEPER-326,BOOKKEEPER-326: DeadLock during ledger recovery (rakeshr via ivank)
+74e097e0b171871f4f0c067600949376ff98cb5d,Ivan Brendan Kelly,ivank@apache.org,2012-08-14,3,4.1.1,,BOOKKEEPER-246: Recording of underreplication of ledger entries (ivank)
+f4daacff80da6802528320f5a920e1989cf20fac,Ivan Brendan Kelly,ivank@apache.org,2012-08-17,3,4.1.1,BOOKKEEPER-338,BOOKKEEPER-338: Create Version.NEW and Version.ANY static instances of Version so that were not passing around nulls (sijie via ivank)
+fbba5c91318c00d77bd62c211066ae13a14d9d00,Ivan Brendan Kelly,ivank@apache.org,2012-08-17,3,4.1.1,,BOOKKEEPER-247: Detection of under replication (ivank)
+bb0888acafee138989dffb1cfee732145c953f38,Ivan Brendan Kelly,ivank@apache.org,2012-08-17,3,4.1.1,,BOOKKEEPER-283: Improve Hedwig Console to use Hedwig Metadata Manager. (sijie via ivank)
+14e23b6d9cf4015cd76c7ed3d5258bfbcbb05ef8,Ivan Brendan Kelly,ivank@apache.org,2012-08-17,3,4.1.1,,BOOKKEEPER-332: Add SubscriptionPreferences to record all preferences for a subscription (sijie via ivank)
+45034f5f4a51225b9f963840741818da7869a85c,Ivan Brendan Kelly,ivank@apache.org,2012-08-17,3,4.1.1,,BOOKKEEPER-332: Add SubscriptionPreferences to record all preferences for a subscription (sijie via ivank) [missing files]
+be94b88ea61b75246586b6495f8d3710d4c4217a,Ivan Brendan Kelly,ivank@apache.org,2012-08-17,3,4.1.1,BOOKKEEPER-372,BOOKKEEPER-372: Check service name in bookie start/stop script. (nijel via ivank)
+89e1c0913e70ce4c345c1c82b92ae91fac80b1d2,Ivan Brendan Kelly,ivank@apache.org,2012-08-19,3,4.1.1,,BOOKKEEPER-299: Provide LedgerFragmentReplicator which should replicate the fragments found from LedgerChecker (umamahesh via ivank)
+c0746ba1c9569427d5839e3f350f4d8394f01320,Ivan Brendan Kelly,ivank@apache.org,2012-08-21,3,4.1.1,BOOKKEEPER-354,BOOKKEEPER-354: [BOOKKEEPER-296] [Documentation] Modify the bookkeeper start script and document the bookkeeper stop command in bookkeeperConfig.xml (Kiran BC via ivank)
+b3331cbc528aa32ceb30dcbc676d298beda62df3,Ivan Brendan Kelly,ivank@apache.org,2012-08-24,3,4.1.1,,BOOKKEEPER-378: ReplicationWorker may not get ZK watcher notification on UnderReplication ledger lock deletion. (umamaheswararao & ivank via ivank)
+97c76a36d79d1d96314cd7e832d1dfbd1211965d,Ivan Brendan Kelly,ivank@apache.org,2012-08-24,3,4.1.1,,BOOKKEEPER-248: Rereplicating of under replicated data (umamahesh via ivank)
+621ace8d93eb322f01416e9a98aac23ac87799e3,Ivan Brendan Kelly,ivank@apache.org,2012-08-27,3,4.1.1,,BOOKKEEPER-380: ZkLedgerUnderreplicationManager.markLedgerUnderreplicated() is adding duplicate missingReplicas while multiple bk failed for the same ledger (rakeshr via ivank)
+8e9a19f762fa27d297bf1b401c55fdbabdbcdc82,Sijie Guo,sijie@apache.org,2012-08-27,3,4.1.1,BOOKKEEPER-381,BOOKKEEPER-381: ReadLastConfirmedOp's Logger class name is wrong (surendra via sijie)
+c59b3d2e495e4ab7483b161ab9c2ce59f0c1e013,Sijie Guo,sijie@apache.org,2012-08-27,3,4.1.1,BOOKKEEPER-382,BOOKKEEPER-382: space missed at concatenations in GarbageCollectorThread logging (Brahma via sijie)
+d930b579a1e96757e1698bf91bc1c99ac1cb5f35,Ivan Brendan Kelly,ivank@apache.org,2012-08-27,3,4.1.1,,BOOKKEEPER-304: Prepare bookie vs ledgers cache and will be used by the Auditor (rakeshr via ivank)
+6b44bc232811e379463f71a27293c3f31ed398ba,Ivan Brendan Kelly,ivank@apache.org,2012-08-27,3,4.1.1,,BOOKKEEPER-272: Provide automatic mechanism to know bookie failures (rakeshr via ivank)
+6379ae858d11bac62a95ccb06675e2bd511f822a,Ivan Brendan Kelly,ivank@apache.org,2012-08-27,3,4.1.1,,BOOKKEEPER-333: server-side message filter (sijie via ivank)
+cb8415d5defb27efeb8fa7ab1c92a60d4f5c31af,Ivan Brendan Kelly,ivank@apache.org,2012-08-28,3,4.1.1,BOOKKEEPER-337,BOOKKEEPER-337: Add entry fails with MetadataVersionException when last ensemble has morethan one bookie failures (rakeshr via ivank)
+06f8f930786ad5c771b8f06ec5d6fe4af5ad3c89,Sijie Guo,sijie@apache.org,2012-08-28,3,4.1.1,,BOOKKEEPER-376: LedgerManagers should consider 'underreplication' node as a special Znode (Uma via sijie)
+fbfd10fa94d909144c369e1514db31669a16872b,Sijie Guo,sijie@apache.org,2012-08-28,3,4.1.1,BOOKKEEPER-371,BOOKKEEPER-371: NPE in hedwig hub client causes hedwig hub to shut down. (Aniruddha via sijie)
+9fcb7c0cddee8b78e1c3aa8db5f7478d9a13397c,Ivan Brendan Kelly,ivank@apache.org,2012-08-31,3,4.1.1,,BOOKKEEPER-384: Clean up LedgerManagerFactory and LedgerManager usage in tests (rakeshr via ivank)
+2ffc123e5ffb37163512a89301a128f07f05750c,Ivan Brendan Kelly,ivank@apache.org,2012-09-03,3,4.1.1,,BOOKKEEPER-334: client-side message filter for java client. (sijie via ivank)
+d169f8843e819e7ef49c1fdfe69a85308f420a4a,Ivan Brendan Kelly,ivank@apache.org,2012-09-03,3,4.1.1,,BOOKKEEPER-335: client-side message filter for cpp client. (sijie via ivank)
+504369377af29b6d09a801243ead58805784765a,Ivan Brendan Kelly,ivank@apache.org,2012-09-03,3,4.1.1,,BOOKKEEPER-385: replicateLedgerFragment should throw Exceptions in error conditions (umamahesh via ivank)
+800fe7de43333d14dedb2ab64e08a89a78fa31b2,Ivan Brendan Kelly,ivank@apache.org,2012-09-04,3,4.1.1,,BOOKKEEPER-386: It should not be possible to replicate a ledger fragment which is at the end of an open ledger (ivank & umamahesh via ivank)
+64fa78224ed46189032a616f00e1755fd71d93e2,Sijie Guo,sijie@apache.org,2012-09-07,3,4.1.1,,BOOKKEEPER-394: CompositeException message is not useful (Stu Hood via sijie)
+0eee9e5cd4b5b3affd930a736a3cc2d68a8da976,Sijie Guo,sijie@apache.org,2012-09-07,3,4.1.1,,BOOKKEEPER-300: Create Bookie format command (Vinay via sijie)
+3d036b0bf3939b042f4ba01a80b8b81ca6774d1b,Sijie Guo,sijie@apache.org,2012-09-07,3,4.1.1,BOOKKEEPER-395,BOOKKEEPER-395: HDFS dep transitively depends on a busted pom (Stu Hood via sijie)
+06b50969499330d4a5421b48a042fdee63857d23,Sijie Guo,sijie@apache.org,2012-09-07,3,4.1.1,BOOKKEEPER-387,BOOKKEEPER-387: BookKeeper Upgrade is not working. (surendra via sijie)
+6f364a214d2b65f5823af2e5699bbc59dc08a4c9,Ivan Brendan Kelly,ivank@apache.org,2012-09-07,3,4.1.1,BOOKKEEPER-383,BOOKKEEPER-383: NPE in BookieJournalTest  (sijie via ivank)
+26671da549558c4b16da42f2eabfad65fa223831,Sijie Guo,sijie@apache.org,2012-09-11,3,4.1.1,BOOKKEEPER-396,BOOKKEEPER-396: Compilation issue in TestClient.java of BenchMark ( showing this in eclipse) (umamahesh via sijie)
+e353a8f93ad48d8785bbaa7162a8a9ebca40a15f,Ivan Brendan Kelly,ivank@apache.org,2012-09-12,3,4.1.1,,BOOKKEEPER-208: Separate write quorum from ack quorum (ivank)
+420a6e5e6cab583929622d190d2cd3b360cbd102,Ivan Brendan Kelly,ivank@apache.org,2012-09-12,3,4.1.1,,BOOKKEEPER-325: Delay the replication of a ledger if RW found that its last fragment is in underReplication. (umamahesh via ivank)
+6bffc3245ae3c2f9a671a0549f394c192460217f,Sijie Guo,sijie@apache.org,2012-09-13,3,4.1.1,BOOKKEEPER-392, BOOKKEEPER-392: Racey ConcurrentMap usage in java hedwig-client (Stu Hood via sijie)
+4f2b11213baf8551ef778599b14a6fc17d95f21d,Ivan Brendan Kelly,ivank@apache.org,2012-09-14,3,4.1.1,BOOKKEEPER-403,BOOKKEEPER-403: ReReadMetadataCb is not executed in the thread responsible for that ledger (ivank)
+ec977dbe1e7bfb56dc93b6ba72d11f0468345668,Sijie Guo,sijie@apache.org,2012-09-14,3,4.1.1,,BOOKKEEPER-32: Clean up LOG.debug statements (Stu Hood via sijie)
+820ce5949c6a32ddca32ce7b408a57e27f5086bb,Ivan Brendan Kelly,ivank@apache.org,2012-09-14,3,4.1.1,,BOOKKEEPER-252: Hedwig: provide a subscription mode to kill other subscription channel when hedwig client is used as a proxy-style server. (sijie via ivank)
+53d3fbf26af00ccc25605fb80bbd73c09c3d90f0,Ivan Brendan Kelly,ivank@apache.org,2012-09-19,3,4.1.1,,BOOKKEEPER-405: Let's add Thread name for ReplicationWorker thread. (umamahesh via ivank)
+00341197badcc1646b8d3fb4ec87ac526ed93b85,Ivan Brendan Kelly,ivank@apache.org,2012-09-21,3,4.1.1,,BOOKKEEPER-388: Document bookie format command (vinayrpet via ivank)
+cf414cc06ad85d9222de710152cb81bd60943aa5,Ivan Brendan Kelly,ivank@apache.org,2012-09-21,3,4.1.1,,BOOKKEEPER-388: Document bookie format command (kiran_bc via ivank) [Corrected CHANGES.txt]
+881cda5c85d17f952bdc2c7e101eef669bce35d2,Sijie Guo,sijie@apache.org,2012-09-26,3,4.1.1,BOOKKEEPER-397,BOOKKEEPER-397: Make the hedwig client in RegionManager configurable. (Aniruddha via sijie)
+eba338eb398f8a22987c6bd8352bf2d649fb7c33,Ivan Brendan Kelly,ivank@apache.org,2012-09-26,3,4.1.1,,BOOKKEEPER-364: re-factor hedwig java client to support both one-subscription-per-channel and multiplex-subscriptions-per-channel. (sijie via ivank)
+853ac6bf0107a8b80e44328ce825a8e710ee8986,Ivan Brendan Kelly,ivank@apache.org,2012-10-01,3,4.1.1,,BOOKKEEPER-143: Add SSL support for hedwig cpp client (sijie via ivank)
+24fb0bca0dbdd2ad14c5afcd7fb2fc31f80882f5,Ivan Brendan Kelly,ivank@apache.org,2012-10-04,3,4.1.1,,BOOKKEEPER-278: Ability to disable auto recovery temporarily (rakeshr via ivank)
+f57cbe507d0f366fa76e0e163e867e4a7f93d958,Ivan Brendan Kelly,ivank@apache.org,2012-10-04,3,4.1.1,,BOOKKEEPER-367: Server-Side Message Delivery Flow Control (sijie via ivank)
+ba01aed276fc847926310376520d3ec513503c61,Ivan Brendan Kelly,ivank@apache.org,2012-10-04,3,4.1.1,,BOOKKEEPER-319: Manage auditing and replication processes (Vinay via ivank)
+e2487b794ef8d93a1d1380a62ffa212381930393,Ivan Brendan Kelly,ivank@apache.org,2012-10-05,3,4.1.1,,BOOKKEEPER-315: Ledger entries should be replicated sequentially instead of parallel. (umamahesh via ivank)
+c4519d96d592967aaad1d056db3d31cbe56de865,Sijie Guo,sijie@apache.org,2012-10-10,3,4.1.1,BOOKKEEPER-415,BOOKKEEPER-415: Rename DeliveryThrottle to MessageWindowSize (ivank via sijie)
+ce0e7b2077d495ca9f4192da1154f565cb9def5b,Sijie Guo,sijie@apache.org,2012-10-10,3,4.1.1,BOOKKEEPER-413,BOOKKEEPER-413: Hedwig C++ client: Rename RUN_AS_SSL_MODE to SSL_ENABLED (ivank via sijie)
+de64ff31f01e2a6e7889bae8d75681d2176f21bc,Ivan Brendan Kelly,ivank@apache.org,2012-10-10,3,4.1.1,,BOOKKEEPER-418: Store hostname of locker in replication lock (ivank)
+bf3d55f0cbd3461626148ad436a78923047dd797,Ivan Brendan Kelly,ivank@apache.org,2012-10-16,3,4.1.1,,BOOKKEEPER-417: Hierarchical zk underreplication manager should clean up its hierarchy when done to allow for fast acquisition of underreplicated entries (ivank)
+2385d7a7054dd7e4c3241374b1f5f57360a5a468,Ivan Brendan Kelly,ivank@apache.org,2012-10-16,3,4.1.1,BOOKKEEPER-436,BOOKKEEPER-436: Journal#rollLog may leak file handler (umamahesh via ivank)
+cb059545270e4517c90d2b52000ea06404307f16,Flavio Paiva Junqueira,fpj@apache.org,2012-10-17,3,4.1.1,,BOOKKEEPER-422: Simplify AbstractSubscriptionManager (stu via fpj)
+5f9f6ef0719a19e48815e8b021da43e8ad15f6f7,Ivan Brendan Kelly,ivank@apache.org,2012-10-18,3,4.1.1,,BOOKKEEPER-369: re-factor hedwig cpp client to provide better interface to support both one-subscription-per-channel and multiple-subscriptions-per-channel. (sijie via ivank)
+794d8c6a363433bc129deeb5568e83ac716379e6,Ivan Brendan Kelly,ivank@apache.org,2012-10-18,3,4.1.1,,BOOKKEEPER-345: Detect IOExceptions on entrylogger and bookie should consider next ledger dir(if any) (Vinay via ivank)
+81aa20165c13aab333f9f0fd6b4e948de2ba1cef,Ivan Brendan Kelly,ivank@apache.org,2012-10-22,3,4.1.1,,BOOKKEEPER-435: Create SubscriptionChannelManager to manage all subscription channel (sijie via ivank)
+d0807e31f6d531cee5898bea3c2af3e312dbe61b,Ivan Brendan Kelly,ivank@apache.org,2012-10-22,3,4.1.1,,BOOKKEEPER-411: Add CloseSubscription Request for multiplexing support (sijie via ivank)
+db1484669db7076d71b0ad890f8867e86a18229f,Ivan Brendan Kelly,ivank@apache.org,2012-10-23,3,4.1.1,BOOKKEEPER-427,BOOKKEEPER-427: TestConcurrentTopicAcquisition hangs every so often (ivank)
+eb01b7c1a9d22a55f0107d8b3ba60807d4fd05f4,Ivan Brendan Kelly,ivank@apache.org,2012-10-25,3,4.1.1,BOOKKEEPER-424,BOOKKEEPER-424: Bookie start is failing intermittently when zkclient connection delays (rakeshr via ivank)
+2c7236cf339a2de3cf3fbc0aaa8cd88cc4398ca0,Ivan Brendan Kelly,ivank@apache.org,2012-10-25,3,4.1.1,BOOKKEEPER-424,BOOKKEEPER-424: Bookie start is failing intermittently when zkclient connection delays (rakeshr via ivank) [missing files]
+7dced572419c90b27b587eccc09d48032e7a6a9c,Ivan Brendan Kelly,ivank@apache.org,2012-10-25,3,4.1.1,,BOOKKEEPER-416: LedgerChecker returns underreplicated fragments for an closed ledger with no entries (ivank)
+ffd46bcd1c7e2c78f6d41355a2215f73661764c1,Ivan Brendan Kelly,ivank@apache.org,2012-10-26,3,4.1.1,BOOKKEEPER-441,BOOKKEEPER-441: InMemorySubscriptionManager should back up top2sub2seq before change it (Yixue via ivank)
+3a9a88708d3a1e9e2337a8cc99c3bb727f93ffc4,Ivan Brendan Kelly,ivank@apache.org,2012-10-26,3,4.1.1,,BOOKKEEPER-346: Detect IOExceptions in LedgerCache and bookie should look at next ledger dir(if any) (Vinay via ivank)
+223a3fb3fbc78fe4dc1922967fe3daa3edfc3fb2,Ivan Brendan Kelly,ivank@apache.org,2012-10-26,3,4.1.1,BOOKKEEPER-439,BOOKKEEPER-439: No more messages delivered after deleted consumed ledgers. (sijie via ivank)
+536d86ec4b93909e870d6bc65fba7037360ea036,Flavio Paiva Junqueira,fpj@apache.org,2012-10-26,3,4.1.1,BOOKKEEPER-425,BOOKKEEPER-425: Cleanup Bookie id generation (ivank via fpj)
+fb28dd140d1c0f6b3737f840b9d62da36713d820,Ivan Brendan Kelly,ivank@apache.org,2012-10-31,3,4.1.1,,BOOKKEEPER-430: Remove manual bookie registration from overview (fpj via ivank)
+0658723fdbcfeceddc983b770d78b01602a64f06,Ivan Brendan Kelly,ivank@apache.org,2012-10-31,3,4.1.1,BOOKKEEPER-434,BOOKKEEPER-434: [Hedwig CPP Client] Delay resolving default host until necessary. (sijie via ivank)
+f633075dd0b0cae6c50db0f7284798089a9cf83b,Ivan Brendan Kelly,ivank@apache.org,2012-11-02,3,4.1.1,,BOOKKEEPER-368 Implementing multiplexing java client. (sijie via ivank)
+2dd4ff7d82d7dc95eb959ad803164f2a5df96968,Ivan Brendan Kelly,ivank@apache.org,2012-11-02,3,4.1.1,,BOOKKEEPER-370: implement multiplexing cpp client. (sijie via ivank)
+da1b308ba8eb4dc0cd93b5ad19065067c354f242,Ivan Brendan Kelly,ivank@apache.org,2012-11-07,3,4.1.1,,BOOKKEEPER-452: Rename ClientConfiguration multiplexing_enabled to subscription_connection_sharing_enabled (sijie via ivank)
+c32437ad4ff1d1e267f885a0bd67100cebb57ba6,Ivan Brendan Kelly,ivank@apache.org,2012-11-07,3,4.1.1,,BOOKKEEPER-444: Refactor pending read op to make speculative reads possible (ivank)
+9b7b78890c2f0631a2b62bbbaa8de35ede102c0e,Ivan Brendan Kelly,ivank@apache.org,2012-11-09,3,4.1.1,,"BOOKKEEPER-204: Provide a MetaStore interface, and a mock implementation. (Jiannan Wang via ivank)"
+0a164a8f7166b853cbf874b91f9a82e51f13f668,Ivan Brendan Kelly,ivank@apache.org,2012-11-21,3,4.1.1,BOOKKEEPER-468,BOOKKEEPER-468: Remove <echo> from protobuf generation in hedwig (ivank)
+10091096ec339c1524877195172325343b20e02f,Ivan Brendan Kelly,ivank@apache.org,2012-11-21,3,4.1.1,BOOKKEEPER-466,BOOKKEEPER-466: ZooKeeper test utility sets the port number as the tickTime (ivank)
+afa7a082a6f8ab6936729fb68d84bcebf09e1f19,Ivan Brendan Kelly,ivank@apache.org,2012-11-22,3,4.1.1,BOOKKEEPER-454,BOOKKEEPER-454: hedwig c++ tester script assumes sh is bash (ivank)
+b3a05cd74652affe4a69f40609de0b92769e05a4,Ivan Brendan Kelly,ivank@apache.org,2012-11-23,3,4.1.1,BOOKKEEPER-467,BOOKKEEPER-467: Allocate ports for testing dynamically (ivank)
+e789bc0dae00b6e8881912a73c1e55f370c83c84,Ivan Brendan Kelly,ivank@apache.org,2012-11-26,3,4.1.1,,BOOKKEEPER-460: LedgerDeleteTest checks wrong place for log file (Fangmin Lv via ivank)
+967149c238389e96b760dbda4d4f722aee46b0b5,Ivan Brendan Kelly,ivank@apache.org,2012-11-26,3,4.1.1,,BOOKKEEPER-460: LedgerDeleteTest checks wrong place for log file (Fangmin Lv via ivank) [missing file]
+e2d624f8b09beca1f3a5c9224aad1aa254642f28,Ivan Brendan Kelly,ivank@apache.org,2012-11-26,3,4.1.1,,BOOKKEEPER-440: Make Write/Delete SubscriptionData Restricted to Version (Fangmin Lv via ivank)
+8a3b4ac9a70eca5e55f7c5163c9c62d677c06aa7,Ivan Brendan Kelly,ivank@apache.org,2012-11-27,3,4.1.1,BOOKKEEPER-471,BOOKKEEPER-471: Add scripts for preCommit testing (ivank)
+d3ee645781a1ed422d53a027e3d397451dd4c0d2,Flavio Paiva Junqueira,fpj@apache.org,2012-11-27,3,4.1.1,BOOKKEEPER-479,BOOKKEEPER-479: Fix apache-rat issues in tree (ivank via fpj)
+38336805e367664fbda2a9c6993d5d343c956752,Flavio Paiva Junqueira,fpj@apache.org,2012-11-27,3,4.1.1,BOOKKEEPER-477,"BOOKKEEPER-477: In ReadOnlyBookieTest, we should wait for the bookie to die before asserting on it (ivank via fpj)"
+9512c57d2c370604e732037c8a3cf262cb60b8a9,Flavio Paiva Junqueira,fpj@apache.org,2012-11-27,3,4.1.1,,BOOKKEEPER-476: Log to file during tests (ivank via fpj)
+0d198abad7b41d8326913384967aeb1239ab0528,Ivan Brendan Kelly,ivank@apache.org,2012-11-29,3,4.1.1,BOOKKEEPER-457,BOOKKEEPER-457: Create a format command for Hedwig to cleanup its metadata. (sijie via ivank)
+ea84d6cc0f7ba8549466104175777369b6de5fac,Ivan Brendan Kelly,ivank@apache.org,2012-11-29,3,4.1.1,,BOOKKEEPER-487: Add existed hub server settings to configuration template file (sijie via ivank)
+aa1fecd255bcc3c23d4037c675df88c9c0ba78ab,Sijie Guo,sijie@apache.org,2012-11-30,3,4.1.1,BOOKKEEPER-481,BOOKKEEPER-481: Fix javadoc warnings (ivank via sijie)
+2522f9863b30359b617b6fd2ab6190c1f1cc8570,Sijie Guo,sijie@apache.org,2012-11-30,3,4.1.1,BOOKKEEPER-480,BOOKKEEPER-480: Fix javac warnings (ivank via sijie)
+3ce797955e66d709fd9d96419bc484cab4ddeec3,Ivan Brendan Kelly,ivank@apache.org,2012-11-30,3,4.1.1,,BOOKKEEPER-389: add documentation for message filter. (sijie via ivank)
+e14983cbea5238a75a45bff4f23a8e431a5892f0,Sijie Guo,sijie@apache.org,2012-12-01,3,4.1.1,BOOKKEEPER-482,BOOKKEEPER-482: Precommit is reporting findbugs errors in trunk (ivank via sijie)
+100785f6f1feb2e6dd1c7de769adab5c88e87427,Flavio Paiva Junqueira,fpj@apache.org,2012-12-01,3,4.1.1,BOOKKEEPER-485,BOOKKEEPER-485: TestFencing hung (ivank via fpj)
+c958b32da81936cee535c411f2214d900f54442c,Sijie Guo,sijie@apache.org,2012-12-03,3,4.1.1,BOOKKEEPER-351,BOOKKEEPER-351: asyncAddEntry should not throw an exception (Matteo Merli via sijie)
+f12b7896e1640bed64cedb0d96bdd82b6cf26a86,Ivan Brendan Kelly,ivank@apache.org,2012-12-03,3,4.1.1,BOOKKEEPER-336,BOOKKEEPER-336 bookie readEntries is taking more time if the ensemble has failed bookie(s) Basic speculative functionality  in place
+6a6d25e7e9a2c3cc4370799ec2529915929e5acc,Ivan Brendan Kelly,ivank@apache.org,2012-12-03,3,4.1.1,BOOKKEEPER-291,BOOKKEEPER-291: BKMBeanRegistry uses log4j directly (fpj via ivank)
+bdf3bfd631493d82688404dde35eed491ec946ad,Ivan Brendan Kelly,ivank@apache.org,2012-12-03,3,4.1.1,BOOKKEEPER-336,"[REVERT] BOOKKEEPER-336 bookie readEntries is taking more time if the ensemble has failed bookie(s) Basic speculative functionality  in place Accidently committed this change, before approval. Reverting (ivank)"
+03bf28db4e8e99a4326e0e01c7a9f7134f151a7b,Ivan Brendan Kelly,ivank@apache.org,2012-12-03,3,4.1.1,,BOOKKEEPER-459: Rename metastore mock implementation to InMemory implementation (jiannan via ivank)
+4380e52969beac534fd1da6a68bd28d48b9ba7e9,Ivan Brendan Kelly,ivank@apache.org,2012-12-03,3,4.1.1,,BOOKKEEPER-459: Rename metastore mock implementation to InMemory implementation (jiannan via ivank) [remove directory]
+0ea460606e4a45a07a79c356ad1d58a6119e0d31,Ivan Brendan Kelly,ivank@apache.org,2012-12-03,3,4.1.1,BOOKKEEPER-442,BOOKKEEPER-442: Failed to deliver messages due to inconsistency between SubscriptionState and LedgerRanges. (jiannan via ivank)
+7f6adbe34f828f6c86fe30bfa398180fdb512425,Ivan Brendan Kelly,ivank@apache.org,2012-12-03,3,4.1.1,,BOOKKEEPER-347: Provide mechanism to detect r-o bookie by the bookie clients (Vinay via ivank)
+c86eb1c481fd837269d370cbcc248274708b0887,Flavio Paiva Junqueira,fpj@apache.org,2012-12-03,3,4.1.1,BOOKKEEPER-484,BOOKKEEPER-484: Misc fixes for test scripts (ivank via fpj)
+55f6300ef7eea86c7573d07d65341e2f9ad982a4,Flavio Paiva Junqueira,fpj@apache.org,2012-12-03,3,4.1.1,,BOOKKEEPER-399: Let hub server configure write quorum from ack quorum. (sijie via fpj)
+6030beaba9e770db9b856b8de1b06dab843b2ccc,Ivan Brendan Kelly,ivank@apache.org,2012-12-04,3,4.1.1,BOOKKEEPER-470,BOOKKEEPER-470: Possible infinite loop in simple.SubscribeReconnectCallback (sijie via ivank)
+7f67e765c73890a2f838ec8f5d43b814ce42c84b,Ivan Brendan Kelly,ivank@apache.org,2012-12-04,3,4.1.1,BOOKKEEPER-461,BOOKKEEPER-461: Delivery throughput degrades when there are lots of publishers w/ high traffic. (sijie via ivank)
+366d393f2e58acdd5494da4ae60513c3ae5730c4,Flavio Paiva Junqueira,fpj@apache.org,2012-12-04,3,4.1.1,BOOKKEEPER-475,BOOKKEEPER-475: BookieRecoveryTest#testSyncBookieRecoveryToRandomBookiesCheckForDupes() iterates too much (ivank via fpj)
+baef283841c05bcb4ebceaaa5d540f7a30e4af1a,Ivan Brendan Kelly,ivank@apache.org,2012-12-07,3,4.1.1,,BOOKKEEPER-453: Extract commonality from MultiplexSubscribeResponseHandler and SimpleSubscribeResponseHandler and put into an abstract class  (sijie via ivank)
+66a0dde14f8d69ebdd409f3a2011d03bcd6b62cd,Flavio Paiva Junqueira,fpj@apache.org,2012-12-08,3,4.1.1,,BOOKKEEPER-431: Duplicate definition of COOKIES_NODE (uma via fpj)
+d0217c170a0906bdf3188cc89a290f6da0950146,Flavio Paiva Junqueira,fpj@apache.org,2012-12-08,3,4.1.1,,BOOKKEEPER-431: Duplicate definition of COOKIES_NODE (uma via fpj).  Additional commit to fix the DEFAULT_ZK_LEDGERS_ROOT_PATH constant.
+40ac04bfee52f2e0fd45397cf5d02fa31236c753,Flavio Paiva Junqueira,fpj@apache.org,2012-12-08,3,4.1.1,BOOKKEEPER-474,BOOKKEEPER-474:  BookieReadWriteTest#testShutdown doesn't make sense (ivank via fpj)
+a063f9b19d035d8c2d9e76e3741368cf41e7d292,Flavio Paiva Junqueira,fpj@apache.org,2012-12-10,3,4.1.1,BOOKKEEPER-469,BOOKKEEPER-469: Remove System.out.println from TestLedgerManager (ivank via fpj)
+7d3dde696ae859297ece4e2c9a047afde4fa5865,Flavio Paiva Junqueira,fpj@apache.org,2012-12-10,3,4.1.1,BOOKKEEPER-465,"BOOKKEEPER-465: CreateNewLog may overwrite lastLogId with smaller value (yixue, fpj via fpj)"
+77efd1c00100b533d67e716579b439e94d4050e3,Flavio Paiva Junqueira,fpj@apache.org,2012-12-10,3,4.1.1,BOOKKEEPER-498,BOOKKEEPER-498: BookieRecoveryTest.tearDown NPE (fpj)
+be155aa0c61f6b7bc0bf3d4f2ea56a9b97e590bf,Flavio Paiva Junqueira,fpj@apache.org,2012-12-11,3,4.1.1,,"BOOKKEEPER-491: Hedwig doc for configuration (fpj, sijie via fpj)"
+7467d2697103abba54d8f665724d630721064e78,Flavio Paiva Junqueira,fpj@apache.org,2012-12-11,3,4.1.1,,"BOOKKEEPER-495: Revise BK config doc (fpj, ivank via fpj)"
+7275006bf7d13194aff768b22da55814e11b1cc2,Flavio Paiva Junqueira,fpj@apache.org,2012-12-11,3,4.1.1,,"BOOKKEEPER-495: Revise BK config doc (fpj, ivank via fpj) (a few extra edits to bookieCOnfigParams.textile)  "
+7fa41ff318a31f973d1de12afe8db0f9893ac653,Sijie Guo,sijie@apache.org,2012-12-12,3,4.1.1,BOOKKEEPER-497,BOOKKEEPER-497: GcLedgersTest has a potential race (ivank via sijie)
+5414cec92a99135c8ba0bc0f6768bd348c65e2fb,Ivan Brendan Kelly,ivank@apache.org,2012-12-12,3,4.1.1,,BOOKKEEPER-205: implement a MetaStore based ledger manager for bookkeeper client. (jiannan via ivank)
+55610c26eb3b8b4cd5dd1955a434c2642334c605,Ivan Brendan Kelly,ivank@apache.org,2012-12-12,3,4.1.1,BOOKKEEPER-493,BOOKKEEPER-493: moveLedgerIndexFile might have chance pickup same directory (sijie via ivank)
+1e35d5d5e6de6a33cd4ca200f3d5d92dcf7cb58d,Sijie Guo,sijie@apache.org,2012-12-13,3,4.1.1,BOOKKEEPER-404,BOOKKEEPER-404: Deprecate non-SubscriptionOptions Subscriber Apis (ivank via sijie)
+b6c1a8bbd7c2d44c2edb59d9938fa073f6f478de,Ivan Brendan Kelly,ivank@apache.org,2012-12-13,3,4.1.1,BOOKKEEPER-365,BOOKKEEPER-365: Ledger will never recover if one of the quorum bookie is down forever and others dont have entry (sijie via ivank)
+d58a71dbd1f07a3edf65c4af80ae18a4d9a95755,Flavio Paiva Junqueira,fpj@apache.org,2012-12-13,3,4.1.1,BOOKKEEPER-458,BOOKKEEPER-458:  Annoy BKReadException error when changing ledger. (jiannan via fpj)
+496f442a7a68dd549355e845540c6c72c2fbb44c,Ivan Brendan Kelly,ivank@apache.org,2012-12-13,3,4.1.1,BOOKKEEPER-336,BOOKKEEPER-336: bookie readEntries is taking more time if the ensemble has failed bookie(s) (ivank)
+d932c9b2181cc9f9b6bb3b43abd5af04cda206b8,Flavio Paiva Junqueira,fpj@apache.org,2012-12-13,3,4.1.1,BOOKKEEPER-483,"BOOKKEEPER-483: precommit tests only check toplevel rat file, not the one for submodules. (ivank via fpj)"
+3a950e6f7f5ca8b646e82c61c98a65991df8d88f,Ivan Brendan Kelly,ivank@apache.org,2012-12-13,3,4.1.1,,BOOKKEEPER-262: Implement a meta store based hedwig metadata manager. (jiannan via ivank)
+4320f6f8a2621c852c19fa81ba7edd8a9e6c87a7,Ivan Brendan Kelly,ivank@apache.org,2012-12-13,3,4.1.1,,BOOKKEEPER-341: add documentation for bookkeeper ledger manager interface. (sijie via ivank)
+e0011de4475969c19023694f5074b50e5d12a08f,Ivan Brendan Kelly,ivank@apache.org,2012-12-13,3,4.1.1,BOOKKEEPER-408,BOOKKEEPER-408: BookieReadWriteTest will enter the endless loop and will not leave out (ivank)
+8125700069b14f80ebd135ddd1a2b67de256cb1e,Ivan Brendan Kelly,ivank@apache.org,2012-12-14,3,4.1.1,,BOOKKEEPER-426: Make auditor Vote znode store a protobuf containing the host that voted (ivank)
+dffe13f5b16200e192c36547021c34c186d00de8,Ivan Brendan Kelly,ivank@apache.org,2012-12-14,3,4.1.1,BOOKKEEPER-504,BOOKKEEPER-504: Fix findbugs warning in PendingReadOp (fpj via ivank)
+e4a42af6933c0cb0be441b3d9d5d28790aa9a7b9,Flavio Paiva Junqueira,fpj@apache.org,2012-12-14,3,4.1.1,,BOOKKEEPER-428: Expose command options in bookie scripts to disable/enable auto recovery temporarily (ivank via fpj)
+5428454ca34823a225eafb114128931d313d9e2f,Flavio Paiva Junqueira,fpj@apache.org,2012-12-14,3,4.1.1,,"BOOKKEEPER-428: Expose command options in bookie scripts to disable/enable auto recovery temporarily (rakesh, ivank via fpj)"
+8c1e71f2b9cb8425046517f69a5024c31d47783c,Sijie Guo,sijie@apache.org,2012-12-15,3,4.1.1,BOOKKEEPER-511,BOOKKEEPER-511: BookieShell is very noisy (ivank via sijie)
+d1a3c6d11eb4433c7e25eeba6ac21fe2db3a2696,Sijie Guo,sijie@apache.org,2012-12-15,3,4.1.1,BOOKKEEPER-512,BOOKKEEPER-512: BookieZkExpireTest fails periodically (ivank via sijie)
+a8d61e64604a6ea5ce6caccc5d29aea2abac69f3,Ivan Brendan Kelly,ivank@apache.org,2012-12-17,3,4.1.1,,BOOKKEEPER-375: Document about Auto replication service in BK (umamahesh via ivank)
+3ab615ebbce3871b1d15099f4e24ecaae9e83d8a,Sijie Guo,sijie@apache.org,2012-12-18,3,4.1.1,,"BOOKKEEPER-490: add documentation for MetaStore interface (sijie, ivank via sijie)"
+c784b602325361a7606f2f53b677996e2c23f730,Sijie Guo,sijie@apache.org,2012-12-18,3,4.1.1,,"BOOKKEEPER-342: add documentation for hedwig metadata manager interface. (sijie, ivank via sijie)"
+a4d8a34fb0779551208ad003b950e0b9a9d86d42,Ivan Brendan Kelly,ivank@apache.org,2012-12-18,3,4.1.1,BOOKKEEPER-509,BOOKKEEPER-509: TestBookKeeperPersistenceManager failed on latest trunk (sijie via ivank)
+e5b0dd0d9e47394202f5a20cedf409f487d90beb,Ivan Brendan Kelly,ivank@apache.org,2012-12-18,3,4.1.1,,BOOKKEEPER-496: Ensure that the auditor and replication worker will shutdown if they lose their ZK session (ivank)
+d69986c4df6b51ed6ed27c5f45a7b6850e69dacd,Ivan Brendan Kelly,ivank@apache.org,2012-12-18,3,4.1.1,BOOKKEEPER-500,BOOKKEEPER-500: Fencing doesn't work when restarting bookies. (sijie via ivank)
+a3da8c74c4226b7d92e9d0eba9591334351afa45,Sijie Guo,sijie@apache.org,2012-12-20,3,4.1.1,BOOKKEEPER-520,BOOKKEEPER-520: BookieFailureTest hangs on precommit build (ivank via sijie)
+fa13426970bd4b6d7ffc086e776559f87349ef71,Sijie Guo,sijie@apache.org,2012-12-24,3,4.1.1,,"BOOKKEEPER-463: Refactor garbage collection code for ease to plugin different GC algorithm. (Fangmin, ivank, fpj via sijie)"
+a0ae97c232caafa1fda9955f9aaa9f99564b74fe,Sijie Guo,sijie@apache.org,2012-12-24,3,4.1.1,BOOKKEEPER-522,BOOKKEEPER-522: TestHedwigHub is failing silently on Jenkins (ivank via sijie)
+7de3ecbd5d5052138a9c4aded9256c5030ab2f6d,Sijie Guo,sijie@apache.org,2012-12-24,3,4.1.1,BOOKKEEPER-447,BOOKKEEPER-447: Bookie can fail to recover if index pages flushed before ledger flush acknowledged (ivank via sijie)
+8a396e1f74ff9f9cf25d3b4bfc43c8a112992555,Flavio Paiva Junqueira,fpj@apache.org,2012-12-27,3,4.1.1,BOOKKEEPER-520,"BOOKKEEPER-520: BookieFailureTest hangs on precommit build (sijie via fpj, jira reopened)"
+ea36e59a1c314bf698d572e5f714e0b68e554a6e,Flavio Paiva Junqueira,fpj@apache.org,2012-12-28,3,4.1.1,BOOKKEEPER-514,"BOOKKEEPER-514: TestDeadLock hanging sometimes (ivank, sijie via fpj)"
+7b2b91579000bc99d6fdded3aefb349975058c6f,Flavio Paiva Junqueira,fpj@apache.org,2012-12-29,3,4.1.1,,"BOOKKEEPER-523: Every test should have a timeout (ivank, sijie via fpj)"
+a27b64e340a6ad12f1e9588d1d55fa51f0b2d1f0,Ivan Brendan Kelly,ivank@apache.org,2013-01-02,3,4.1.1,BOOKKEEPER-55,BOOKKEEPER-55: SubscribeReconnectRetryTask might retry subscription endlessly when another subscription is already successfully created previously (sijie via ivank)
+b4e985b32cbb5aa7c6b109898f9d8bf51b2fd330,Ivan Brendan Kelly,ivank@apache.org,2013-01-03,3,4.1.1,,BOOKKEEPER-409: Integration Test - Perform bookie rereplication cycle by Auditor-RW processes (rakeshr via ivank)
+ee29f75f3f6a0168008da2e424e4174f2aee8cbb,Ivan Brendan Kelly,ivank@apache.org,2013-01-03,3,4.1.1,BOOKKEEPER-507,BOOKKEEPER-507: Race condition happens if closeSubscription and subscribe happened at the same time (in multiplexed client). (sijie via ivank)
+005b62cc60093dd5b32d4abecd06c2e441bc62ae,Ivan Brendan Kelly,ivank@apache.org,2013-01-04,3,4.1.1,,BOOKKEEPER-293: Periodic checking of ledger replication status (ivank)
+f80dcedaeea5f701822f02484c098cf4df2f04da,Sijie Guo,sijie@apache.org,2013-01-07,3,4.1.1,BOOKKEEPER-524,"BOOKKEEPER-524: Bookie journal filesystem gets full after SyncThread is terminated with exception (Matteo, fpj via sijie)"
+b625fdc27a429341143e204338cf5deab3188e9e,Ivan Brendan Kelly,ivank@apache.org,2013-01-07,3,4.1.1,BOOKKEEPER-355,"BOOKKEEPER-355: Ledger recovery will mark ledger as closed with -1, in case of slow bookie is added to ensemble during recovery add (ivank)"
+f7ce39d522827a0359a0183eae02694ebb35bafd,Ivan Brendan Kelly,ivank@apache.org,2013-01-07,3,4.1.1,BOOKKEEPER-534,BOOKKEEPER-534: Flakeyness in AuditorBookieTest (umamahesh via ivank)
+ed9b6037be51845f7cab2446593df695ffcede59,Flavio Paiva Junqueira,fpj@apache.org,2013-01-07,3,4.1.1,BOOKKEEPER-532,BOOKKEEPER-532: AbstractSubscriptionManager#AcquireOp read subscriptions every time even it already owned the topic. (sijie via fpj)
+faf407d5d40e9d476bab2a926f41b993bf87098f,Ivan Brendan Kelly,ivank@apache.org,2013-01-09,3,4.1.1,BOOKKEEPER-531,BOOKKEEPER-531: Cache thread should wait until old entries are collected (sijie via ivank)
+55a6e1b983420b40813b327f67bbbff8196a8e41,Flavio Paiva Junqueira,fpj@apache.org,2013-01-09,3,4.1.1,,BOOKKEEPER-541: Add guava to notice file (ivank via fpj)
+f0db18abedd30af1d6191d068652b93db0c68fc6,Flavio Paiva Junqueira,fpj@apache.org,2013-01-09,3,4.1.1,BOOKKEEPER-533,BOOKKEEPER-533: TestSubAfterCloseSub fails strangely in tests (ivank via fpj)
+1f5278d06ddbf4da0d2d6ed41676321f89a4aecd,Ivan Brendan Kelly,ivank@apache.org,2013-01-09,3,4.1.1,,BOOKKEEPER-529: stopServingSubscriber in delivery manager should remove stub callbacks in ReadAheadCache (sijie via ivank)
+5c19add8bc394d3caae4fddf566e149281370a52,Ivan Brendan Kelly,ivank@apache.org,2013-01-09,3,4.1.1,,BOOKKEEPER-542: Remove trailing spaces in IndexCorruptionTest (fpj via ivank)
+a9b851b3afe2d8031ad426fdd2e579ba003fe02c,Sijie Guo,sijie@apache.org,2013-01-10,3,4.1.1,BOOKKEEPER-543,BOOKKEEPER-543: Read zk host list in a wrong way in hedwig server (Fangmin via sijie)
+40de140171a26b0943909900d6af4a73b31a641e,Sijie Guo,sijie@apache.org,2013-01-10,3,4.1.1,,BOOKKEEPER-540: #stopServingSubscriber when channel is disconnected. (Fangmin via sijie)
+7c1793d2979b01062682b70687839a978bf65c4c,Ivan Brendan Kelly,ivank@apache.org,2013-01-10,3,4.1.1,BOOKKEEPER-530,BOOKKEEPER-530: data might be lost during compaction. (ivank)
+4250c1f93962af30e6e40759e006035a7089613e,Flavio Paiva Junqueira,fpj@apache.org,2013-01-10,3,4.1.1,BOOKKEEPER-538,BOOKKEEPER-538: Race condition in BookKeeper#close (ivank via fpj)
+1374b7ad2738f6c52a2aed1d0ee4e412aa382086,Sijie Guo,sijie@apache.org,2013-01-11,3,4.1.1,BOOKKEEPER-539,BOOKKEEPER-539: ClientNotSubscribedException & doesn't receive enough messages in TestThrottlingDelivery#testServerSideThrottle (sijie)
+96b5aa8e6463c36a0421e47f9892479aa63f885b,Ivan Brendan Kelly,ivank@apache.org,2013-01-12,3,4.1.1,BOOKKEEPER-503,BOOKKEEPER-503: The test case of TestThrottlingDelivery#testServerSideThrottle failed sometimes (jiannan & sijie via ivank)
+7d8079c446110872d8f6d50eff86268a3cb4e989,Ivan Brendan Kelly,ivank@apache.org,2013-01-14,3,4.1.1,BOOKKEEPER-513,BOOKKEEPER-513: TestMessageFilter fails periodically (ivank)
+17de3dbe64450bfab7505d7cf51e082eb5672bc8,Ivan Brendan Kelly,ivank@apache.org,2013-01-14,3,4.1.1,,Updating version in CHANGES.txt before branching for 4.2.0
+582370359c8e0e399b30df5a7e60a569b0d5aadf,Ivan Brendan Kelly,ivank@apache.org,2013-01-14,3,4.1.1,,Updating version in CHANGES.txt & pom.xml after branching for 4.2.0
+087e490270c6e006b9e4b47035f20fea843149be,Ivan Brendan Kelly,ivank@apache.org,2013-01-14,3,4.1.1,,BOOKKEEPER-472: Provide an option to start Autorecovery along with Bookie Servers (umamahesh via ivank)
+ec430abc550d8d1d66e9dd8dc3c096f44e666eeb,Ivan Brendan Kelly,ivank@apache.org,2013-01-14,3,4.1.1,,"Fixup for CHANGES.txt (some issues were missing or wrongly placed, also removed tabs)"
+7bed2a74a98f49b31c1653a513944f60a359776c,Ivan Brendan Kelly,ivank@apache.org,2013-01-24,5,4.2.1,BOOKKEEPER-544,BOOKKEEPER-544: Modify hedwig server tests to allow client testcases to start/stop them as part of their tests (mridul via ivank)
+e95b9392d4ba38c68617dff16de53e523d8ea51b,Ivan Brendan Kelly,ivank@apache.org,2013-01-31,5,4.2.1,,BOOKKEEPER-312: Implementation of JMS provider (mridul via ivank)
+b4bac04a8141fa116223de8028471facbe343555,Ivan Brendan Kelly,ivank@apache.org,2013-02-06,5,4.2.1,,BOOKKEEPER-526: multiple threads for delivery manager (sijie via ivank)
+f060c0d2745b47314562bc94ecb5f525e2addb07,Uma Maheswara Rao G,umamahesh@apache.org,2013-02-08,5,4.2.1,BOOKKEEPER-561,BOOKKEEPER-561 Findbugs report errors with openjdk. Contributed by Ivan Kelly.
+3902ae5a6056ba6348f71c873d23f74ac32cebef,Sijie Guo,sijie@apache.org,2013-02-09,5,4.2.1,BOOKKEEPER-556,BOOKKEEPER-556: BookieServerMXBean#getServerState makes no sense (ivank via sijie)
+3bcabc5adb48e75dd041384ebcbb0017d56c3299,Sijie Guo,sijie@apache.org,2013-02-12,5,4.2.1,BOOKKEEPER-554,"BOOKKEEPER-554: fd leaking when move ledger index file (sijie, ivank via sijie)"
+26731c770bf8e3cb54ec0466c027b6e313983bba,Ivan Brendan Kelly,ivank@apache.org,2013-02-12,5,4.2.1,,BOOKKEEPER-555: Make BookieServer use Netty rather than a custom IO server (ivank)
+5b7b6835c74a11162164e90e66bb05a84411a8c2,Sijie Guo,sijie@apache.org,2013-02-15,5,4.2.1,BOOKKEEPER-568,BOOKKEEPER-568: NPE during GC with HierarchicalLedgerManager (Matteo via sijie)
+cda181255f0bb2ebc1a69f75b2b6f84b50c4fba0,Flavio Paiva Junqueira,fpj@apache.org,2013-02-16,5,4.2.1,BOOKKEEPER-569,BOOKKEEPER-569: Critical performance bug in InterleavedLedgerStorage (ivank via fpj)
+040a442bef5b93143a9e07c0b601fddea88c5712,Ivan Brendan Kelly,ivank@apache.org,2013-02-19,5,4.2.1,BOOKKEEPER-548,BOOKKEEPER-548: Document about periodic ledger checker configuration (ivank)
+f4d189431ee77d1133b617dba9e939756cb9d721,Ivan Brendan Kelly,ivank@apache.org,2013-02-19,5,4.2.1,BOOKKEEPER-549,BOOKKEEPER-549: Documentation missed for readOnlyMode support (ivank)
+d40d380363f7ab608231e91b84dd94e3478f3773,Ivan Brendan Kelly,ivank@apache.org,2013-02-19,5,4.2.1,BOOKKEEPER-567,BOOKKEEPER-567: ReadOnlyBookieTest hangs on shutdown (sijie via ivank)
+f31a366fa581b5561bc51d6dd06ce2ebfe3c9f03,Uma Maheswara Rao G,umamahesh@apache.org,2013-02-26,5,4.2.1,,BOOKKEEPER-574: Extend the bookkeeper shell to get a list of available bookies. Contributed by Ivan Kelly
+ea5a13d748918f495ad1cb1e37c0f995e3d53072,Uma Maheswara Rao G,umamahesh@apache.org,2013-03-05,5,4.2.1,BOOKKEEPER-559,BOOKKEEPER-559: Fix occasional failure in AuditorBookieTest. Contributed by Ivan Kelly.
+94ea9a8629ce404566d875895208dabe82c99fbe,Ivan Brendan Kelly,ivank@apache.org,2013-03-08,5,4.2.1,BOOKKEEPER-579,BOOKKEEPER-579: TestSubAfterCloseSub was put in a wrong package (sijie via ivank)
+1b7cb6fa9704d10a3a6134edfd0b12d85bf0012c,Sijie Guo,sijie@apache.org,2013-03-17,5,4.2.1,,BOOKKEEPER-576: Bookie client should use netty Decoder/Encoder (ivank via sijie)
+9f0d2a3e2f4279921f8fa1df8aad708773124cd5,Sijie Guo,sijie@apache.org,2013-03-17,5,4.2.1,BOOKKEEPER-585, BOOKKEEPER-585: Auditor logs noisily when a ledger has been deleted (ivank via sijie) 
+9868081b708b27f272e2a92cf04163996caf9544,Sijie Guo,sijie@apache.org,2013-03-17,5,4.2.1,,BOOKKEEPER-573: Script to start a bookkeeper cluster (ivank via sijie)
+f2bb5603ff33b8ac54bcdf2daddb61cf3e65de80,Sijie Guo,sijie@apache.org,2013-03-25,5,4.2.1,BOOKKEEPER-557,BOOKKEEPER-557: Compiler error showing up badly with jdk 7 (ivank via sijie)
+d1bb8ec0e7c65e241f55c8b700395570e0ee5daf,Sijie Guo,sijie@apache.org,2013-03-25,5,4.2.1,BOOKKEEPER-583,BOOKKEEPER-583: Read from a ReadOnlyBookie fails if index fileinfo is not in ledger cache (vinay via sijie)
+6268be59c7d8cf411860a6807a2cb45bc1c891f4,Ivan Brendan Kelly,ivank@apache.org,2013-03-25,5,4.2.1,BOOKKEEPER-586,BOOKKEEPER-586: Remove recursive call in delivery manager (sijie via ivank)
+e14cbe41b5db846a5d819fcae6e82bc489ebeb73,Ivan Brendan Kelly,ivank@apache.org,2013-03-25,5,4.2.1,,BOOKKEEPER-506: Provide better topic release algorithm (sijie via ivank)
+455aabfd3b6ffd4247f6df63cb29d0694b359cdd,Ivan Brendan Kelly,ivank@apache.org,2013-03-25,5,4.2.1,BOOKKEEPER-581,BOOKKEEPER-581: Ledger recovery doesn't work correctly when recovery adds force changing ensembles. (sijie via ivank)
+feb077afa2e5064f24f011067fd626c81ede8491,Ivan Brendan Kelly,ivank@apache.org,2013-04-02,6,4.2.2,BOOKKEEPER-597,BOOKKEEPER-597: Add flag to output test logs to stdout (ivank)
+c8f9135e7d3147a2a474df31b430b8c403e2792a,Ivan Brendan Kelly,ivank@apache.org,2013-04-02,6,4.2.2,,BOOKKEEPER-595: Crash of inprocess autorecovery daemon should not take down the bookie (ivank)
+b118823702e946ccdeb14843e2691fdd760a59e4,Ivan Brendan Kelly,ivank@apache.org,2013-04-04,6,4.2.2,BOOKKEEPER-596,BOOKKEEPER-596: Ledgers are gc'ed by mistake in MSLedgerManagerFactory. (sijie & ivank)
+cdf138e24b76f934721eb1e82a226d0be296b838,Sijie Guo,sijie@apache.org,2013-04-07,6,4.2.2,BOOKKEEPER-599,BOOKKEEPER-599: NPE in PerChannelBookieClient (jiannan via sijie)
+09ec928ee0218caeef5661ba60978fd18b2e553b,Sijie Guo,sijie@apache.org,2013-04-07,6,4.2.2,BOOKKEEPER-598,BOOKKEEPER-598: Fails to compile - RESUBSCRIBE_EXCEPTION conflict (Matthew Farrellee via sijie)
+685ca079690f8be2cbcfacb615fc0eb5a798b8da,Ivan Brendan Kelly,ivank@apache.org,2013-04-26,6,4.2.2,BOOKKEEPER-584,BOOKKEEPER-584: Data loss when ledger metadata is overwritten (sijie via ivank)
+d175ada58dcaf78f0a70b0ebebf489255ae67b5f,Ivan Brendan Kelly,ivank@apache.org,2013-05-04,6,4.2.2,,BOOKKEEPER-564: Better checkpoint mechanism (sijie & ivank)
+3a4f8920ba5017ef37d7641d3d5f0eeb0bbc590b,Flavio Paiva Junqueira,fpj@apache.org,2013-05-06,6,4.2.2,,BOOKKEEPER-562: Ability to tell if a ledger is closed or not (fpj)
+f86e4929ef9c0ddfa7d26d230caefa369a2a0dde,Flavio Paiva Junqueira,fpj@apache.org,2013-05-07,6,4.2.2,BOOKKEEPER-577,BOOKkEEPER-577: BookieFailureTest uses sync/wait()/notify() incorrectly (ivank via fpj)
+c2bb7ffb366d5c1942ee2e040516af749a705115,Ivan Brendan Kelly,ivank@apache.org,2013-05-09,6,4.2.2,,BOOKKEEPER-608: Make SyncThread a reusable component (ivank)
+4c89310f8b8e09f2ad394a7e7fd5fffc8f51e701,Ivan Brendan Kelly,ivank@apache.org,2013-05-10,6,4.2.2,,BOOKKEEPER-257: Ability to list all ledgers (fpj via ivank)
+ccc9545c4565c337ef6ea06004149de75b4dd3af,Flavio Paiva Junqueira,fpj@apache.org,2013-05-31,6,4.2.2,,BOOKKEEPER-611: Speed up bookkeeper tests (ivank via fpj)
+cf2a858bb7bc669e12058e2dda1a996a67d3d37a,Ivan Brendan Kelly,ivank@apache.org,2013-06-03,6,4.2.2,BOOKKEEPER-603,BOOKKEEPER-603: Support Boost 1.53 for Hedwig Cpp Client (jiannan via ivank)
+faf2ed87762fabe4f6cb5f629cf5a7132869ca60,Ivan Brendan Kelly,ivank@apache.org,2013-06-05,6,4.2.2,BOOKKEEPER-617|BOOKKEEPER-544,BOOKKEEPER-617: BOOKKEEPER-544 breaks hedwig-server/bin/hedwig script (ivank)
+1c04906c0077d228076c3d157d815e5c7219bb0c,Ivan Brendan Kelly,ivank@apache.org,2013-06-12,6,4.2.2,,BOOKKEEPER-592: allow application to recommend ledger data locality (sijie via ivank)
+0a208e10117f8c5201e0414ce3d644d2367b5abc,Flavio Paiva Junqueira,fpj@apache.org,2013-06-15,6,4.2.2,BOOKKEEPER-626,BOOKKEEPER-626: BOOKIE_EXTRA_OPTS are added twice (vinay via fpj)
+5ef7f760d8ccf2bc765e77891447ed050926f4a3,Flavio Paiva Junqueira,fpj@apache.org,2013-06-15,6,4.2.2,,BOOKKEEPER-627: LedgerDirsMonitor is missing thread name (rakesh via fpj)
+fce6d459242361e2363b9b92f8c764b04c7ddfd7,Flavio Paiva Junqueira,fpj@apache.org,2013-06-15,6,4.2.2,,BOOKKEEPER-618: Better resolution of bookie address (ivank via fpj)
+a3de791cb79873c4f9b99e7ac1b9ade75ea225ac,Ivan Brendan Kelly,ivank@apache.org,2013-06-21,6,4.2.2,BOOKKEEPER-619,BOOKKEEPER-619: Bookie should not create local cookie files if zookeeper is uninitialized (ivank)
+01cccee0298f3e0f9d32acc550ed94a7c9fafdfd,Ivan Brendan Kelly,ivank@apache.org,2013-06-21,6,4.2.2,BOOKKEEPER-313,BOOKKEEPER-313: Bookkeeper shutdown call from Bookie thread is not shutting down server (vinay via ivank)
+119e2034303b45478123a0fa62c1c48925b201c1,Sijie Guo,sijie@apache.org,2013-06-26,6,4.2.2,BOOKKEEPER-623,BOOKKEEPER-623: LedgerChecker should avoid segments of closed ledger with higher start entryId than closed entry. (vinay via sijie)
+0cd4be8fde5206d956addd29cbad0391ceca1716,Sijie Guo,sijie@apache.org,2013-06-26,6,4.2.2,BOOKKEEPER-633,BOOKKEEPER-633: ConcurrentModificationException in RackawareEnsemblePlacementPolicy when a bookie is removed from available list (vinay via sijie)
+bf3224adf56b74e7d8c2792eec9dcdab9c49e3d3,Ivan Brendan Kelly,ivank@apache.org,2013-06-28,6,4.2.2,BOOKKEEPER-620,BOOKKEEPER-620: PerChannelBookieClient race during channel disconnect (ivank)
+ad11d4144dbf024fcdfd22a2a043c7790f940dc3,Ivan Brendan Kelly,ivank@apache.org,2013-07-02,6,4.2.2,,BOOKKEEPER-637: NoSuchEntry exception when reading an entry from a bookie should not print ERROR level message (mmerli via ivank)
+0d9708c65998f48ba9b692ff5532251a0e1b8bc9,Ivan Brendan Kelly,ivank@apache.org,2013-07-03,6,4.2.2,BOOKKEEPER-641,BOOKKEEPER-641: DeathWatcher thread is unnecessarily running even after bookie shutdown (rakeshr via ivank)
+ed3bb58f5cc5cd4176573cb696bb7277c628b26a,Ivan Brendan Kelly,ivank@apache.org,2013-07-04,6,4.2.2,BOOKKEEPER-636,BOOKKEEPER-636: Latest txn logs might be deleted in a race condition which is not recoverable if BK goes down before next txn log created. (vinay via ivank)
+0ce12e55edb179fc55bc9c5749a589a52bb36b3a,Flavio Paiva Junqueira,fpj@apache.org,2013-07-13,6,4.2.2,BOOKKEEPER-601,BOOKKEEPER-601: readahead cache size isn't updated correctly (sijie via fpj)
+53c208b09483c90207aecf0e27e669ee810619c2,Flavio Paiva Junqueira,fpj@apache.org,2013-07-14,6,4.2.2,BOOKKEEPER-600,BOOKKEEPER-600: shouldClaim flag isn't cleared for hedwig multiplex java client (sijie via fpj)
+4d66c36cf8825ab3f9f4a389bddfb924a0df9107,Sijie Guo,sijie@apache.org,2013-07-20,6,4.2.2,,BOOKKEEPER-563: Avoid Journal polluting page cache (Robin Dhamankar via sijie)
+f3731732ce984f41b8530939254706f9e597583d,Sijie Guo,sijie@apache.org,2013-07-20,6,4.2.2,BOOKKEEPER-610,BOOKKEEPER-610: Make SyncThread use an executor (ivank via sijie)
+d9682edfc57911ccb9d70ae41c6627112a96a355,Sijie Guo,sijie@apache.org,2013-07-20,6,4.2.2,BOOKKEEPER-635,BOOKKEEPER-635: jenkins build should highlight which lines of the patch cause raw analysis errors (ivank via sijie)
+4a2c740129d506f620dcfbdb5e1e852258a726d2,Sijie Guo,sijie@apache.org,2013-07-20,6,4.2.2,BOOKKEEPER-646,BOOKKEEPER-646: BookieShell readjournal command is throwing BufferUnderflowException (Rakesh via sijie)
+61e619c2b2215fca05df3498256e3f0966a668ff,Sijie Guo,sijie@apache.org,2013-07-20,6,4.2.2,BOOKKEEPER-652,BOOKKEEPER-652: Logger class name is wrong in LedgerCacheImpl.java (Rakesh via sijie)
+a889f63d1041a84d6b894874b31681ed35312781,Ivan Brendan Kelly,ivank@apache.org,2013-07-22,6,4.2.2,BOOKKEEPER-607,BOOKKEEPER-607: Filtered Messages Require ACK from Client Causes User Being Throttled Incorrectly Forever (sijie via ivank)
+67ffec189fc77e53a8dcbe666b1695a3b790e8da,Ivan Brendan Kelly,ivank@apache.org,2013-07-24,6,4.2.2,,BOOKKEEPER-653: Timeout option is missing in few testcases (Rakesh via ivank)
+d3328c5a78137de5416f3d8bc1f269f2ac648e6b,Ivan Brendan Kelly,ivank@apache.org,2013-07-24,6,4.2.2,BOOKKEEPER-642,"BOOKKEEPER-642: Bookie returns incorrect exitcode, ExitCode.ZK_REG_FAIL is getting overridden (Rakesh via ivank)"
+22509a7a2c8acbd5cce182529169fc0057e55b0d,Ivan Brendan Kelly,ivank@apache.org,2013-07-29,6,4.2.2,BOOKKEEPER-663,BOOKKEEPER-663: HierarchicalLedgerManager iterator is missing some ranges and the last ledger in the range (mmerli via ivank)
+d1ad860f8e83530e0d8f1498a35da2e9fbb85962,Ivan Brendan Kelly,ivank@apache.org,2013-08-12,6,4.2.2,BOOKKEEPER-604,BOOKKEEPER-604: Ledger storage can log an exception if GC happens concurrently. (sijie & ivank via ivank)
+94d65d8d2e3239ad0694d3c2252fca0e3dbea8b3,Ivan Brendan Kelly,ivank@apache.org,2013-08-13,6,4.2.2,BOOKKEEPER-667,BOOKKEEPER-667: Client write will fail with BadMetadataVersion in case of multiple Bookie failures with AutoRecovery enabled (sijie via ivank)
+2179f1bf6d656d7c5f7e89f2eeaaa0732f0b9608,Ivan Brendan Kelly,ivank@apache.org,2013-08-20,6,4.2.2,BOOKKEEPER-668,BOOKKEEPER-668: Race between PerChannelBookieClient#channelDisconnected() and disconnect() calls can make clients hang while add/reading entries in case of multiple bookie failures (sijie & ivank via ivank)
+f41bb6f8b521e26a0a746530e648a9ca2120af51,Ivan Brendan Kelly,ivank@apache.org,2013-08-20,6,4.2.2,BOOKKEEPER-624,BOOKKEEPER-624: Reduce logs generated by ReplicationWorker (vinay via ivank)
+c4fd34f0f13a044c0261732ff2dd454acc4b73de,Ivan Brendan Kelly,ivank@apache.org,2013-08-21,6,4.2.2,BOOKKEEPER-632,BOOKKEEPER-632: AutoRecovery should consider read only bookies (vinay via ivank)
+d8e6972385e6662ddcf398fc2de47622a9bef22d,Ivan Brendan Kelly,ivank@apache.org,2013-08-22,6,4.2.2,BOOKKEEPER-649,BOOKKEEPER-649: Race condition in sync ZKUtils.createFullPathOptimistic() (ivank)
+98d6dcec7403c523cfd07cf48ed878e1ab13eae0,Ivan Brendan Kelly,ivank@apache.org,2013-08-23,6,4.2.2,BOOKKEEPER-580,BOOKKEEPER-580: improve close logic (sijie & ivank via ivank)
+aadaae443e1bc70505150a3218a54ff66ebfb921,Ivan Brendan Kelly,ivank@apache.org,2013-09-10,6,4.2.2,BOOKKEEPER-446,BOOKKEEPER-446: BookKeeper.createLedger(..) should not mask the error with ZKException (sijie via ivank)
+bc0eb8b14278999a5c6550fbca6531b862beb12b,Ivan Brendan Kelly,ivank@apache.org,2013-09-10,6,4.2.2,,BOOKKEEPER-675: Log noise fixup before cutting 4.2.2 (ivank)
+441891b2d76b3b0244d00480e0ab70f2d2121d57,Ivan Brendan Kelly,ivank@apache.org,2013-09-27,6,4.2.2,BOOKKEEPER-683,BOOKKEEPER-683: TestSubAfterCloseSub fails on 4.2 (jiannan via ivank)
+dea488afbf4615e4416079f5517a6e3ae1000c17,Sijie Guo,sijie@apache.org,2013-10-02,6,4.2.2,,BOOKKEEPER-640: Log improvement - add shutdown/exit log message for the bookie services (rakesh via sijie)
+e2013e3f2b2e3e10ce5d1977adac8e073fd0404d,Sijie Guo,sijie@apache.org,2013-10-02,6,4.2.2,,BOOKKEEPER-666: Naming threads of ExecutorService (rakesh via sijie)
+3d9bb20a7f7e510bce7c16be392c0ac82c3a3496,Sijie Guo,sijie@apache.org,2013-10-02,6,4.2.2,,BOOKKEEPER-645: Bookkeeper shell command to get a list of readonly bookies (rakesh via sijie)
+8dafa943a1d5a1cf562d94cc6d2f656e0c0be17e,Sijie Guo,sijie@apache.org,2013-10-02,6,4.2.2,BOOKKEEPER-686,BOOKKEEPER-686: Bookie startup will fail if one of the configured ledgerDir is full and the same is used for replaying the journal (Rakesh via sijie)
+0f853a49d7e6899151f63ae9b1912ed936e5a5fb,Sijie Guo,sijie@apache.org,2013-10-11,7,4.3.0,,BOOKKEEPER-658: ledger cache refactor (Robin Dhamankar via sijie)
+d9f4e60c850291d17e12ed44776b88cf02335701,Ivan Brendan Kelly,ivank@apache.org,2013-10-11,7,4.3.0,BOOKKEEPER-638,BOOKKEEPER-638: Two bookies could start at the same time to access bookie data. (sijie via ivank)
+bedfebf93f8c9f93fac19bd58005dce6e0ffbd17,Sijie Guo,sijie@apache.org,2013-10-12,7,4.3.0,,BOOKKEEPER-657: Journal Improvement (Robin Dhamankar via sijie)
+dc1f36e982f3fc2955141c8e0de5e04c6ac06053,Sijie Guo,sijie@apache.org,2013-10-12,7,4.3.0,,BOOKKEEPER-657: Journal Improvement (Robin Dhamankar via sijie) (add missing file)
+16978d671b8d6d9e563edb3a6119a4be574245af,Ivan Brendan Kelly,ivank@apache.org,2013-10-14,7,4.3.0,,BOOKKEEPER-605: Use static Logger objects everywhere for bookkeeper (sijie via ivank)
+a3575c3ebcb323a53d7a193488453aa44557c97a,Ivan Brendan Kelly,ivank@apache.org,2013-10-14,7,4.3.0,BOOKKEEPER-676,BOOKKEEPER-676: Make add asynchrounous in ledger recovery (aniruddha via ivank)
+33ea58027b0a3ba160f7ac19d20568709f453f4d,Ivan Brendan Kelly,ivank@apache.org,2013-10-14,7,4.3.0,BOOKKEEPER-673,BOOKKEEPER-673: Ledger length can be inaccurate in failure case (sijie via ivank)
+24dc8ac30c97620cf4dbef48deff2bb957932eb8,Sijie Guo,sijie@apache.org,2013-10-22,7,4.3.0,BOOKKEEPER-688,BOOKKEEPER-688: NPE exception in PerChannelBookieClient (ivank via sijie)
+9602c32f16184e10873d53c269e270e3cd0ebeed,Sijie Guo,sijie@apache.org,2013-10-22,7,4.3.0,BOOKKEEPER-664,BOOKKEEPER-664: Compaction increases latency on journal writes (ivank via sijie)
+bf5c1838b4b0d764aa9f24842643fd9339610b9c,Ivan Brendan Kelly,ivank@apache.org,2013-10-22,7,4.3.0,,"BOOKKEEPER-659: LRU page management in ledger cache. (Aniruddha, Robin Dhamankar & sijie via ivank)"
+2d0cd0d1b9d41f3b600f6dac308c6d34317ae676,Sijie Guo,sijie@apache.org,2013-10-29,7,4.3.0,BOOKKEEPER-602,"BOOKKEEPER-602: we should have request timeouts rather than channel timeout in PerChannelBookieClient (Aniruddha, ivank via sijie)"
+cd05194d8bbb03a08d8d9fbeb09738bd8a2e09a8,Ivan Brendan Kelly,ivank@apache.org,2013-10-29,7,4.3.0,,"BOOKKEEPER-614: Generic stats interface, which multiple providers can be plugged into (sijie & ivank via ivank)"
+6c6ec2b2f9cb1aff37001f3d9f002cc820096404,Ivan Brendan Kelly,ivank@apache.org,2013-10-29,7,4.3.0,,BOOKKEEPER-615: Twitter stats implementation of stats interface (sijie via ivank)
+f345cb9472250eca2b724fa14b8d2c08425b6a2f,Sijie Guo,sijie@apache.org,2013-10-30,7,4.3.0,BOOKKEEPER-698,BOOKKEEPER-698: Bookie client closure is not considering timeoutExecutor (rakesh via sijie)
+ea4a13a45d8d2102f5f0098e404d3de66777a39b,Ivan Brendan Kelly,ivank@apache.org,2013-10-30,7,4.3.0,BOOKKEEPER-700,BOOKKEEPER-700: GarbageCollectorThread exsiting with ArrayIndexOutOfBoundsException (rakeshr via ivank)
+eb7066a02a50e2b15e66dfd4e99706ecf79454e6,Sijie Guo,sijie@apache.org,2013-11-09,7,4.3.0,,BOOKKEEPER-699: Codahale metrics implementation of stats API (ivank via sijie)
+67dccebdbee27476657898a370c4f1808231fc4b,Ivan Brendan Kelly,ivank@apache.org,2013-11-22,7,4.3.0,BOOKKEEPER-678,BOOKKEEPER-678: BookieServer shutdown hangs indefinitely at NioServerSocketChannelFactory.releaseExternalResources (rakeshr via ivank)
+7c7e009691bc24642018e4f5c81123a0667d4e8b,Ivan Brendan Kelly,ivank@apache.org,2013-12-02,7,4.3.0,,BOOKKEEPER-565: Make an option to separate storing entry log files from index files. (sijie via ivank)
+810f10e9c628604a7697172df79478d9186be637,Sijie Guo,sijie@apache.org,2013-12-05,7,4.3.0,BOOKKEEPER-711,BOOKKEEPER-711: bookkeeper-daemon.sh will not remove the pid file one successful stop (vinay via sijie)
+42185c2e3d9e6d85b095842ac051f3a3c4a4d22f,Sijie Guo,sijie@apache.org,2013-12-05,7,4.3.0,BOOKKEEPER-712,BOOKKEEPER-712: bookkeeper script should use java from JAVA_HOME (vinay via sijie)
+34c260bfc7db379351fa8807897603b9a9b9012b,Sijie Guo,sijie@apache.org,2013-12-06,7,4.3.0,,BOOKKEEPER-701: Improve exception handling of Bookkeeper threads (rakesh via sijie)
+5c3a30f8e423da51b1ee03173a336400335de3b8,Flavio Paiva Junqueira,fpj@apache.org,2014-01-03,7,4.3.0,BOOKKEEPER-709,BOOKKEEPER-709: SlowBookieTest#testSlowBookie fails intermittently (Rakesh R via fpj)
+79a73f0f71be5701b44ab47c14f92945989b1417,Sijie Guo,sijie@apache.org,2014-01-09,7,4.3.0,BOOKKEEPER-714,BOOKKEEPER-714: Logging channel exceptions in PerChannelBookieClient (sijie)
+da8864ad7cd53d302eb27ab31f942bdbae160a98,Ivan Brendan Kelly,ivank@apache.org,2014-01-15,7,4.3.0,,BOOKKEEPER-662: Major GC should kick in immediately if remaining space reaches a warning threshold (sijie via ivank)
+78c0d2515f2e381b2c690bdbf2bf9bad03d1250c,Ivan Brendan Kelly,ivank@apache.org,2014-01-17,7,4.3.0,BOOKKEEPER-710,BOOKKEEPER-710: OpenLedgerNoRecovery should watch ensemble change. (sijie via ivank)
+96cc0e11ca2166a5e5326be4ead0dab595b7e4bc,Sijie Guo,sijie@apache.org,2014-01-21,7,4.3.0,,BOOKKEEPER-429: Provide separate read and write threads in the bookkeeper server (Aniruddha via sijie)
+75f103d9d6694ae0116fe741a2dfbf60e3c63ce1,Sijie Guo,sijie@apache.org,2014-01-21,7,4.3.0,,"BOOKKEEPER-696: stats collection on bookkeeper client (Aniruddha, ivank via sijie)"
+23f3760dd5d79e6894616834aa41d59089c9548a,Ivan Brendan Kelly,ivank@apache.org,2014-01-21,7,4.3.0,BOOKKEEPER-719,BOOKKEEPER-719: Inconsistent synchronization of org.apache.bookkeeper.stats.CodahaleMetricsProvider.metrics (sijie via ivank)
+9b1e561cb5e4f081f40bf8b751bcc2c16226092e,Ivan Brendan Kelly,ivank@apache.org,2014-01-21,7,4.3.0,,BOOKKEEPER-661: Turn readonly back to writable if spaces are reclaimed. (sijie via ivank)
+7b44d9552d8b854160278582db3f5ca07882358a,Sijie Guo,sijie@apache.org,2014-01-22,7,4.3.0,BOOKKEEPER-720,BOOKKEEPER-720: CheckpointSource.MIN#compareTo does exactly the opposite of what it should (ivank via sijie)
+694568b0ff0d048c284c8d5db0c9455d30dfa3ce,Ivan Brendan Kelly,ivank@apache.org,2014-01-22,7,4.3.0,,BOOKKEEPER-643: Improve concurrency of entry logger (sijie & Aniruddha via ivank)
+8bb0cde556cf1dc07d62cd74ca6739b392242cf0,Sijie Guo,sijie@apache.org,2014-01-24,7,4.3.0,,BOOKKEEPER-703: Document all the settings added in BOOKKEEPER-656 (sijie)
+0345c8095ee47aefd7d40a07e2a621079c94f4fd,Sijie Guo,sijie@apache.org,2014-02-02,7,4.3.0,BOOKKEEPER-708,"BOOKKEEPER-708: Shade protobuf library to avoid incompatible versions (rakesh, ivank via sijie)"
+92a62781682721e7c6bb47a95c72029fb91d2e2f,Flavio Paiva Junqueira,fpj@apache.org,2014-02-05,8,4.2.3,,BOOKKEEPER-644: Provide a bookie address wrapper (sijie via fpj)
+94ebe62b8c6ddcd2b52e8bc4eac4e102ff4cf720,Flavio Paiva Junqueira,fpj@apache.org,2014-02-05,8,4.2.3,BOOKKEEPER-727,BOOKKEEPER-727: Names of bookie write/read threads are backwards (ivank via fpj)
+63232dec02952e3404beeafd0c73fc61c2c7cd17,Sijie Guo,sijie@apache.org,2014-02-06,8,4.2.3,BOOKKEEPER-728,"BOOKKEEPER-728: Bookkeeper#Builder is not public, so can't be used outside of client package (ivank via fpj)"
+b62a67b1b11a10fe378a0bef25b846887cd104b1,Sijie Guo,sijie@apache.org,2014-02-06,8,4.2.3,BOOKKEEPER-729,"BOOKKEEPER-729: Bookie shouldn't exit with 0, if exiting from deathwatcher and thread death was caused by OOM (ivank via fpj)"
+3870ff300c64dc41828fdc8c9627e76450cff077,Sijie Guo,sijie@apache.org,2014-02-06,8,4.2.3,BOOKKEEPER-725,BOOKKEEPER-725: AutoRecoveryMain should exit with error code if deathwatcher finds dead thread (ivank via sijie)
+7e0b69cac5d406c777765bc1fa879520ea9176ec,Sijie Guo,sijie@apache.org,2014-02-06,8,4.2.3,BOOKKEEPER-726,BOOKKEEPER-726: PerChannelBookieClient should print address that it failed to connect to when it fails to correct (ivank via sijie)
+8aafd10f6634f039e33b0576d4b61121b494e93a,Flavio Paiva Junqueira,fpj@apache.org,2014-02-06,8,4.2.3,BOOKKEEPER-724,BOOKKEEPER-724: Shade introduces RAT error (sijie via fpj)
+68ffb83d69e6e9be3da94e78d5f76bd6c57b2316,Sijie Guo,sijie@apache.org,2014-02-10,8,4.2.3,,BOOKKEEPER-732: Add env variable ENTRY_FORMATTER_CLASS to the bkenv.sh (rakesh via sijie)
+f19744d30ed879022a66de885cb1236d54582d2b,Sijie Guo,sijie@apache.org,2014-02-10,8,4.2.3,BOOKKEEPER-731,BOOKKEEPER-731: Missing BOOKIE_PID_DIR and BOOKIE_STOP_TIMEOUT in env variables list (rakesh via sijie)
+653dd6d733e9022a6189a2c8546bb8e3afa22715,Ivan Brendan Kelly,ivank@apache.org,2014-02-21,8,4.2.3,BOOKKEEPER-654,"BOOKKEEPER-654: Bookkeeper client operations are allowed even after its closure, bk#close() (sijie via ivank)"
+261bb8f671dc233d3b604b3355bb20d82edac539,Ivan Brendan Kelly,ivank@apache.org,2014-03-07,8,4.2.3,,BOOKKEEPER-717: journal should look forward to group time-out entries (sijie via ivank)
+12daded8c22edc11363ec4eddfbba670e66ee9ad,Ivan Brendan Kelly,ivank@apache.org,2014-03-07,8,4.2.3,,BOOKKEEPER-715: bookie: delay dropping journal cached pages (sijie via ivank)
+9d4ce1671cd6731b9b9652399c24a91c34e0bc65,Ivan Brendan Kelly,ivank@apache.org,2014-03-07,8,4.2.3,BOOKKEEPER-730,BOOKKEEPER-730: Shade pom file missing apache license header (ivank)
+2d427e8d4b2c1d889ab5586e28e198c140a10489,Ivan Brendan Kelly,ivank@apache.org,2014-03-07,8,4.2.3,BOOKKEEPER-363,BOOKKEEPER-363: Re-distributing topics among newly added hubs. (aniruddha via ivank)
+1ac25ebe98dd3038f68fe80e79570b9beceb0be8,Sijie Guo,sijie@apache.org,2014-03-10,8,4.2.3,BOOKKEEPER-740,BOOKKEEPER-740: AutoRecoveryMainTest#testAutoRecoverySessionLoss is failing (Rakesh via sijie)
+88533163987f328be1d36c9f6fc208667f2144a0,Ivan Brendan Kelly,ivank@apache.org,2014-03-12,8,4.2.3,,"BOOKKEEPER-432: Improve performance of entry log range read per ledger entries (yixue, sijie via ivank)"
+e1838f47800120252a3b5db77b7d1169e1daf801,Ivan Brendan Kelly,ivank@apache.org,2014-04-24,8,4.2.3,BOOKKEEPER-742,BOOKKEEPER-742: Fix for empty ledgers losing quorum. (ivank)
+54c54f71a5fad10838c66c6a6b28ef13d9388931,Ivan Brendan Kelly,ivank@apache.org,2014-04-24,8,4.2.3,BOOKKEEPER-743,BOOKKEEPER-743: Periodic ledger check running too often as doc doesn't match implementation. (ivank)
+5c18886657c88f48672554c0f814cf6418ad1e18,Ivan Brendan Kelly,ivank@apache.org,2014-04-29,8,4.2.3,,BOOKKEEPER-716: padding writes for bookie journal (sijie via ivank)
+4c27506835dd0a58ee0a37c4422c44237a344b30,Ivan Brendan Kelly,ivank@apache.org,2014-05-06,8,4.2.3,BOOKKEEPER-744,BOOKKEEPER-744: Run the auditor bookie check periodically (ivank)
+e824ac2691f4e86ac5ced675cd3ffb66f00e059a,Ivan Brendan Kelly,ivank@apache.org,2014-05-06,8,4.2.3,BOOKKEEPER-744,BOOKKEEPER-744: Run the auditor bookie check periodically (ivank) [missing files]
+19b821c63b91293960041bca7b031614a109a7b8,Ivan Brendan Kelly,ivank@apache.org,2014-05-09,8,4.2.3,,BOOKKEEPER-629: Support hostname based ledger metadata to help users to change IP with existing installation (rakeshr via ivank)
+3ed06c0e9246a3ac21e1340d01f1ee7be612194f,Sijie Guo,sijie@apache.org,2014-05-12,8,4.2.3,,BOOKKEEPER-747: Implement register/unregister LedgerMetadataListener in MSLedgerManagerFactory (fpj via sijie)
+e3594b50f93b881f8ded9fe26c9ae2f875e054ea,Flavio Paiva Junqueira,fpj@apache.org,2014-05-14,8,4.2.3,BOOKKEEPER-755,BOOKKEEPER-755: Incorrect number of seconds specified in a day (Joseph Redfern via fpj)
+151c50dbe992efcaf0fa831dbf829b792b8bb925,Flavio Paiva Junqueira,fpj@apache.org,2014-05-23,8,4.2.3,BOOKKEEPER-750,BOOKKEEPER-750. Flake in BookieAutoRecoveryTest#testEmptyLedgerLosesQuorumEventually (ivank via fpj)
+d67f3a752d291b1f55e5b9597eca6b135d3626ee,Flavio Paiva Junqueira,fpj@apache.org,2014-05-23,8,4.2.3,BOOKKEEPER-750,BOOKKEEPER-750. Flake in BookieAutoRecoveryTest#testEmptyLedgerLosesQuorumEventually (ivank via fpj)
+ce3abc6e03216563613db23bd8dd11cf58645982,Ivan Brendan Kelly,ivank@apache.org,2014-05-27,8,4.2.3,,BOOKKEEPER-756: Use HashedwheelTimer for request timeouts for PCBC (sijie via ivank)
+209dbf4982eb997c9691c4331dcaea3b7e4af6d6,Ivan Brendan Kelly,ivank@apache.org,2014-05-30,8,4.2.3,BOOKKEEPER-763,BOOKKEEPER-763: findbugs fails to run on jenkins (ivank)
+64d0170510849e29de9762957a7107d1a7f07284,Ivan Brendan Kelly,ivank@apache.org,2014-05-30,8,4.2.3,,BOOKKEEPER-758: Add TryReadLastAddConfirmed API (sijie via ivank)
+d11665de31b5ee6969128062569f2081b5d9cf79,Ivan Brendan Kelly,ivank@apache.org,2014-05-30,8,4.2.3,BOOKKEEPER-751,BOOKKEEPER-751: Ensure all the bookkeeper callbacks not run under ledger handle lock (sijie via ivank)
+d86917af98c2a7442619f1b71aa6d4d1da5945f4,Ivan Brendan Kelly,ivank@apache.org,2014-06-02,8,4.2.3,BOOKKEEPER-745,BOOKKEEPER-745: Fix for false reports of ledger unreplication during rolling restarts. (ivank)
+404b83abafb94b62c0ced2ba7cf6878762643746,Ivan Brendan Kelly,ivank@apache.org,2014-06-03,8,4.2.3,BOOKKEEPER-746,"BOOKKEEPER-746: 5 new shell commands. List ledgers, list metadata, list underreplicated, show auditor and simpletest (ivank)"
+68deb96d2d1de45eea0c358c0eab39847d51e1f8,Flavio Paiva Junqueira,fpj@apache.org,2014-06-05,8,4.2.3,BOOKKEEPER-766,BOOKKEEPER-766: Update notice.txt files to include 2014 (ivank via fpj)
+80c6e5526c63409e4f359905d0fd319ac7d2b129,Flavio Paiva Junqueira,fpj@apache.org,2014-06-06,8,4.2.3,BOOKKEEPER-767,BOOKKEEPER-767: Allow loopback in tests (ivank via fpj)
+c9db762707538a99a92852e60b88bed577b01377,Ivan Brendan Kelly,ivank@apache.org,2014-06-10,8,4.2.3,BOOKKEEPER-765,BOOKKEEPER-765 bookkeeper script should fall back to java in path if JAVA_HOME is not set (ivank)
+37fda574a530eedc6bd3ba5030e2f3e0805c10f8,Sijie Guo,sijie@apache.org,2014-07-15,9,4.3.1,BOOKKEEPER-768,BOOKKEEPER-768: fix typo seconds to milliseconds in benchmark output (jialin via sijie)
+8f09334e24deaa8e80674a702c498d802986f3c8,Flavio Paiva Junqueira,fpj@apache.org,2014-07-23,9,4.3.1,BOOKKEEPER-739,BOOKKEEPER-739: Test timeouts mostly ignored (sijie via fpj)
+c81076e4d9521bc67653a917e9fb9edbe27bf073,Flavio Paiva Junqueira,fpj@apache.org,2014-07-24,9,4.3.1,,BOOKKEEPER-582: Make bookie and client use protobuf for requests (non-wire part) (sijie via fpj)
+4ec0bf11c3fdb78e390c5c889140d8fbf87ce60b,Sijie Guo,sijie@apache.org,2014-07-26,9,4.3.1,,BOOKKEEPER-582: Make bookie and client use protobuf for requests (non-wire part) (missing files) (sijie)
+69620e6561196975295752175b01354877a9fdde,Flavio Paiva Junqueira,fpj@apache.org,2014-08-02,9,4.3.1,,BOOKEEPER-697. stats collection on bookkeeper server (sijie via fpj)
+e30e116fc65088aad428b4151e1ab39c73c99676,Sijie Guo,sijie@apache.org,2014-08-06,9,4.3.1,,BOOKKEEPER-697: stats collection on bookkeeper server (sijie via fpj) (missing file)
+b6f33e49d0671a5b982bcb3613c5c9844f6aec8b,Sijie Guo,sijie@apache.org,2014-08-14,9,4.3.1,BOOKKEEPER-774,BOOKKEEPER-774: Flaky test org.apache.bookkeeper.test.ReadOnlyBookieTest.testBookieShouldTurnWritableFromReadOnly (sijie)
+38a6fd30048c5fe165409a9ca536fb1ffbdbf537,Ivan Brendan Kelly,ivank@apache.org,2014-08-18,9,4.3.1,,BOOKKEEPER-704: reconnectable zookeeper client wrapper (sijie via ivank)
+c0cef66c6b34c635ec69a69ef033f96600ca5b99,Ivan Brendan Kelly,ivank@apache.org,2014-08-18,9,4.3.1,,"BOOKKEEPER-630: Add tag to o.a.b.net.* to indict which release of hadoop they came from, move DNS to o.a.b.net.* and indent (sijie via ivank)"
+e61a1968c488a7517912be69e5d2cc98eb421040,Ivan Brendan Kelly,ivank@apache.org,2014-08-19,9,4.3.1,,BOOKKEEPER-704: reconnectable zookeeper client wrapper (sijie via ivank) [missing file]
+0c96765dffe3850ae6fc80397f9bc221421f1fa3,Flavio Paiva Junqueira,fpj@apache.org,2014-09-04,9,4.3.1,BOOKKEEPER-780,BOOKKEEPER-780: Findbug issue in trunk (ivank via fpj)
+8f81eba34d2af8444be9f713447e12f4387e5932,Sijie Guo,sijie@apache.org,2014-09-06,9,4.3.1,BOOKKEEPER-777,BOOKKEEPER-777: Flake in LedgerCloseTest (ivank via fpj)
+fd6835e4f06d3cbb6a33062f582e4756d0a3139b,Sijie Guo,sijie@apache.org,2014-09-06,9,4.3.1,BOOKKEEPER-779,BOOKKEEPER-779: jmx reporter for codahale metrics provider (ivank via sijie)
+8abec018fca57d9cee9efd13a7085d8808a3b57e,Sijie Guo,sijie@apache.org,2014-09-06,9,4.3.1,,BOOKKEEPER-718: AuditorLedgerCheckerTest is flakey (ivank via sijie)
+6fe9f6349443aaa193749e7d436a7aaca30d3ccd,Sijie Guo,sijie@apache.org,2014-09-06,9,4.3.1,,BOOKKEEPER-736: Stats for AutoRecovery (sijie)
+caf9ef945c93833f8cbc3bb0e6e451e1e58855cb,Sijie Guo,sijie@apache.org,2014-09-09,9,4.3.1,BOOKKEEPER-778,BOOKKEEPER-778: Flake in TestTryReadLastConfirmed (ivank via sijie)
+2e1346c5fb6f8641f23dd926e1626211657be2ca,Flavio Paiva Junqueira,fpj@apache.org,2014-09-09,9,4.3.1,,BOOKKEEPER-781: Fix OOM on Hedwig Tests (sijie via fpj)
+fb6324b064e5b367d48d59fc44381462431d500a,Flavio Paiva Junqueira,fpj@apache.org,2014-09-09,9,4.3.1,,BOOKKEEPER-776: Flaky test BookieRecoveryTest (ivank via fpj)
+77e68b5b033f306f8575b66278e8765784394413,Flavio Paiva Junqueira,fpj@apache.org,2014-09-10,9,4.3.1,,BOOKKEEPER-775: Improve MultipleThreadReadTest to reduce flakiness (sijie via fpj)
+c918051659f9f9231989531304a0a0a15f0f939e,Ivan Brendan Kelly,ivank@apache.org,2014-09-17,9,4.3.1,BOOKKEEPER-783,BOOKKEEPER-783: Avoid running out of fds in MutlipleThreadReadTest (sijie via ivank)
+4f0e52d027ed277576344ecbde1938ed3eeb7aae,Sijie Guo,sijie@apache.org,2014-09-18,9,4.3.1,BOOKKEEPER-785,BOOKKEEPER-785: Fix javadoc warnings in trunk (ivank via sijie)
+4a2174a91fbd6b85fed640ef58f1c98fd28ee2d4,Sijie Guo,sijie@apache.org,2014-09-18,9,4.3.1,BOOKKEEPER-784,BOOKKEEPER-784: BookKeeperCloseTest#testLedgerCheck is failing intermittently (ivank via sijie)
+86480a21d366210eec96a7f47f2d43f1313705cc,Sijie Guo,sijie@apache.org,2014-09-18,9,4.3.1,,BOOKKEEPER-782: Use builder pattern for Cookie (rakeshr via sijie)
+36478d1e639ba099cc4256ca2b2fbcc98f7649dd,Flavio Paiva Junqueira,fpj@apache.org,2014-09-22,9,4.3.1,BOOKKEEPER-786,BOOKKEEPER-786: Fix Findbugs Error In Codahale Stats Provider (sijie via fpj)
+479cb452d43785c88c729934e079d5ca4939ba90,Ivan Brendan Kelly,ivank@apache.org,2014-09-23,9,4.3.1,,BOOKKEEPER-787: Modify Cookie by removing 'znodeVersion' state/field (rakeshr via ivank)
+2d630bbd594de7a79afbf227ed41f84484a527f5,Ivan Brendan Kelly,ivank@apache.org,2014-09-29,9,4.3.1,,BOOKKEEPER-773: Provide admin tool to rename bookie identifier in Cookies (rakeshr via ivank)
+643992144d17297d2a5a8414f0a1e106d0fc8b99,Sijie Guo,sijie@apache.org,2014-10-03,9,4.3.1,,Preparing for release 4.3.0
+528270848b98f2090d51dfea9f6652aa1fc10b66,Sijie Guo,sijie@apache.org,2014-10-03,9,4.3.1,,Bump version number to 4.4.0
+334f75ea5516158a9cb544be7ee678c3945ec0a9,Sijie Guo,sijie@apache.org,2014-10-14,9,4.3.1,,Update README to reflect bookkeeper modules
+ea03266f5c5af20281de7bd147faeb9bc715065f,Sijie Guo,sijie@apache.org,2014-10-14,9,4.3.1,,Add JNA license in NOTICE files
+3020fcb555d978c986e4e014e79c14d9817b606a,Sijie Guo,sijie@apache.org,2014-10-15,9,4.3.1,BOOKKEEPER-793,BOOKKEEPER-793: Move to java 7
+b17a30a46a820a9914bcee713f156698d93ff734,Ivan Brendan Kelly,ivank@apache.org,2014-11-19,9,4.3.1,BOOKKEEPER-797,BOOKKEEPER-797: IllegalArgumentException when calling CodahaleOpStatsLogger#toOpStatsData()
+6a94e45c6b813978d6b4fa98eeb87175d0241d96,Ivan Kelly,ivank@apache.org,2014-12-04,9,4.3.1,BOOKKEEPER-815,BOOKKEEPER-815: Ledger fence state is lost when the ledger file is evicted (Charles Xie via ivank)
+78d6e49d4d6bf83ee53655e6198848b896c4239c,Ivan Kelly,ivank@apache.org,2014-12-05,9,4.3.1,BOOKKEEPER-800,BOOKKEEPER-800: Expose whether a ledger is closed or not (ivank)
+5de01f700ede31f186f5d8d97afac382f1e45327,Ivan Kelly,ivank@apache.org,2014-12-05,9,4.3.1,BOOKKEEPER-799,BOOKKEEPER-799: Distribution schedule coverage sets don't take gaps in response lists into account when writequorum > ackquorum (ivank)
+130ebfa8f3763c1b98b29124a2bb648b2a810281,Sijie Guo,sijie@apache.org,2014-12-06,9,4.3.1,BOOKKEEPER-805,BOOKKEEPER-805: NullPointException in bookie server when using twitter-ostrich-provider (Youngjoon Kim via sijie)
+0dfb4fb94d0ccc98e1050f662712d85bcf2003b1,Sijie Guo,sijie@apache.org,2014-12-06,9,4.3.1,BOOKKEEPER-809,BOOKKEEPER-809: Wrong metric on LedgerDeleteOp and LedgerOpenOp (Charles Xie via sijie)
+8a5ac72762480f5f972aafcf1fc8207e12ef76e3,Sijie Guo,sijie@apache.org,2014-12-06,9,4.3.1,BOOKKEEPER-805,BOOKKEEPER-805: NullPointException in bookie server when using twitter-ostrich-provider (Youngjoon Kim via sijie) (missing CHANGES.txt)
+ff5d2c5125d7d7fbe48d7935524820c55a887124,Sijie Guo,sijie@apache.org,2014-12-06,9,4.3.1,BOOKKEEPER-809,BOOKKEEPER-809: Wrong metric on LedgerDeleteOp and LedgerOpenOp (Charles Xie via sijie) (missing CHANGES.txt)
+492997b1e6fe73426dda799a6eaf228329a9342f,Sijie Guo,sijie@apache.org,2014-12-06,9,4.3.1,,BOOKKEEPER-820: print out fi.isFenced() in BookieShell (zhaijia via sijie)
+2b88b11fa7597254ccbf828f16efc665e852788d,Sijie Guo,sijie@apache.org,2014-12-06,9,4.3.1,BOOKKEEPER-804,BOOKKEEPER-804: Client program is not terminated when using openLedgerNoRecovery (ivank via sijie)
+e790cab6d89de3cff3ee32842347d0176b6e24c5,Sijie Guo,sijie@apache.org,2014-12-06,9,4.3.1,BOOKKEEPER-813,BOOKKEEPER-813: BookieShell doesn't find index directory (Charles Xie via sijie)
+92e502233d1489290fbcb448b932fdc4b569d431,Sijie Guo,sijie@apache.org,2014-12-06,9,4.3.1,,BOOKKEEPER-810: Allow to configure TCP connect timeout (Charles Xie via sijie)
+24591f1514624e09a07ef2f34ba35116ea847266,Sijie Guo,sijie@apache.org,2014-12-06,9,4.3.1,,BOOKKEEPER-811: Recovery tool doesn't remove cookie after recovering one bookie (Charles Xie via sijie)
+e79f8736a7dfc2c7191455e4e88b85a85f0472bf,Ivan Kelly,ivan@bleurgh.com,2014-12-09,9,4.3.1,BOOKKEEPER-795,BOOKKEEPER-795: Race condition causes writes to hang if ledger is fenced (sijie via ivank)
+0e3d95c9411289b89961e434ce760e3726290761,Ivan Kelly,ivank@apache.org,2014-12-10,9,4.3.1,BOOKKEEPER-814,BOOKKEEPER-814: clean up temp files that generated by test cases. (zhaijia via ivank)
+91b80f6c8d538fd9c16b30907c95d93ee90af04a,Ivan Kelly,ivank@apache.org,2014-12-12,9,4.3.1,BOOKKEEPER-801,BOOKKEEPER-801: Bookkeeper client tutorial (ivank)
+264995cf2fc97ae527a8c24b369790a424d88d87,Ivan Kelly,ivank@apache.org,2014-12-12,9,4.3.1,BOOKKEEPER-803,BOOKKEEPER-803: Guide for making a replicated log out of ledgers (ivank)
+4050e79654704ebc0224cc024980e297fdc56473,Ivan Kelly,ivank@apache.org,2015-01-12,9,4.3.1,,BOOKKEEPER-832: Allow starting bookie in ReadOnly mode (zhaijia via ivank)
+99b40326fed855906b709cbe1f562f45bda79e5d,Ivan Kelly,ivank@apache.org,2015-01-13,9,4.3.1,,BOOKKEEPER-634: Provide admin tool to rename bookie identifier in ledger metadata (rakeshr via ivank)
+0d6a65d3b14122f0c0a3a4e9d6a4fbe569165ec7,fpj,fpj@apache.org,2015-01-16,9,4.3.1,,"BOOKKEEPER-827 change throttle in GarbageCollector to use either ""by entry"" or ""by byte"" (Jia Zhai via fpj)"
+afbab15ad6778f1010b726b7f765a47417fbbed0,fpj,fpj@apache.org,2015-01-19,9,4.3.1,,BOOKKEEPER-830: Documentation has no structure (ivank via fpj)
+8b23bd30c5e7388e91f650615671d754a9ee2727,Sijie Guo,sijie@apache.org,2015-02-23,9,4.3.1,BOOKKEEPER-838,BOOKKEEPER-838: ForceWriteThread::run() leaks “logFile.close()” when interrupt comes (zhaijia via sijie)
+e89ee080f1894143ed3415f27017b89eefe3ceb1,Sijie Guo,sijie@apache.org,2015-03-12,9,4.3.1,BOOKKEEPER-839,BOOKKEEPER-839: AuditorPeriodicCheckTest timeout (rakeshr via sijie)
+0c7dfc077b413d4019b68133cb7461832eae3541,Sijie Guo,sijie@apache.org,2015-03-12,9,4.3.1,,BOOKKEEPER-837: UpdateLedgerOp - Replace AbstractFuture with SettableFuture (rakeshr via sijie)
+f2928dca4860b3c1461b99b834992e16901c8a87,Sijie Guo,sijie@apache.org,2015-03-12,9,4.3.1,BOOKKEEPER-831,BOOKKEEPER-831: Outdated links in tutorial (ivank via sijie)
+68c5b5a40c33b813482e8a2371eedcb2e0d224e8,Sijie Guo,sijie@apache.org,2015-03-18,9,4.3.1,BOOKKEEPER-840,BOOKKEEPER-840: Deadlock on flushLock on compaction (sijie)
+4a4802ab5ef1a98eb40cd2bfb4b2f76409745220,Sijie Guo,sijie@apache.org,2015-03-18,9,4.3.1,BOOKKEEPER-828,BOOKKEEPER-828: Script for updating docs on website from master branch (ivank via sijie)
+7177f2a03c52ca0457ea7d1a9c946f194ffb1c5f,Sijie Guo,sijie@apache.org,2015-03-18,9,4.3.1,BOOKKEEPER-834,BOOKKEEPER-834: test case error in test class TestDiskChecker (zhaijia via sijie)
+c181ea8aa409ed17f28e5b901ae33adc0faaf4be,Sijie Guo,sijie@apache.org,2015-03-18,9,4.3.1,,BOOKKEEPER-844: Add more metrics about latency and bytes characteristics on bookie operations (Tong Yu via sijie)
+638b332569a0ce4c502cc4d15be535a67d464f9d,Sijie Guo,sijie@apache.org,2015-03-18,9,4.3.1,,BOOKKEEPER-844: Add more metrics about latency and bytes characteristics on bookie operations (Tong Yu via sijie) (missing file)
+6622b46d4979c92cd9c3f450e3832d63513c6a22,Sijie Guo,sijie@apache.org,2015-04-21,9,4.3.1,,BOOKKEEPER-849: Collect stats with sub-milliseconds precision (Matteo Merli via sijie)
+fe6259c7eade644c8d2a5e96aba61c1792d64843,Sijie Guo,sijie@apache.org,2015-04-21,9,4.3.1,,BOOKKEEPER-850: Use nanoseconds to calculate poll timeout when doing group commit (Matteo Merli via sijie)
+b24cd7fd85bb3235036e660ff3a295dc939705e6,Sijie Guo,sijie@apache.org,2015-04-21,9,4.3.1,BOOKKEEPER-847,BOOKKEEPER-847: ArrayIndexOutOfBoundsException in LedgerFragmentReplicator::updateEnsembleInfo (zhaijia via sijie)
+70da24d504e3f4cba0d87a0914a0add7ea19394d,Sijie Guo,sijie@apache.org,2015-04-21,9,4.3.1,BOOKKEEPER-848,BOOKKEEPER-848: Use volatile for lastAddConfirmed (Matteo Merli via sijie)
+b6dd505342051f267ca6af5fba1b70637c1e3fe0,Sijie Guo,sijie@apache.org,2015-04-21,9,4.3.1,BOOKKEEPER-695,BOOKKEEPER-695: Some entry logs are not removed from the bookie storage (Matteo Merli via sijie)
+e0d331781ec7a0e415bc6f16c38686aab34cb0c5,Sijie Guo,sijie@apache.org,2015-04-21,9,4.3.1,,"BOOKKEEPER-836: disable compaction when disk becomes full, otherwise compaction will fill up disk quickly (zhaijia via sijie)"
+da1a2fa6b19ddcdba68834147bf6afbe5bf90cbf,Sijie Guo,sijie@apache.org,2015-04-21,9,4.3.1,BOOKKEEPER-833,BOOKKEEPER-833: EntryLogId and EntryLogLimit should not be larger than Integer.MAX_VALUE (sijie)
+26b17cba50aded931afb2e66d549fbeb8f4f1d39,Sijie Guo,sijie@apache.org,2015-04-21,9,4.3.1,,BOOKKEEPER-846: TestLedgerChecker times out (rakeshr via sijie)
+6688d96b52072496202f607f8c55976472f4c9a6,Sijie Guo,sijie@apache.org,2015-05-19,9,4.3.1,BOOKKEEPER-835,BOOKKEEPER-835: Update copyright for 2015 on all active branches
+5bd2edbf82bd0c8bd9ea9e507b07d23cb856f934,Sijie Guo,sijie@apache.org,2015-05-19,9,4.3.1,BOOKKEEPER-835,BOOKKEEPER-835: Update copyright for 2015 on all active branches (sijie) (missing CHANGES.txt file)
+1387b2be44686abfe78bf4efee4ad52d2d699e12,Sijie Guo,sijie@apache.org,2015-05-20,9,4.3.1,BOOKKEEPER-854,BOOKKEEPER-854: NPE on InterleavedLedgerStorage.onRotateEntryLog (sijie)
+6286c39eaa8f7422323fc3405c72f9c6333f444f,Sijie Guo,sijie@apache.org,2015-05-20,9,4.3.1,BOOKKEEPER-821,BOOKKEEPER-821: Failing to write lastId to ledger directories should not fail startup of bookies (zhaijia via sijie)
+35fbcc357970f126b6b9f9a7bf2a453bd3786044,Sijie Guo,sijie@apache.org,2015-06-02,10,4.3.2,BOOKKEEPER-858,BOOKKEEPER-858: Fix broken links and typos in bookkeeper documents (Youngjoon Kim via sijie)
+8df7e0fb18547e9805238f4bb15d3d0d67978422,Sijie Guo,sijie@apache.org,2015-07-07,10,4.3.2,BOOKKEEPER-823,BOOKKEEPER-823: Clean up temp files created by hedwig tests (Jia Zhai via sijie)
+a80bba272ecd7344ac552f3888ef5db49cbbdeb5,fpj,fpj@apache.org,2015-07-10,10,4.3.2,,BOOKKEEPER-796: Make bookkeeper client use reconnectable zookeeper wrapper (sijie via fpj)
+8c1b9ebc22988aabb42ba9cfe79be8898fc5a69e,Sijie Guo,sijie@apache.org,2015-07-16,10,4.3.2,,BOOKKEEPER-687: Use static final Logger for hedwig related modules (Ankur Garg via sijie)
+8bf97fb5ba115b1d053bbc9a779335455e6926c5,fpj,fpj@apache.org,2015-07-28,10,4.3.2,,BOOKKEEPER-760: Don't close PCBC proactively if bookies disappeared from zookeeper znodes (sijie via fpj)
+c29a4f2601f72f8543cc4b1db419c84b01de75ce,Sijie Guo,sijie@apache.org,2015-08-12,10,4.3.2,BOOKKEEPER-863,BOOKKEEPER-863: Potential resource leak with unclosed LedgerManager in BookieShell (Ted Yu via sijie)
+a59bd5687e2f5c4a4ac3f2a957543b5a1a3148d8,Sijie Guo,sijie@apache.org,2015-09-07,10,4.3.2,BOOKKEEPER-802,BOOKKEEPER-802: Bookkeeper protocol documentation (ivank via sijie)
+5662416d8ecef535fb089baa0a10e0dae08ae805,Sijie Guo,sijie@apache.org,2015-09-15,10,4.3.2,,BOOKKEEPER-438: Move ledger id generation out of LedgerManager (Tong Yu via sijie)
+6cfecea6c3e2b6e327fb53ac85f1894df81a10b2,Sijie Guo,sijie@apache.org,2015-10-06,10,4.3.2,,BOOKKEEPER-862: Add tracing and stats to OrderedSafeExecutor for debugging slow tasks (Leigh Stewart via sijie)
+48ab23ef3e16f8edfda2a977f9c0fc99c441db40,Sijie Guo,sijie@apache.org,2015-10-06,10,4.3.2,,BOOKKEEPER-868: Add ADD_ENTRY quorum timeout (Leigh Stewart via sijie)
+885cebf113ea104dc579f93d6e112825a3bf1959,Sijie Guo,sijie@apache.org,2015-10-06,10,4.3.2,,BOOKKEEPER-826: PendingAddOp is ignoring ack response after meet ack quorum constraint (sijie)
+9803ee8e6293dcd0346b1ca3cb0f2666b5e12382,Sijie Guo,sijie@apache.org,2015-10-10,10,4.3.2,BOOKKEEPER-872,BOOKKEEPER-872: Resource leak with unclosed LedgerManager in HierarchicalLedgerManagerFactory#format() (Ted Yu via sijie)
+8a3922e00d5fc3f82cb28ca032595b02db1a516e,Sijie Guo,sijie@apache.org,2015-10-16,10,4.3.2,,BOOKKEEPER-866: Fix compile issue when Updating junit to latest release version( 4.12) in the test of  Bookkeeper-server. (Jia Zhai via sijie)
+355ddbc7c13e39c49a58371d467e87aa80f696d7,Sijie Guo,sijie@apache.org,2015-10-22,10,4.3.2,,BOOKKEEPER-867: New Client API to allow applications pass-in EntryId. (Venkateswararao Jujjuri via sijie)
+e47fb5703d1a26db238dd20aa58bc580830dd5af,Sijie Guo,sijie@apache.org,2015-10-22,10,4.3.2,,BOOKKEEPER-867: New Client API to allow applications pass-in EntryId. (Venkateswararao Jujjuri via sijie) (missing CHANGES.txt)
+e42efa9a84d554c8c0cdc9faf39d5efb85fe01f0,Sijie Guo,sijie@apache.org,2016-01-22,11,4.4.0,,BOOKKEEPER-877: Script for generating patch for reviews (sijie)
+19160e44d3d6814127e35f9a2c1062bcae57213f,Sijie Guo,sijie@apache.org,2016-01-24,11,4.4.0,,BOOKKEEPER-885: Script to merge github pull request (sijie via mmerli)
+92722ee9c34b069e23d1a87d7fc78256b8540268,Sijie Guo,sijie@apache.org,2016-01-26,11,4.4.0,,BOOKKEEPER-855: handle session expire event in bookie (sijie)
+8729d12be50295086e7440dfa5d0256abb7688d5,Sijie Guo,sijie@apache.org,2016-02-09,11,4.4.0,BOOKKEEPER-883,BOOKKEEPER-883: Test timeout in bookkeeper-benchmark
+626b7e8bb0b84271df97cfbf0a1b157c6cfe5a18,Matteo Merli,mmerli@apache.org,2016-02-09,11,4.4.0,BOOKKEEPER-890,BOOKKEEPER-890: Concurrent modification exception when removing listener in…
+61390322ea591bcfe3186e289c27f331c86941ad,Siddharth Boobna,sboobna@yahoo-inc.com,2016-02-09,11,4.4.0,,BOOKKEEPER-892: Bookie sanity test
+63a2a91eba191e92a1902cf5400325dcf4d36089,Matteo Merli,mmerli@yahoo-inc.com,2016-02-09,11,4.4.0,,BOOKKEEPER-888: Dispatch individual callbacks from journal in different threads
+d96a2db912278e3d88ed59d8d3e15b62bc37ffd4,Matteo Merli,mmerli@yahoo-inc.com,2016-02-09,11,4.4.0,,BOOKKEEPER-886: Allow to disable ledgers operation throttling
+63395a3e3d9bb253ea2745042631e44a3d195ea0,Siddharth Boobna,sboobna@yahoo-inc.com,2016-02-09,11,4.4.0,BOOKKEEPER-893,BOOKKEEPER-893: explicitly call bk shutdown to set the exit code
+9c937f5d814d4079b6134db361a0e2de1e37cd05,Matteo Merli,mmerli@apache.org,2016-02-09,11,4.4.0,BOOKKEEPER-891,BOOKKEEPER-891: Read entries failure should trigger callback only once
+bac3ed3603f9dc9864beb610bea215c186ef4fab,eolivelli,eolivelli@gmail.com,2016-02-23,11,4.4.0,,BOOKKEEPER-879: Record ledger creation time
+9bd9e061bc225f36d8c9d516d4265aa209e4e90e,Sijie Guo,sijie@apache.org,2016-02-23,11,4.4.0,BOOKKEEPER-897,BOOKKEEPER-897: Fix findbugs warnings and missing apache license header
+2c567d008c644df5db8c441fb9aaf135ed36db95,Matteo Merli,mmerli@apache.org,2016-02-23,11,4.4.0,,BOOKKEEPER-841: Bookie should calculate ledgers map writing a new entry log file
+96adbf1d613a63602c8b1b4aad1b0a7d17e6eee3,Matteo Merli,mmerli@apache.org,2016-03-08,11,4.4.0,,BOOKKEEPER-851: Configurable LedgerStorage implementation
+c8255f8c5f73a2353293ec1d9612dbb98f291ccc,Siddharth Boobna,sboobna@yahoo-inc.com,2016-03-08,11,4.4.0,,BookKeeper client should try not to use bookies with errors/timeouts when forming a new ensemble
+bfa74f736ba270cc1a0bd0f7a1a6c643a00e385d,Siddharth Boobna,sboobna@yahoo-inc.com,2016-03-08,11,4.4.0,BOOKKEEPER-899,Bookie should return to read-write mode once the disk usage drops before the threshold
+fe52b500cfec1c93725fa967ad2d5e0e7350580c,Siddharth Boobna,sboobna@yahoo-inc.com,2016-03-08,11,4.4.0,BOOKKEEPER-900,read only bookie runs replicator and does not release the under replicated lock after failing
+a77042db1b024b5cb2bdd2a5f49ea18a43bc036b,Siddharth Boobna,sboobna@yahoo-inc.com,2016-03-08,11,4.4.0,BOOKKEEPER-898,BOOKKEEPER-898: listen to read only bookie changes also in auditor
+410ff7263a477d4b75a43d006adde3549225a4b9,Matteo Merli,mmerli@apache.org,2016-03-14,11,4.4.0,BOOKKEEPER-902,BOOKKEEPER-902: Test failures in EntryLogTest
+9a8d62b1d1231f2fe6feca7e0c407a426a1278d5,Robin Dhamankar,robindh@apache.org,2016-03-16,11,4.4.0,BOOKKEEPER-769,BOOKKEEPER-769: Remove the Hedwig Code
+1a98088e38ca0a43c26d9a4847619b0a27bb90e8,Matteo Merli,matteo.merli@gmail.com,2016-03-16,11,4.4.0,BOOKKEEPER-594,BOOKKEEPER-594: AutoRecovery shutting down on SyncDisconnected
+a13d75d7eae29f1ce42dbfe5c6b4878a822fdf91,Siddharth Boobna,sboobna@yahoo-inc.com,2016-03-16,11,4.4.0,,BOOKKEEPER-894: add command to read ledger entries form shell
+e32c38890ffbd0291e24e2b3f2625374b27f1f67,Arun M. Krishnakumar,akrishnakumar@salesforce.com,2016-03-31,11,4.4.0,BOOKKEEPER-909,BOOKKEEPER-909: ZooKeeper of LocalBookkeeper should use the correct tickTime
+b1c12c0f41b7c27b2452fef311f12077d771f431,Ivan Kelly,ivank@yahoo-inc.com,2016-04-05,11,4.4.0,BOOKKEEPER-794,BOOKKEEPER-901: Authentication framework
+d607b366ba493617408888a768a99ee3f3ffb976,Matteo Merli,mmerli@apache.org,2016-04-05,11,4.4.0,BOOKKEEPER-578,BOOKKEEPER-578: LedgerCacheImpl is reserving 1/3 of Heap size but allocates NonHeap memory
+e5939ed587d81212fb032a37b2b83401359fa7fc,eolivelli,eolivelli@gmail.com,2016-04-05,11,4.4.0,,BOOKKEEPER-896: VM-local transport
+19a5efe21ca0b33156a405f1084ddaa9ba4b28f5,Arun M. Krishnakumar,akrishnakumar@salesforce.com,2016-04-05,11,4.4.0,BOOKKEEPER-910,"BOOKKEEPER-910: In LocalBookkeeper, Zookeeper server and client use different host addresses"
+3fe7e7dad1a1a5a1ac958ef245f244d36523c0ea,eolivelli,eolivelli@gmail.com,2016-04-06,11,4.4.0,BOOKKEEPER-904,BOOKKEEPER-904: BookieInitializationTest.testDuplicateBookieServerStartup fails on non-english machines
+3efde26e0510be38237c73a7bfeeb105f25d8dbe,Andrey Yegorov,ayegorov@salesforce.com,2016-04-07,11,4.4.0,BOOKKEEPER-914,BOOKKEEPER-914: ReadOnlyBookieTest.testBookieShouldTurnWritableFromReadOnly is intermettently failing
+89b032a1b59bebaf1bd48a95c0eb0f3e0caa2519,eolivelli,eolivelli@gmail.com,2016-04-08,11,4.4.0,,BOOKKEEPER-880: Make LedgerHandle implement AutoCloseable
+f2bc62b85e9bb855416fa4ea424cfd19ae9944e5,Matteo Merli,mmerli@apache.org,2016-04-10,11,4.4.0,BOOKKEEPER-913,BOOKKEEPER-913: Fix flakiness in TestBackwardCompat
+b42d8db2b03079ce65d603d808442297ad759433,Matteo Merli,mmerli@apache.org,2016-04-10,11,4.4.0,BOOKKEEPER-917,BOOKKEEPER-917: LocalBookKeeperTest seems to be silently failing
+10cab08d0a8b4ca4b182554dee95834dc42175d2,Sijie Guo,sijie@apache.org,2016-04-13,11,4.4.0,,BOOKKEEPER-870: Change the default value for bookie settings.
+91595fc04ac6168b5a652e803e55caadae757f74,Matteo Merli,mmerli@apache.org,2016-04-27,11,4.4.0,BOOKKEEPER-911,BOOKKEEPER-911: Fix TestReplicationWorker tests in master
+d66b9f0b4d27eae59fb9d6e607f24b2e8a0e611a,Matteo Merli,mmerli@apache.org,2016-04-27,11,4.4.0,,BOOKKEEPER-920: Extend bk-merge-pr.py to add more info to Jira ticket…
+40af841a366323d19fde2ae73d198824c16af688,Matteo Merli,mmerli@apache.org,2016-04-27,11,4.4.0,,Auditor is sometimes marking as failed a bookie switching from available to read-only mode
+dd575a16decbeaab1f230db271bc400d7e434216,Siddharth Boobna,sboobna@yahoo-inc.com,2016-04-27,11,4.4.0,,BOOKKEEPER-895: GC ledgers that are no longer a part of the ensemble
+696a1515bcd4ef41ef27944dad64ac3e1c9d4991,Arun M. Krishnakumar,arunmk95@gmail.com,2016-04-27,11,4.4.0,BOOKKEEPER-921,BOOKKEEPER-921: Typo in LocalBookkeeper: Use InetAddress.getHostAddress instead of InetAddress
+101de10a817d2a0704ce746eaed90cc0d73ca078,Matteo Merli,mmerli@apache.org,2016-04-27,11,4.4.0,BOOKKEEPER-925,BOOKKEEPER-925: Fix FindBugs discovered issues in master
+f8e0331f14a933ad2ed3d933c5eea927020b4967,Matteo Merli,mmerli@apache.org,2016-04-29,11,4.4.0,BOOKKEEPER-925,BOOKKEEPER-925: Fix FindBugs discovered issues in master
+d32010f5fcc6a040a56dc8b983cc14d107cff2df,Matteo Merli,mmerli@apache.org,2016-05-04,11,4.4.0,BOOKKEEPER-926,BOOKKEEPER-926: Compacted entries are not properly synced before updating index
+d1df2dbdc06666490867285812654ca8e91647a9,Matteo Merli,mmerli@apache.org,2016-05-05,11,4.4.0,,Updated CHANGES.txt for release 4.4.0
+f36bb289c19f5528572b677d1529951ae4346a93,Matteo Merli,mmerli@apache.org,2016-05-05,11,4.4.0,,Bump version to 4.5.0-SNAPSHOT
+7e7fcf6618417a0846baae4b6ee84778571a3556,Sijie Guo,sijieg@twitter.com,2016-05-09,11,4.4.0,,Initial Check-in for distributedlog oss
+5a71ed88116fcdffcccdb99eb79055912c46a85e,Sijie Guo,sijieg@twitter.com,2016-05-09,11,4.4.0,,Initial Check-in for distributedlog oss
+089735246f6084e9f68085ab03999394c7158a72,Dave Rusek,dave.rusek@gmail.com,2016-05-13,11,4.4.0,,Fixes #14: remove concurrency from ConfigurationSubscription tests (#16)
+5c768b0a3cf573a4ba71f8b6edc9f183fdce4f65,Sijie Guo,sijieg@twitter.com,2016-05-24,12,4.5.0,,Add documents on running distributedlog in distributed mode
+88f134e018608a4cccfc8f374ea8168581d1b839,Arvind Kandhare,arvind.kandhare@emc.com,2016-05-26,12,4.5.0,,Added vagrant files to start 3 ZK nodes and 3 BK nodes with writeproxy
+bd2ebcd75f41552f37166616e05821f4f7752f26,Rithin,rithin.shetty@salesforce.com,2016-06-08,12,4.5.0,,BOOKKEEPER-881: Upgrade surefire plugin to 2.19.1
+8ad9b2929dbddb5124b58c86feaca5fca73d9acf,arvindkandhare,sweet.kandy@gmail.com,2016-06-24,12,4.5.0,,Vagrant based solution to create multi-node deployment (#34)
+bb31fd75bf4cf022001e9be25ea725477b0a5e16,Kandhare,arvind.kandhare@emc.com,2016-06-24,12,4.5.0,,Merge remote-tracking branch 'origin/master' into dockerize
+ab069c3628562a90357b989e50d626acfc608695,Franck Cuny,fcuny@twitter.com,2016-07-11,12,4.5.0,,Add executions for maven-assembly-plugin.
+3196448632fd93b53964d58aaf070709d2bb050c,Franck Cuny,franckcuny@gmail.com,2016-07-11,12,4.5.0,,A few changes to the shell scripts to start bookies
+e5f3afa5ef84dbc466562664f1f8b0cd60779c02,JV,vjujjuri@salesforce.com,2016-07-11,12,4.5.0,BOOKKEEPER-908,BOOKKEEPER-908: BKLedgerExistException creation is missing
+6d71b8292bc255e21f2dcf048be191650c01b4dc,Rithin,rithin.shetty@salesforce.com,2016-07-11,12,4.5.0,,BOOKKEEPER-922: CreaterId in ledger metadata
+d5cea821c2201db77bd75a9bc48ff4bf9f483ce2,Matteo Merli,mmerli@apache.org,2016-07-11,12,4.5.0,,BOOKKEEPER-932: Move to JDK 8
+2506c98f8cc474d538df84ca30d229fbe0470e29,Sijie Guo,sijie@apache.org,2016-07-11,12,4.5.0,BOOKKEEPER-939,BOOKKEEPER-939: Fix typo of bookkeeper merge pr script
+2f71beb5e4b06691d4fd6c2601b78632236b3533,eolivelli,eolivelli@gmail.com,2016-07-14,12,4.5.0,BOOKKEEPER-940,BOOKKEEPER-940: Fix findbugs warnings after bumping to java 8
+1f7e47005588eedd879d0b9d163b4f125c6a0d59,JV,vjujjuri@salesforce.com,2016-07-25,12,4.5.0,BOOKKEEPER-927,BOOKKEEPER-927: LedgerHandleAdv to handle disabled ledgers operation …
+8324632b2983beba1528ab53a999340756c7f563,eolivelli,eolivelli@gmail.com,2016-07-31,12,4.5.0,BOOKKEEPER-933,BOOKKEEPER-933: ClientConfiguration always inherits System properties
+c43858b5095318b50f4c7f86fc33b0a9e454bee5,Robin Dhamankar,robindh@Robins-MacBook-Air.local,2016-07-31,12,4.5.0,,BOOKKEEPER-941: Feature Switches for controling client and server behavior
+bf0f60c84034c7d3a1b4f51ef686db5de2bf9f2c,Yiming Zang,yzang@twitter.com,2016-07-31,12,4.5.0,,DL-20: Validate bk read timeout in configuration
+64f596f4563436b3e4cfe0f57714fc3012778b4c,Andrey Yegorov,ayegorov@salesforce.com,2016-08-01,12,4.5.0,BOOKKEEPER-938,BOOKKEEPER-938 ledger digestType autodetection on open
+28f23e80bc1f64a22b45c52166cd51d526eacb5b,Andrey Yegorov,ayegorov@salesforce.com,2016-08-16,12,4.5.0,,BOOKKEEPER-937: Upgrade protobuf to 2.6
+b99cee8295439e10c88d4290abe21e422eff833d,Yiming Zang,yzang@twitter.com,2016-08-16,12,4.5.0,,DL-21: Fix DL flaky test cases
+25af8e2950670648c04047e65ed67136c6a81ba7,jiazhai,zhaijia03@gmail.com,2016-08-23,12,4.5.0,,DL-1: Clean up the distributedlog pom files
+55937e03ec9f9d9c9939af6dcaa7f420cd655924,jiazhai,zhaijia03@gmail.com,2016-08-23,12,4.5.0,,DL-1: Clean up the distributedlog pom files
+e39e3b036145907e9df87f72fb7b9773c4f35b45,Sijie Guo,sijieg@twitter.com,2016-08-23,12,4.5.0,,DL-31: Provide flag to disable zk based distributed lock
+18ad45fa87c18f362e93060922d6b25729d503ce,Jon Derrick,jonathan.derrickk@gmail.com,2016-08-27,12,4.5.0,,DL-36: travis ci build failed with assembly plugin
+a1890ec9992442ca0e051a674df2a130de6fd0a9,jiazhai,zhaijia03@gmail.com,2016-09-07,12,4.5.0,,Mark some dl tests as flaky
+9db51b8d532d18485798d9dd96973c22450a0495,eolivelli,eolivelli@gmail.com,2016-09-10,12,4.5.0,,BOOKKEEPER-930: Option to disable Bookie networking
+9dc05fc080ddf01e69eb89ce1b0865c552d3de53,Rithin,rithin.shetty@salesforce.com,2016-09-10,12,4.5.0,,BOOKKEEPER-945: Add counters to track the activity of auditor and repl…
+941bd8ddf4b65e4dc0cec56f1e76c3cfe157be5a,jiazhai,zhaijia03@gmail.com,2016-09-13,12,4.5.0,,Add infinite retry policy to zookeeper client used by tests
+bbd1eb8d8560b03834175fbd996b85237df09f5c,Robin Dhamankar,robin.dhamankar@gmail.com,2016-10-13,12,4.5.0,,BOOKKEEPER-612: Region aware placement
+bf4a4d6a07f9d615752054c6743035cebd86716e,eolivelli,eolivelli@gmail.com,2016-10-13,12,4.5.0,BOOKKEEPER-924,BOOKKEEPER-924: addEntry() is susceptible to spurious wakeups
+b9247a10caa4ff635184da52c8975a921877b500,Jon Derrick,jonathan.derrickk@gmail.com,2016-10-13,12,4.5.0,,DL-32: Fix Findbug warnings
+2b2f33f51c8d3ac78fb7b969294eab952d730a99,Jon Derrick,jonathan.derrickk@gmail.com,2016-10-13,12,4.5.0,,DL-32: Fix Findbug warnings
+4383b0b171d5fdfcdfa55c196998bbc6b7fdc260,Yiming Zang,yzang@twitter.com,2016-10-20,12,4.5.0,BOOKKEEPER-952,BOOKKEEPER-952: Fix RegionAwareEnsemblePlacementPolicy
+0abf37c64ced0fe49a6470bc0e2be632e47902d6,Rithin,rithin.shetty@salesforce.com,2016-11-09,12,4.5.0,,BOOKKEEPER-946: Provide an option to delay auto recovery of lost bookies
+309cbba65c8532ef84c70efe181b3162e3078333,Charan Reddy Guttapalem,cguttapalem@salesforce.com,2016-11-09,12,4.5.0,BOOKKEEPER-903,BOOKKEEPER-903: metaformat command fix
+cc3d2701687ce1a4ff14502e2214a381b43aed5f,Charan Reddy Guttapalem,cguttapalem@salesforce.com,2016-11-09,12,4.5.0,BOOKKEEPER-956,BOOKKEEPER-956: Fix for HierarchicalLedgerRangeIterator
+8f0bed9f8401001abd683c420757610996cf96d8,Charan Reddy Guttapalem,cguttapalem@salesforce.com,2016-11-09,12,4.5.0,BOOKKEEPER-957,BOOKKEEPER-957: LedgerHandleAdv fixes
+026ef10e1e9706ead4f1bc6763ded2e28c91480d,Charan Reddy Guttapalem,cguttapalem@salesforce.com,2016-11-09,12,4.5.0,BOOKKEEPER-958,BOOKKEEPER-958: Fix for ZeroBuffer Bug
+7673febb6519fedb96320ec98db71601826a63b1,Matteo Merli,mmerli@apache.org,2016-11-12,12,4.5.0,,BOOKKEEPER-961: Assign read/write requests for same ledger to a single thread
+2ba9a2c4f7192ec0abaccdfd334025b4ddb9da66,Matteo Merli,mmerli@apache.org,2016-11-12,12,4.5.0,,BOOKKEEPER-962: Add more journal timing stats
+9359d682a1598e30364eca6021d976f911e055b2,Robin Dhamankar,robindh@Robins-MacBook-Air.local,2016-11-17,12,4.5.0,,BOOKKEEPER-965: Long Polling Part I: Changes in the write path
+95ea4815b5313ea2ab02e5192c9f577d1c0fe24e,eolivelli,eolivelli@gmail.com,2016-11-17,12,4.5.0,,BOOKKEEPER-912: Allow EnsemblePlacementPolicy to choose bookies using ledger custom data (multitenancy support)
+baa0afc059dc0a96d5fb8c902a0504cf8fd30e02,Khurrum Nasim,khurrumnasimm@gmail.com,2016-11-29,12,4.5.0,,Fix deadlock on BKSyncLogReaderDLSN
+66515e74d3fb03d21cad4eccb446a90ab7e94597,Rithin,rithin.shetty@salesforce.com,2016-11-29,12,4.5.0,,BOOKKEEPER-948: Provide an option to add more ledger/index directorie…
+4cf097871d28b70a53f8c6bffaf1c2022e9953b2,Charan Reddy Guttapalem,cguttapalem@salesforce.com,2016-11-29,12,4.5.0,BOOKKEEPER-955,BOOKKEEPER-955: in listLedgers method currentRange variable has to be…
+ecbb053e6e873859507e247cae727f4bc8b9f7fa,Matteo Merli,mmerli@yahoo-inc.com,2016-11-29,12,4.5.0,,BOOKKEEPER-964: Add concurrent maps and sets for primitive types
+f710e5a44569aa080b80eff855fff2c3810957fd,eolivelli,eolivelli@gmail.com,2016-11-29,12,4.5.0,,BOOKKEEPER-976 Fix license headers
+aebd68049eec8417769059d7500ab9a4ebb19c27,Franck Cuny,fcuny@apache.org,2016-12-03,12,4.5.0,,Update a couple of scripts
+2717eb4e37c88925fc4c0059bba013fd0f3aba97,Sijie Guo,sijieg@twitter.com,2016-12-03,12,4.5.0,,DL-49: Support building project with scala 2.10 and 2.11
+3a0025998c65df7794ae2a1b20ad1d58c03bf410,Sijie Guo,sijie@apache.org,2016-12-12,12,4.5.0,,DL-127: Fix coverall report
+8a4f4a63b1f066598e887ca34620d88f7db2bdd5,Sijie Guo,sijie@apache.org,2016-12-12,12,4.5.0,,DL-127: Fix coverall report
+13b890b738f6470463a6c8f72917fe94cdfb97bd,Franck Cuny,fcuny@apache.org,2016-12-16,12,4.5.0,,Clean up and fix a few shell scripts
+0451d59c89b0df346e39c921acf6f066d949bfe0,Sijie Guo,sijieg@twitter.com,2016-12-16,12,4.5.0,,DL-141: Fix broken scripts in tutorials and add integration test to travis ci
+6d2737ca22533aed461ed71e94d2472a6664df3c,Sijie Guo,sijie@apache.org,2016-12-17,12,4.5.0,BOOKKEEPER-984,BOOKKEEPER-984: Fix BookieClientTest.testWriteGaps
+d2e82d4942be079cbfdb179e9a3fe3e574beff8d,eolivelli,eolivelli@gmail.com,2016-12-17,12,4.5.0,BOOKKEEPER-987,BOOKKEEPER-987: BookKeeper build is broken due to the shade plugin
+4bb57ef0b1b72eb1118963efc3ab9f0e9bec0e1c,Charan Reddy Guttapalem,cguttapalem@salesforce.com,2016-12-17,12,4.5.0,,BOOKKEEPER-967: New testsuite for RackPlacement
+be99f024df5d53b3988f585ab46d6b604592acf1,jiazhai,jia.zhai@emc.com,2016-12-17,12,4.5.0,,BOOKKEEPER-971: update bk codahale stats provider version
+669ab4ac32bcbf6b3d883a07ed942d36d25b8a6e,Rithin,rithin.shetty@salesforce.com,2016-12-17,12,4.5.0,,BOOKKEEPER-946: Provide an option to delay auto recovery of lost bookies
+73edd4a99191d3c710b24a85eed3e2dbcd0a93bc,jiazhai,jia.zhai@emc.com,2016-12-17,12,4.5.0,,BOOKKEEPER-966: change bookieServer cmdline to make conf-file and option co-exist
+7b5dc6231e89d282fe00b95cb845ddaf15b034e8,Jordan Bull,jbull@twitter.com,2016-12-17,12,4.5.0,,DL-86: Improve handling of lock conflicts in zk session lock
+db17ed7b24abd2a938dc344a0bae4a703349c207,Jordan Bull,jbull@twitter.com,2016-12-17,12,4.5.0,,DL-87: Introduce periodic keepalive control record in writer
+b06b537a54654824eb130e11bd3286c1120723d4,Sijie Guo,sijieg@twitter.com,2016-12-17,12,4.5.0,,DL-88: remove watches when unregister children watches
+6aa61c918ff2b3ddd1ba2fd9b98f8423d2411006,Dave Rusek,drusek@apache.org,2016-12-17,12,4.5.0,,DL-90: Don't use stack and codec together for configuring thriftmux
+8b05fe3a171bc8aba245ef3e0b3cccd785691387,Brennon York,brennon.york@capitalone.com,2016-12-20,12,4.5.0,,DL-136: Avoid empty catch blocks
+64bcb21f5e6e21b49ac743941445d63b8b4e87d3,Brennon York,brennon.york@capitalone.com,2016-12-20,12,4.5.0,,DL-123: Every tests should have timeout
+715fa5cefc31a7041725cb959641287f60921dd7,Brennon York,brennon.york@capitalone.com,2016-12-20,12,4.5.0,,DL-122: Use assertions from Junit rather than assert() for tests
+6fb1a5d564eb72cabd94b28e58e0b7052424335b,xieliang,xieliang007@gmail.com,2016-12-20,12,4.5.0,,DL-28: using /* */ style comment to avoid scrooge windows platform issue
+77de65efa4e06aa4434ba87f4760e6851ae8c6ba,Sijie Guo,sijieg@twitter.com,2016-12-20,12,4.5.0,,DL-91: Be able to close writer within a timeout duration
+54863473365572f955a8e7a3e022614f5f5e4604,Sijie Guo,sijie@apache.org,2016-12-20,12,4.5.0,BOOKKEEPER-988,BOOKKEEPER-988: Add missing license header
+9a506c261d3702ddd3f39556f4331b91da952a6e,Charan Reddy Guttapalem,cguttapalem@salesforce.com,2016-12-21,12,4.5.0,,BOOKKEEPER-983: BookieShell LedgerDelete Command
+6e738d0c02ebe6710a24aad505e2fd9386bb8821,Charan Reddy Guttapalem,cguttapalem@salesforce.com,2016-12-21,12,4.5.0,BOOKKEEPER-986,BOOKKEEPER-986: Handle memtable flush failure
+a6a463591a823bd930aa8b921b17cef70ea445c1,Xi Liu,xiliuant@gmail.com,2016-12-21,12,4.5.0,,DL-129: Enable checkstyle plugin for distributedlog-protocol module
+ed4d2bff7443f861a288ac3e0d47ec036bc751f2,Sijie Guo,sijie@apache.org,2016-12-21,12,4.5.0,,DL-97: Remove unused methods in BKLogHandler
+f53cbf82758af7f620ecd1506c76801bd0e75c86,eolivelli,eolivelli@gmail.com,2016-12-21,12,4.5.0,,BOOKKEEPER-964: Ignore findbugs warnings
+ef4572afa128dabf0607068eadfb6f3e50d43da2,xieliang,xieliang007@gmail.com,2016-12-27,12,4.5.0,,DL-145: the write requests should be error out immediately even if the rolling writer still be creating
+3953dfb058ce841c8a23faadfc707ed5995f7b40,xieliang,xieliang007@gmail.com,2016-12-27,12,4.5.0,,DL-155: fix flaky TestAsyncReaderLock#testReaderLockMultiReadersScenario
+30742c0375eb11dd653f92f734aaa478faa6c0cc,Sijie Guo,sijieg@twitter.com,2016-12-28,12,4.5.0,,DL-150: Ensure namespace path is created for TestZKLogMetadataForWriter
+ff21a477e2697daa0759d6a3b7daf5354db156df,Sijie Guo,sijieg@twitter.com,2016-12-28,12,4.5.0,,DL-151: TestBKLogReadHandler#testGetFirstDLSNWithOpenLedger is flaky
+7f2b59a7e6fa115793ed71d8cc1ad1cb9da677be,Sijie Guo,sijieg@twitter.com,2016-12-28,12,4.5.0,,DL-101: Improve session expire handling on fetching log segments for readers
+037713709672b3b500f7375a1bd81c1649956e3f,Sijie Guo,sijieg@twitter.com,2016-12-28,12,4.5.0,,DL-101: Improve session expire handling on fetching log segments for readers
+2cdd371f8799f47a5d473eb429f72d95337ca607,Leigh Stewart,lstewart@apache.org,2016-12-28,12,4.5.0,,DL-102: Add routing service to write proxy server side
+1eb1b1e94407de828694c1caead6b865b7e28887,Yiming Zang,yzang@twitter.com,2016-12-28,12,4.5.0,,DL-105: Make compression stats available per stream
+9eabddb64a0b47d7c2c2096e571f5f2586f28d11,Jordan Bull,jbull@twitter.com,2016-12-28,12,4.5.0,,DL-104: BKClientReadTimeout can be equal to getReadLACLongPollTimeout so current config validates
+fdee73641c1841448451bf34f859a78ac6bd9d08,Leigh Stewart,lstewart@apache.org,2016-12-28,12,4.5.0,,DL-102: Add routing service to write proxy server side
+35587d3d70cf60b84f425db13718b4537336fd80,Sijie Guo,sijieg@twitter.com,2016-12-28,12,4.5.0,,DL-109: Add a tool to find the stream containing the given ledger
+0d424a17571ab19039f8b7c7a5766980b6373090,Yiming Zang,yzang@twitter.com,2016-12-28,12,4.5.0,,DL-108: Log rate limiting more clearly
+13a7381f50fea4b9300cd111fdd5b671954fbd7e,Phillip Su,psu@twitter.com,2016-12-28,12,4.5.0,,DL-107: Added unregistering gauges for distributedlog-core and distributedlog-benchmark
+b42a8c34511612bef539d30d7ade5f68234297af,Yiming Zang,yzang@twitter.com,2016-12-28,12,4.5.0,,DL-106: Use namespace after it is closed will throw AlreadyClosedException
+c9e76260dee1d661906c8bf89b032950f92c6d0e,Sijie Guo,sijieg@twitter.com,2016-12-28,12,4.5.0,,DL-112: Improve SyncReader to access readahead cache directly
+ee117235dc1a6fa76093c315c0fed4239831cd63,Sijie Guo,sijieg@twitter.com,2016-12-28,12,4.5.0,,DL-111: ReadAhead Cache should cache entries rather than records
+b90cce8bbffa23f348058f8977a740b97f39dee2,Sijie Guo,sijieg@twitter.com,2016-12-28,12,4.5.0,,DL-110: Write control record if necessary when roll a log segment
+7c4476cd01e2ed7530cbb6f429d78f083837b838,Sijie Guo,sijieg@twitter.com,2016-12-28,12,4.5.0,,DL-113: Improve the sync reader benchmark
+aa60a4e830183f6d9a61ab9100cf845712e281b7,Leigh Stewart,agrodellic@gmail.com,2016-12-29,12,4.5.0,,DL-114: Add namespace watch tool
+d606ee4ba0080431c5ec67b8805ff3bb269005d6,Yiming Zang,yzang@twitter.com,2016-12-29,12,4.5.0,,DL-115: fix force get log segment logic
+68f796019ce771a44ba20548046a444177143be0,Yiming Zang,yzang@twitter.com,2016-12-29,12,4.5.0,,DL-116: Add tool for deleting subscriber from subscription store
+de4711ddf87571c4de5686385663aef3f19fcaf7,Sijie Guo,sijieg@twitter.com,2016-12-29,12,4.5.0,,DL-117: Stream metadata store
+3a512326dc2cec7e4c62e0dc8fe569fdc5305373,Sijie Guo,sijieg@twitter.com,2016-12-29,12,4.5.0,,DL-118: Stream metadata store followup - rename ZKLogMetadata* to LogMetadata*
+09a34b0e9b814bf602dceccd64ad7dbfc718fcfb,Yiming Zang,yzang@twitter.com,2016-12-29,12,4.5.0,,DL-119: Fix the logging on closing readahead worker
+da53069b9858fd904a68ce84b5954c60a0ba05b2,Jordan Bull,jbull@twitter.com,2016-12-29,12,4.5.0,,DL-157: resource placement for write proxy
+fd08cedc7e1e5df4cdf307a1dd615319bdc1bdd6,Yiming Zang,yzang@twitter.com,2016-12-29,12,4.5.0,,DL-158: update truncation status for all completed log segments
+a5e892fc1901100e267e6a677261936a87b9d22b,Sijie Guo,sijieg@twitter.com,2016-12-29,12,4.5.0,,DL-195: ReadAhead Improvement (part 1) - Interface for LogSegmentEntryReader and LogSegmentEntryWriter
+e2c6bc0d7faa7b7912a51a7a4ed6e1b9ac5653bf,Sijie Guo,sijieg@twitter.com,2016-12-29,12,4.5.0,,DL-195: ReadAhead Improvement (part 1) - Interface for LogSegmentEntryReader and LogSegmentEntryWriter
+714ae49baff3c9f390fb65afa9b8cf801c5a5316,Sijie Guo,sijieg@twitter.com,2016-12-29,12,4.5.0,,DL-159: ReadAhead Improvement (part 2) - New ReadAhead Reader using the LogSegmentEntryReader interface
+d7105aa88f29faecd779c4371fb023775e2c7e40,Sijie Guo,sijieg@twitter.com,2016-12-29,12,4.5.0,,DL-159: ReadAhead Improvement (part 2) - New ReadAhead Reader using the LogSegmentEntryReader interface
+590805a487fbfcc3c85c9baf5988106a9037dc2f,Sijie Guo,sijieg@twitter.com,2016-12-29,12,4.5.0,,DL-160: Remove 'DLSN' suffix from async and sync readers
+1166e11904ab83ec64e0147998cebffc653bdbf3,Sijie Guo,sijieg@twitter.com,2016-12-29,12,4.5.0,,DL-161: Rename ledger id to log segment id
+a83b233a79300c0bf1b3dcac0a24fef628ad48f8,Sijie Guo,sijieg@twitter.com,2016-12-29,12,4.5.0,,DL-162: Use log segment entry store interface
+d15bc06466e345651f53ef7a7f5a771ac4880446,Sijie Guo,sijieg@twitter.com,2016-12-29,12,4.5.0,,DL-163: clean up direct zookeeper and bookkeeper usage and use metadata/data store abstraction
+da6cd40e0864548b94fee3fed63549026e446dd9,Sijie Guo,sijieg@twitter.com,2016-12-29,12,4.5.0,,DL-164: Create stream operation should not be submitted by StreamImpl
+c7e78df8b7555b3a57f69ffbdff3072d29b8e024,xieliang,xieliang007@gmail.com,2017-01-04,12,4.5.0,,DL-140: Fix distributedlog-core findbug inconsistent synchronization warings
+ef1ca0e73e8ca832dabc46497058aeda6ca6b537,xieliang,xieliang007@gmail.com,2017-01-05,12,4.5.0,,DL-165: Add TestTimedOutTestsListener to dump timed out cases thread dump
+3319bc0231f27322f2008c326e0256c90e799f67,xieliang,xieliang007@gmail.com,2017-01-05,12,4.5.0,,DL-165: Add TestTimedOutTestsListener to dump timed out cases thread dump
+e0e819b015b4e2910ac267321123cdbfd0f71fd0,Sijie Guo,sijieg@twitter.com,2017-01-05,12,4.5.0,,DL-4: Repackage the source under apache namespace
+817989ce704261be588d33ff952719706599b6c6,Sijie Guo,sijieg@twitter.com,2017-01-05,12,4.5.0,,DL-4: Repackage the source under apache namespace
+6cd251227258da58b2ab5d6ebffc620431e04b92,xieliang,xieliang007@gmail.com,2017-01-07,12,4.5.0,,DL-171: adding a short sleep to let the WriteCompleteListener have time to run before the final position be requested
+361b423a14753a2a8b696fd352115bc87fb9284c,Sijie Guo,sijieg@twitter.com,2017-01-07,12,4.5.0,,DL-176: Rename the DL artifact from com.twitter to org.apache.distributedlog
+9d1f3bdfd01fdb3f003120d33aa5e5655fefb768,Sijie Guo,sijieg@twitter.com,2017-01-07,12,4.5.0,,DL-176: Rename the DL artifact from com.twitter to org.apache.distributedlog
+4b6c849f1b19571f3b38db71ae520b2b39cd5438,Sijie Guo,sijieg@twitter.com,2017-01-08,12,4.5.0,,DL-83: Add javadoc to website
+965c82de9f22f66b2cde9dc03e14137e87145656,Sijie Guo,sijieg@twitter.com,2017-01-08,12,4.5.0,,DL-83: Add javadoc to website
+c248f9dbbc87bddb087fe7b3012772049241636a,adamtracymartin,atmartin@yahoo.com,2017-01-08,12,4.5.0,,DL-28: changed // comments to /* */
+9bfb2a2d52dfd2f8890049accf96f3fa4f79878c,Gerrit Sundaram,gerritsundaram@gmail.com,2017-01-08,12,4.5.0,,DL-170: All dependency versions should be defined in the parent pom
+8ba3c921f1b650df6e1f924f2e4a0bd7d5acdfa8,Gerrit Sundaram,gerritsundaram@gmail.com,2017-01-08,12,4.5.0,,DL-170: All dependency versions should be defined in the parent pom
+c3077c499489e114ef17bfd31afc5509387d664e,Sijie Guo,sijieg@twitter.com,2017-01-08,12,4.5.0,,Remove Xlint compiler arguments for building release
+b7d28756c5be788ac7819dbeb5e7d8d92e920afb,Sijie Guo,sijieg@twitter.com,2017-01-08,12,4.5.0,,[maven-release-plugin] prepare branch release-0.4.0-incubating
+eeb96c180b1b53d6608b13cf7077e3006ffdcb47,Sijie Guo,sijieg@twitter.com,2017-01-08,12,4.5.0,,[maven-release-plugin] prepare branch release-0.4.0-incubating
+a1e1bb1fc016a99c383bc9f20220342ac2ee5561,Sijie Guo,sijieg@twitter.com,2017-01-08,12,4.5.0,,[maven-release-plugin] prepare for next development iteration
+5548c21dff62d544a0035f0cbb3cc59e385a4bd5,Sijie Guo,sijieg@twitter.com,2017-01-08,12,4.5.0,,[maven-release-plugin] prepare for next development iteration
+90e09af0fbfa6f05106e07ac8833be26abfa3f9a,Sijie Guo,sijie@apache.org,2017-01-11,12,4.5.0,,Fix the script to make sure binary package can execute scripts correctly
+15d6f600e7158e2eecb0ae7231455305e5d1ceaa,Charan Reddy Guttapalem,cguttapalem@salesforce.com,2017-01-11,12,4.5.0,,BOOKKEEPER-992: ReadLog Command Enhancement
+0fbb98b3629df18518ab6b2298bdd6fe5f19af7e,Charan Reddy Guttapalem,cguttapalem@salesforce.com,2017-01-11,12,4.5.0,,BOOKKEEPER-991: Get list of disk files
+43971c3b9e4a9ac37ee07b398ed5506e040f9310,eolivelli,eolivelli@gmail.com,2017-01-11,12,4.5.0,,BOOKKEEPER-943: Reduce log level of AbstractZkLedgerManager
+ca7e5fd80662745e7f64ee8f70c66dc9734f6e3a,Charan Reddy Guttapalem,cguttapalem@salesforce.com,2017-01-30,12,4.5.0,BOOKKEEPER-907,BOOKKEEPER-907: EntryFormatter should be configured
+ba5dadcb3e1fa942f2f1a17178fd368c4bd0f0c4,JV,vjujjuri@salesforce.com,2017-01-30,12,4.5.0,,BOOKKEEPER-949: Allow entryLog creation for compaction
+26b09abb4202362ca37d6944ce75eb2a3309dc3c,Andrey Yegorov,ayegorov@salesforce.com,2017-01-31,12,4.5.0,,BOOKKEEPER-968: Entry log flushes at configurable chunks
+13d668f2208bf472e4938cfdfd2de912eaa11275,eolivelli,eolivelli@gmail.com,2017-01-31,12,4.5.0,BOOKKEEPER-959,BOOKKEEPER-959: ClientAuthProvider and BookieAuthProvider Public API used Protobuf Shaded classes
+42e8f1294f206cbe51a6af669cf605833b78bf42,Venkateswara,vjujjuri@salesforce.com,2017-01-31,12,4.5.0,, BOOKKEEPER-873 and BOOKKEEPER-553
+712d1cb77f53a814bd2f678fcdd1f9c9db637292,xieliang,xieliang007@gmail.com,2017-01-31,12,4.5.0,,DL-186: fix common.sh grep bug; kill MultiReader java process as expected
+c813b3d3298586ded02032a57a99d5fc6c974581,JV,vjujjuri@salesforce.com,2017-01-31,12,4.5.0,,BOOKKEEPER-874: Explict LAC from Writer to Bookies
+91db1254c1118c4efa1c520f61850a3382f41fff,Sijie Guo,sijie@apache.org,2017-01-31,12,4.5.0,,BOOKKEEPER-996: LongHierarchicalLedgerManagerFactory is missing license header
+123eccd435a4a96a9147ed4a24efbe9025fe79ba,Govind Menon,govindappumenon@gmail.com,2017-03-22,12,4.5.0,,BOOKKEEPER-1009: Use multiple journals in bookie
+28c264c8655f74e09ceee5ad499942cfb0dc65dc,Robert (Bobby) Evans,evans@yahoo-inc.com,2017-03-22,12,4.5.0,,BOOKKEEPER-998: Increased the max entry size to 5MB
+32ebf0ad68f85daffdec571e28206339a4d09443,Robert (Bobby) Evans,evans@yahoo-inc.com,2017-03-22,12,4.5.0,BOOKKEEPER-999,BOOKKEEPER-999: Stop leaking threads in BookKeeper client
+f3671fc9f588c7a53a9b3cdd520580c45dae06e3,Kishor Patil,kpatil@yahoo-inc.com,2017-03-22,12,4.5.0,,BOOKKEEPER-1003: Fix TestDiskChecker so it can be used on /dev/shm
+f20568eaa25e0efe6926ede9030a210382e3005b,eolivelli,eolivelli@gmail.com,2017-03-22,12,4.5.0,,BOOKKEEPER-1007: Explicit LAC: make the interval configurable in ms
+b2285e64df3258dbab1d84687118cbdc041891d8,Sijie Guo,sijie@apache.org,2017-03-23,12,4.5.0,,DL-191: Fix license header issues
+3d3340be7d754af1738a117ee07e3bed04ec5547,Sijie Guo,sijie@apache.org,2017-03-23,12,4.5.0,BOOKKEEPER-1013,BOOKKEEPER-1013: Fix findbugs errors on latest master
+986110c4d03a38db81c166216cf4db81a9cb5cb7,Francesco Caliumi - Diennea,francesco.caliumi@diennea.com,2017-03-23,12,4.5.0,,BOOKKEEPER-1001: Make LocalBookiesRegistry.isLocalBookie() public
+1e4ccaf167936fb4ad0de8c29ecf840bed3e89ed,Sijie Guo,sijie@apache.org,2017-03-23,12,4.5.0,,BOOKKEEPER-970: Bump the zookeeper version to 3.5
+03c53f514867dac06d72ec587827b22acb457d73,xieliang,xieliang007@gmail.com,2017-03-28,12,4.5.0,,"DL-184: reduce server_graceful_shutdown_period_ms from 35s to 20s, which is smaller than the default daemon stop timeout value"
+0583175de72446d00088611000310b000e8e61df,Rithin,rithin.shetty@salesforce.com,2017-03-28,12,4.5.0,,BOOKKEEPER-950: Ledger placement policy to accomodate different storage capacity of bookies
+bf8ef14bc1bfdde6c6c8edcd7f380b4beca023f6,Matteo Merli,mmerli@apache.org,2017-03-28,12,4.5.0,BOOKKEEPER-852,BOOKKEEPER-852: Release LedgerDescriptor and master-key objects when not used anymore
+825e0e7b4a27730d85afbe823a405ba333de3a65,Govind Menon,govindappumenon@gmail.com,2017-03-28,12,4.5.0,,BOOKKEEPER-1004: Allow bookie garbage collection to be triggered manu…
+b30b527ba995978694ebf735c02b508374001021,eolivelli,eolivelli@gmail.com,2017-03-28,12,4.5.0,,BOOKKEEPER-390: Provide support for ZooKeeper authentication
+9836c87dc2c082c46692d60c60cf9e23c7b0b06c,eolivelli,eolivelli@apache.org,2017-04-03,12,4.5.0,BOOKKEEPER-1020,BOOKKEEPER-1020: Fix Explicit LAC tests on master
+9001e300ce0d5d2655d437e3eaa52f91487caed6,Govind Menon,govindappumenon@gmail.com,2017-04-03,12,4.5.0,BOOKKEEPER-1018,BOOKKEEPER-1018: Allow client to select older V2 protocol (no protobuf)
+f30f60889e0810a47797daf4107c0d9bc2ee998c,Govind Menon,govindappumenon@gmail.com,2017-04-04,12,4.5.0,BOOKKEEPER-1018,"BOOKKEEPER-1018: Revert "": Allow client to select older V2 protocol (no…"
+ab707d2c6b3251b2a9a30a6d14074704460b3da5,Sijie Guo,sijie@apache.org,2017-04-11,12,4.5.0,BOOKKEEPER-1021,BOOKKEEPER-1021: Improve merge script to handle github reviews api
+48aa69dd0ba41f5ba7bb2b04f31172c919be4391,Samuel Just,sjust@salesforce.com,2017-04-11,12,4.5.0,BOOKKEEPER-1031,BOOKKEEPER-1031: close the ledger handle in ReplicationWorker.rereplicate
+0f155f38bb48d23aab4ac8489f7908925b8f0cca,Matteo Merli,matteo.merli@gmail.com,2017-04-11,12,4.5.0,,BOOKEEPER-1002: Limiting the number of open files to avoid process max
+12bb13cdb1feca0fa6739f8e6287c326fb5fdb94,eolivelli,eolivelli@apache.org,2017-04-11,12,4.5.0,,BOOKKEEPER-1022: Make BookKeeperAdmin implement AutoCloseable
+24fae0322327d8fd75c30524546924f27e278448,Sijie Guo,sijie@apache.org,2017-04-11,12,4.5.0,,BOOKKEEPER-997: Wire protocol change for supporting long poll
+0dd0e4fe0ae29dec3864e7539144a6ffca64df19,Sijie Guo,sijie@apache.org,2017-04-13,12,4.5.0,,DL-196: Remove 'Copyright 2017 The Apache Software Foundation' from license header
+ba3505e60f83f8f99c480414a56dd6dec25a832b,adamtracymartin,atmartin@yahoo.com,2017-04-13,12,4.5.0,,DL-173: changed FileUtils.deleteDirectory to FileUtils.forceDeleteOnExit so d…
+6a80ebc30244da56bc0e3fc64d02650ddfd6d6cb,adamtracymartin,atmartin@yahoo.com,2017-04-13,12,4.5.0,,DL-174: added getParent method to Utils to replace usage of File.getParent which changes / to \ on Windows
+f74d07d6b96ba3e6f1270d053fa36676cf680304,Govind Menon,govindappumenon@gmail.com,2017-04-15,12,4.5.0,,BOOKKEEPER-1018: Allow client to select older V2 protocol (no protobuf)
+de59bd2ad038428cfa61cfdefe1266f3356e1937,eolivelli,eolivelli@apache.org,2017-04-18,12,4.5.0,,BOOKKEEPER-1039: bk-merge-pr.py ask to run findbugs and rat before merge
+83d5d9e2a51c8c135bfc97d3831beccebe11a69a,eolivelli,eolivelli@apache.org,2017-04-20,12,4.5.0,,BOOKKEEPER-1038: Fix findbugs warnings and upgrade to 3.0.4
+c94bbbacd7dcf369c51480a21ad8e55f1af4c9a6,eolivelli,eolivelli@apache.org,2017-04-24,12,4.5.0,,BOOKKEEPER-1043: Upgrade Apache Parent Pom Reference to latest version
+c72ff5efbfaa21cbc95c21f89692190aa52a5a29,Enrico Olivelli,eolivelli@apache.org,2017-05-01,12,4.5.0,,BOOKKEEPER-1042: Deploy SNAPSHOTS of master to public Apache Repository
+9c79e078b8cfefc24251aefcb727760fb99229ed,eolivelli,eolivelli@apache.org,2017-05-02,12,4.5.0,,BOOKKEEPER-1019: Support for reading entries after LAC
+057af8dbce6c08794eb8b46ca52ca13f222d9bbb,Kyle Nusbaum,knusbaum@yahoo-inc.com,2017-05-02,12,4.5.0,,BOOKKEEPER-552: 64 Bits Ledger ID Generation
+5d282dceae140577b97a12db5b2b531c7d84e985,Matteo Merli,mmerli@apache.org,2017-05-04,12,4.5.0,,BOOKKEEPER-1045: Execute tests in different JVM processes
+25c113f62a40bff6ff91cf82f699fd1d35b102fb,Matteo Merli,mmerli@yahoo-inc.com,2017-05-04,12,4.5.0,,BOOKKEEPER-1046: Avoid long to Long conversion in OrderedSafeExecutor task submit
+d5af77c05256d5942c19aff2654c5d8f5ac1eb79,Matteo Merli,mmerli@apache.org,2017-05-04,12,4.5.0,BOOKKEEPER-1047,BOOKKEEPER-1047: Add missing error code in ZK setData return path
+61a5446b8923e5ce0b2a46891a385fd480275bac,Matteo Merli,mmerli@apache.org,2017-05-09,12,4.5.0,,BOOKKEEPER-1050: Cache journalFormatVersionToWrite when starting Journal
+1a2e017b65812e6e50975213a365aa37eba9fa96,Matteo Merli,mmerli@apache.org,2017-05-09,12,4.5.0,,BOOKKEEPER-1051: Fast shutdown for GarbageCollectorThread
+5531014ab1cf282d35d4d53db975192b853bf7a6,Siddharth Boobna,sboobna@yahoo-inc.com,2017-05-09,12,4.5.0,,BOOKKEEPER-1052: Print autorecovery enabled or not in bookie shell
+d8a7ac310947049f65687e33d92b847c44c91a39,Matteo Merli,mmerli@apache.org,2017-05-10,12,4.5.0,,BOOKKEEPER-1053: Upgrade RAT maven version to 0.12 and ignore Eclipse project files
+af397e2247d453af25db6a1f33426fb9c69e2cdf,Matteo Merli,mmerli@apache.org,2017-05-10,12,4.5.0,,BOOKKEEPER-1060: Add utility to use SafeRunnable from Java8 Lambda
+fc4800544bcd60c66fa682e6ffcbf2789b7fbb74,Matteo Merli,mmerli@apache.org,2017-05-10,12,4.5.0,,BOOKKEEPER-1059: Upgrade to SLF4J-1.7.25
+eeaddeda66fc687d20c2309a8cbc109c5dfeed89,Matteo Merli,mmerli@apache.org,2017-05-10,12,4.5.0,,BOOKKEEPER-1054: Add gitignore file
+e2894a9e9946b4cc4647c280094bcb2eb1a521ea,Matteo Merli,mmerli@apache.org,2017-05-12,12,4.5.0,,BOOKKEEPER-1066: Introduce GrowableArrayBlockingQueue
+d7f7b922f3ea0471452115c6271fd18ab63d3505,Matteo Merli,mmerli@apache.org,2017-05-12,12,4.5.0,,BOOKKEEPER-1064: ConcurrentModificationException in AuditorLedgerCheckerTest
+5130d3596f7fb862e38910bf0a0a1dae3ed892e8,Matteo Merli,mmerli@yahoo-inc.com,2017-05-12,12,4.5.0,,BOOKKEEPER-1063: Use executor.execute() instead of submit()
+811ece53a1c975c4e768422f3d622ac9de6b3e41,rdhabalia,rdhabalia@yahoo-inc.com,2017-05-15,12,4.5.0,BOOKKEEPER-1058,BOOKKEEPER-1058: Ignore already deleted ledger on replication audit
+74f795136c1fff3badb29fc982d0cc2d43096b45,Matteo Merli,mmerli@apache.org,2017-05-15,12,4.5.0,,BOOKKEEPER-1008: Netty 4.1
+d863513719b696638e3369f4bbfde9abf5fd3d5f,Matteo Merli,mmerli@apache.org,2017-05-15,12,4.5.0,,BOOKKEEPER-1067: Add Prometheus stats provider
+5d43260e84c6121df72c0ee4c844651bfb726638,Matteo Merli,mmerli@apache.org,2017-05-15,12,4.5.0,BOOKKEEPER-1061,BOOKKEEPER-1061: BookieWatcher should not do ZK blocking operations from ZK async callback thread
+0f81461d2d1dc5cf9db4de9a46599d7d64e3dac6,Matteo Merli,mmerli@apache.org,2017-05-15,12,4.5.0,,BOOKKEEPER-1048: Use ByteBuf in LedgerStorage interface
+e44c7388399e5589cf44e38c58bb84c74da544af,Matteo Merli,mmerli@yahoo-inc.com,2017-05-16,12,4.5.0,,"BOOKKEEPER-1069: If client uses V2 proto, set the connection to always decode V2 messages"
+0f16da8961521372b9bec953ab62c8913bb8dc31,Matteo Merli,mmerli@apache.org,2017-05-17,12,4.5.0,,BOOKKEEPER-1055: Optimize handling of masterKey in case it is empty
+7da9ed293db87103efcc28b7e706c0b386131ec1,Enrico Olivelli,eolivelli@apache.org,2017-05-18,12,4.5.0,,BOOKKEEPER-1070: bk-merge-pr.py use apache-rat:check goal
+bc973476cbed0fa5bc2e5349c4478f7697c7dadd,Sijie Guo,sijie@apache.org,2017-05-24,12,4.5.0,,Remove package-info.java under com.twitter.distributedlog.subscription
+667390d1a6305c31608130929ba0d68a0b5a4763,Enrico Olivelli,eolivelli@apache.org,2017-05-25,12,4.5.0,,BOOKKEEPER-391: Support Kerberos authentication of bookkeeper
+8ba8ab9403dbc464c68caf6e7cd3fc490670731e,Sijie Guo,sijie@apache.org,2017-05-25,12,4.5.0,BOOKKEEPER-1072,BOOKKKEEPER-1072: CompactionTest is flaky when disks are almost full
+7b1eec47092d0de6776c5a89575dbfc678165ee7,Matteo Merli,mmerli@yahoo-inc.com,2017-05-25,12,4.5.0,,BOOKKEEPER-1068: Expose ByteBuf in LedgerEntry to avoid data copy
+64bedc2f92d5bb17783c6ea2a2db7ea29170f264,Alex Yarmula,ak@twitter.com,2017-05-25,12,4.5.0,BOOKKEEPER-1075,BOOKKEEPER-1075: BK LedgerMetadata: more memory-efficient parsing of configs
+6698912e4d35119a2e85a6ea3877c6771073489c,Sijie Guo,sijieg@twitter.com,2017-05-26,12,4.5.0,BOOKKEEPER-1077,BOOKKEEPER-1077: Allow configuration journal/ledger paths for local bookkeeper.
+fd3331a2769a29c379ed63e21ed2dc3c0f85ba25,arvindkandhare,arvind.kandhare@emc.com,2017-05-26,12,4.5.0,,BOOKKEEPER-1010: Moving Guava to 20.0
+9bade929dd87829a8903e402f6c3e3be366a854a,Enrico Olivelli,eolivelli@apache.org,2017-05-26,12,4.5.0,BOOKKEEPER-1079,BOOKKEEPER-1079: shell lastMark throws NPE
+fc51f73cbc9cdaae9876bc08cafa3e7a80826207,Sijie Guo,sijie@apache.org,2017-06-01,12,4.5.0,BOOKKEEPER-1073,BOOKKEEPER-1073: Several stats provider related changes.
+da70648719679fd1db001c74ad873bf134f16198,Matteo Merli,mmerli@yahoo-inc.com,2017-06-01,12,4.5.0,BOOKKEEPER-1071,BOOKKEEPER-1071: Use per connection instances of request encoder/decoder
+0eca5ff57f6e19fe5829d5ef8df228411467401f,Sijie Guo,sijie@apache.org,2017-06-01,12,4.5.0,,BOOKKEEPER-1078: Local BookKeeper enhancements for testability
+77a01dc7e6431092f82a7efb02789beb165b75e2,Sijie Guo,sijieg@twitter.com,2017-06-01,12,4.5.0,,BOOKKEEPER-1084: Make variables finale if necessary
+e33ec10aa400f32c2e0278c15ea80a0f624e5919,Robin Dhamankar,rdhamankar@twitter.com,2017-06-01,12,4.5.0,,BOOKKEEPER-1083: Improvements on OrderedSafeExecutor
+d1f37dafbb475d4d6aab4769335550428c680269,Sijie Guo,sijie@apache.org,2017-06-01,12,4.5.0,,BOOKKEEPER-1085: Introduce the AlertStatsLogger
+dd08ce1a644de00967dd5fe34ce15caa9789d775,Sijie Guo,sijie@apache.org,2017-06-01,12,4.5.0,BOOKKEEPER-1074,BOOKKEEPER-1074: Remove JMX Bean
+a9fe7d94f1890f697633fdca8abdeff23903025f,Matteo Merli,mmerli@yahoo-inc.com,2017-06-01,12,4.5.0,,BOOKKEEPER-1056: Removed PacketHeader serialization/deserialization allocation
+5c81acaccfb0cb1260acdfd7d0bb95ae84f85654,Sijie Guo,sijieg@twitter.com,2017-06-01,12,4.5.0,,BOOKKEEPER-1086: Ledger Recovery - Refactor PendingReadOp
+55d1dc45c4761f150c59a34b94d21e39e69f872c,Sijie Guo,sijie@apache.org,2017-06-01,12,4.5.0,BOOKKEEPER-989,BOOKKEEPER-989: Enable Travis CI for Apache BookKeeper
+5f945f8a02f5171608810eb002443193c3eb058c,Matteo Merli,mmerli@yahoo-inc.com,2017-06-01,12,4.5.0,,BOOKKEEPER-1090: Use LOG.isDebugEnabled() to avoid unexpected allocations
+efd8ec26926d2e75f51d6d576543a0dcc116b83f,Charan Reddy Guttapalem,cguttapalem@salesforce.com,2017-06-05,12,4.5.0,,BOOKKEEPER-944: LowWaterMark Storage Threshold
+b3b958c2b6a7195b23477d181db3fea1e7d1c248,Sijie Guo,sijie@apache.org,2017-06-05,12,4.5.0,,BOOKKEEPER-1087: Ledger Recovery (part 2) - Add a parallel reading request in PendingReadOp
+5fe86525a9c823f79b3e97fd82ea4aa1c75c79eb,Sijie Guo,sijie@apache.org,2017-06-05,12,4.5.0,,BOOKKEEPER-1088: Ledger Recovery (part-3) - Add a ReadEntryListener to callback on individual request
+58b92de8b5feee37f8bc9a99d8c98c2a9d9df383,Sijie Guo,sijie@apache.org,2017-06-05,12,4.5.0,,BOOKKEEPER-748: Move fence requests out of read threads
+13c5c88f63f4b7faa63c8c7e42d95f94c6a8d204,Sijie Guo,sijie@apache.org,2017-06-10,12,4.5.0,,BOOKKEEPER-1088: CompactionTest tests are broken because of
+07852d35856dca232450135913090bac27b29abe,Charan Reddy Guttapalem,cguttapalem@salesforce.com,2017-06-12,12,4.5.0,,BOOKKEEPER-1096: recursive znode delete
+b90ad5d89717bb3ca161387af4fce4f913c9e0ae,Sijie Guo,sijie@apache.org,2017-06-12,12,4.5.0,,DL-205: Remove StatusCode dependency on DLException
+8618b21a2395834ac2a6ede41635832b9d26d03f,Sijie Guo,sijie@apache.org,2017-06-12,12,4.5.0,,DL-205: Remove StatusCode dependency on DLException
+83c527c32f9aa7ffd89aac2085e0b798a3ced1af,Sijie Guo,sijie@apache.org,2017-06-12,12,4.5.0,,DL-199: Be able to support filesystem-path like name
+46e6b70feda2e8ad61ba13928df93b2c94d3dd4e,Sijie Guo,sijie@apache.org,2017-06-12,12,4.5.0,,DL-204: Bump libthrift to latest version for distributedlog-core
+164c44bb97e5b3ea8c658f5f376390b787061125,Sijie Guo,sijie@apache.org,2017-06-16,12,4.5.0,,ISSUE #184: Support GitHub issues in bk-merge script
+363c5d00b847b7eb2a93826b6d947fd3180a37dd,jiazhai,zhaijia@live.com,2017-06-21,12,4.5.0,,ISSUE #191: add template for ISSUE and PR
+1bf73e9f5b1d9a982182681156c90c6de026ce17,Sijie Guo,sijie@apache.org,2017-06-21,12,4.5.0,,DL-124: Use Java8 Future rather than twitter Future
+7e63cff1c110b7b9435a88ab8ab321659057c298,Sijie Guo,sijie@apache.org,2017-06-21,12,4.5.0,,DL-124: Use Java8 Future rather than twitter Future
+b4770a090a95802250dc69b13487eeb7ff6e0bb3,Sijie Guo,sijie@apache.org,2017-06-21,12,4.5.0,,DL-124: Use Java8 Future rather than twitter Future
+90a8f283999ddbfee818629e1be17102e63be22c,Sijie Guo,sijieg@twitter.com,2017-06-21,12,4.5.0,,BOOKKEEPER-1089: Ledger Recovery (part-4) - allow batch reads in ledger recovery
+90e4e46bccdd1a788e10056f4a3818aa2aead452,Sijie Guo,sijie@apache.org,2017-06-21,12,4.5.0,,BOOKKEEPER-1093: Piggyback LAC on ReadResponse
+256e7587331eddd51b7c05f27717c9d4dc848500,Sijie Guo,sijie@apache.org,2017-06-21,12,4.5.0,,BOOKKEEPER-1092: Ledger Recovery (Part 5) - Add Test Case for Parallel Ledger Recovery
+59696600784c54192877a5742c6b141eadb07e26,Charan Reddy Guttapalem,cguttapalem@salesforce.com,2017-06-21,12,4.5.0,,BOOKKEEPER-1097: GC test when no WritableDirs
+189d7e80b4b0096d580bafa66323fa5f099df65d,Sijie Guo,sijie@apache.org,2017-06-22,12,4.5.0,,ISSUE #203: TestFencing is failing due to LAC piggyback changes
+fe8ded50ed8f008457665138ec0e6a88bba67f73,Diego Salvi,lothruin.mirwen@gmail.com,2017-06-28,12,4.5.0,,ISSUE #216: Remove useless and misleading '&= true'
+9ddd9e6f9e48b03a57a2c78ec2630303abd49782,Charan Reddy Guttapalem,cguttapalem@salesforce.com,2017-06-28,12,4.5.0,,BOOKKEEPER-1034: Bookie start in RO when diskfull
+32c2859f0bec9ab74965d954bce038480e4dc2ba,Samuel Just,sjust@salesforce.com,2017-06-28,12,4.5.0,BOOKKEEPER-1098,BOOKKEEPER-1086: ZkUnderreplicationManager cache watcher
+b9648998802ce4bf256e33ffd6296b4c973a4824,Jia Zhai,jiazhai@users.noreply.github.com,2017-06-29,12,4.5.0,,Issue 212: change github PR template to adjust both issue# and jira# (#213)
+75aca2397e43ec321a049aaec514c99cc9fad235,Sijie Guo,sijie@apache.org,2017-06-29,12,4.5.0,,ISSUE #207: change the HashSet to BitSet to handle duplicated bookies on reading entries
+95ebc45fa2d0c4028c31c66b790743f4a7909800,Sijie Guo,sijieg@twitter.com,2017-06-29,12,4.5.0,,ISSUE #209: Introduce Speculative Read/Read LAC policy
+5e399df67c2aa1e5f228c62ba8533ca3293ab147,Sijie Guo,sijieg@twitter.com,2017-06-29,12,4.5.0,,BOOKKEEPER-759: Delay Ensemble Change & Disable Ensemble Change
+1b0492bf2ac547cf583736d3eaf9849498e42f80,Sijie Guo,sijie@apache.org,2017-06-30,12,4.5.0,,ISSUE #198: TestBackwardCompat.testCompat410 often fails due to io.netty.util.IllegalReferenceCountException
+450629d4314cf467fbf78da2d2a43840d0ccf783,Sijie Guo,sijie@apache.org,2017-07-01,12,4.5.0,,ISSUE #221: Make netty server shutdown idempotent
+e735c0305c8b3737e78ba5a1ba15b5d80a5ffb47,Sijie Guo,sijie@apache.org,2017-07-04,12,4.5.0,,Issue 225: Remove Parameterized from CompactionTest
+21366fee0e43e69591a03d7b517cf66dff2861d9,sigee,sigee15@gmail.com,2017-07-04,12,4.5.0,,Issue 223: Code cleanups
+ee0dddee6849d1968500af666571df668d34393a,Sijie Guo,sijie@apache.org,2017-07-04,12,4.5.0,,BOOKKEEPER-772: Reorder Read Sequence
+b59d63e8be237e80872f73d92a31b4213d9a649b,Sijie Guo,sijie@apache.org,2017-07-04,12,4.5.0,,Add missed tests for SortedLedgerStorage
+29eb420f1cca07c1a3a7748ed7fbb8a5bc54f2fa,cguttapalem,cguttapalem@salesforce.com,2017-07-07,12,4.5.0,,BOOKKEEPER-1028 and BOOKKEEPER-1029
+9aff6d52e01b50f25f5dbe1086ff10012ca25c48,cguttapalem,cguttapalem@salesforce.com,2017-07-07,12,4.5.0,,BOOKKEEPER-1033: Handle DirsPartitionDuplication
+3b33d636a058f211e1cc24b748dc9888256899c6,Enrico Olivelli,eolivelli@apache.org,2017-07-09,12,4.5.0,,ISSUE #235: Setter for JournalMaxGroupWaitMSec/JOURNAL_MAX_GROUP_WAIT_M…
+8aac2cab6630de6dee5e1ccef7f15a6f41758b5f,Edward Ribeiro,eribeiro@users.noreply.github.com,2017-07-13,12,4.5.0,,ISSUE #239: typo in class name SpeculativeRequestExecutor (#240)
+8bb699ed468c39e1ae1c01dd7fc02033d7b74ce2,jiazhai,zhaijia@live.com,2017-07-14,12,4.5.0,,y
+ccf83ed5bd49155697e909e13edb572082e838ec,Enrico Olivelli,eolivelli@apache.org,2017-07-16,12,4.5.0,,ISSUE #232: Add code-coverage report
+c49621bacaa960d240afbbee83a9703b4cbc3ec2,Sijie Guo,sijie@apache.org,2017-07-17,12,4.5.0,,ISSUE #208: Improve ledger fence logic
+387dc83d6d2db6a1d30bac3216a92f875083d144,Sijie Guo,sijie@apache.org,2017-07-17,12,4.5.0,,ISSUE #228: BookKeeper Server: Index Page Management Memory Growth
+a84b5e11114c5a6eabeaf17ba60975439593fa2d,sigee,sigee15@gmail.com,2017-07-17,12,4.5.0,,Add Checkstyle to the build process (Part 1)
+dc1fba1685fe04931ae2966d2ccc5b418af257ca,Enrico Olivelli,eolivelli@apache.org,2017-07-17,12,4.5.0,,ISSUE #237: Upgrade to ZooKeeper 3.5.3-BETA
+1b79adaae7ffd4736530bd1088b45de8ac049f98,Sijie Guo,sijie@apache.org,2017-07-17,12,4.5.0,,BOOKKEEPER-1095: Long Poll - Server and Client Side Changes
+086537beda9427c057a286ad6c4614659da6ed7f,sigee,sigee15@gmail.com,2017-07-18,12,4.5.0,,ISSUE #230: Add Checkstyle to the build process (Part 2)
+d61cfaba69cb0f87bc388889a58f2095f4034f30,Sijie Guo,sijie@apache.org,2017-07-18,12,4.5.0,,ISSUE #252: Enable four-letter-words zookeeper commands in localbookie
+f47dd4272f54bb95fd38abdd6c492dbe199dd7a4,Sijie Guo,sijie@apache.org,2017-07-18,12,4.5.0,BOOKKEEPER-980,BOOKKEEPER-980: BookKeeper Tools doesn't process the argument correctly
+7277657740c276b6f036322177c147264ba5100b,Sijie Guo,sijie@apache.org,2017-07-18,12,4.5.0,,ISSUE #249: Organize findbugs and checkstyle files in buildtools module
+7e9350cff67f0cb72ab757d500d98044cbdd4264,Sijie Guo,sijie@apache.org,2017-07-19,12,4.5.0,,ISSUE #256: BookieInitializationTest.testWithDiskFullAndAbilityToCreateNewIndexFile failed
+11fdac3cfdfe0900db994b45aa17500974ba3907,Sijie Guo,sijie@apache.org,2017-07-19,12,4.5.0,,ISSUE #258: BookieInitializationTest.testRegNodeExistsAfterSessionTimeOut failed
+2d992e39da0fc121901a72849b424c86fb099f03,Sijie Guo,sijie@apache.org,2017-07-20,12,4.5.0,,BOOKKEEPER-1027: Cleanup README
+0ef4a29c9c34022816c7584943404d0fb52b9a1c,Yiming Zang,yzang@twitter.com,2017-07-21,12,4.5.0,,ISSUE #267: Bookie should serve in read only mode during shutting down.
+1c567f88d5827d6728f05adc1d478648859d3ff0,Sijie Guo,sijie@apache.org,2017-07-21,12,4.5.0,,ISSUE #263: Enable request rate limiter in zookeeper client
+626ce687e2342b8a75005cf018540fda76ee15d8,Enrico Olivelli,eolivelli@apache.org,2017-07-24,12,4.5.0,,Provide a minimal test case using v2wireprotocol option
+96d82102bef3152934f564db16373b12b1689ead,Enrico Olivelli,eolivelli@apache.org,2017-07-24,12,4.5.0,,Issue#243 - asyncAddEntry fails with NPE with LedgerHandlerAdv
+24ac8ead6240aaaaa845afccb4e606fbe0da1602,Sijie Guo,sijie@apache.org,2017-07-25,12,4.5.0,BOOKKEEPER-1044,BOOKKEEPER-1044: Entrylogger is not readding rolled logs back to the logChannelsToFlush list when exception happens while trying to flush rolled logs
+ce57acaa1686493fd32fc58d3332d956db06122b,Sijie Guo,sijie@apache.org,2017-07-25,12,4.5.0,,ISSUE #247: Missing JavaDoc for classes
+313cfa66018836e8d6372b06c29ec551fca91e34,Enrico Olivelli,eolivelli@apache.org,2017-07-26,12,4.5.0,,BOOKKEEPER-1017: Create documentation for ZooKeeper ACLs
+f27bf45e2643016742f997e3c467363cc3407be7,Nicolò Boschi,nicolo.boschi@diennea.com,2017-07-26,12,4.5.0,,ISSUE #196: Create Jenkins configuration using OpenStack Jenkins Job Builder
+671ec2b21d6e603f00abc8f92a04bbec7d5750b2,Jia Zhai,zhaijia03@gmail.com,2017-07-26,12,4.5.0,,ISSUE #295: LocalBookKeeper fails to start up
+c00cb9f69104c99d7ad10242c04175a5d9ef3801,Enrico Olivelli,eolivelli@apache.org,2017-07-27,12,4.5.0,,ISSUE #271: LedgerHandle#readEntries leaks ByteBufs
+d5f824755028e08e07e7f3b326b097148c9b3bec,Enrico Olivelli,eolivelli@apache.org,2017-07-27,12,4.5.0,,ISSUE #308: LocalBookKeeper.java rethrow Exception in case of failed boot
+c9cf161d81d3fb8afd0af647e1f3d23f9fb50f04,Sijie Guo,sijie@apache.org,2017-07-28,12,4.5.0,,ISSUE #306: Update SCM info for using mvn:release
+7a480d3f8e5ec5c8c3592c332cbcab19b4043dad,zhaijack,zhaijia03@gmail.com,2017-07-28,12,4.5.0,,ISSUE #296: Bookie supports ephemeral port
+0ccbc0e9c3e6a82d5e44b8347cc6567e043f253f,Samuel Just,sjust@salesforce.com,2017-07-28,12,4.5.0,BOOKKEEPER-1104,BOOKKEEPER-1104: Fix testWithDiskFullAndAbilityToCreateNewIndexFile
+b63eb86da3757a3740f922093128868d5a53394c,Enrico Olivelli,eolivelli@apache.org,2017-07-28,12,4.5.0,,ISSUE #300: EnsemblePlacementPolicy must not use com.google.common.base.Optional but java.util.Optional
+cf2936548aa7f91e99bb53a8d53cbca567649535,Sijie Guo,sijie@apache.org,2017-07-28,12,4.5.0,,BOOKKEEPER-935: Javadoc improvements and publish sources and javadocs to Maven Central
+fdbea38d9767e6eb28fbf8ec7c61491be3e06e66,Luc Perkins,lucperkins@gmail.com,2017-07-28,12,4.5.0,,ISSUE #294: Beta version of the new website
+3908d9ce6a5530ae2ae8526b9988b983423c026c,Samuel Just,sjust@salesforce.com,2017-07-28,12,4.5.0,BOOKKEEPER-1103,BOOKKEEPER-1103: Fix LedgerMetadataCreateTest random id loop
+809f2cbf16d9ecb1b04fda23d610deea4c9bfabe,Sijie Guo,sijie@apache.org,2017-07-29,12,4.5.0,,ISSUE #320: add scripts for publishing new website to staging and apache
+50f67361d5deea529d0af80a61e3312a8dd31e7e,Sijie Guo,sijie@apache.org,2017-07-31,12,4.5.0,,ISSUE #323: [WEBSITE] ci job to automatically publish website to apache once the pull request is merged
+f581e030c79abbde81bf165603fccdb5e6a1d38a,Jia Zhai,zhaijia03@gmail.com,2017-08-01,12,4.5.0,,ISSUE #314: Enable checkstyle on bookkeeper-server
+a5f8580f53464065243a9af038935f5893434166,Samuel Just,sjust@salesforce.com,2017-08-01,12,4.5.0,BOOKKEEPER-1102,BOOKKEEPER-1102: Clarify BookieInfoReader and fix associated test flappers
+b299a699794c1f0aa8447704795361739a8bd055,Sijie Guo,sijie@apache.org,2017-08-01,12,4.5.0,,"ISSUE #321: Update ""who are we?"""
+3daf94143ba2b1352a56c68e1b886d7d7cd499a5,Jia Zhai,zhaijia03@gmail.com,2017-08-01,12,4.5.0,,ISSUE #339: Use ephemeral port for bookkeeper tests and variable unit test improvements
+3713aa7e09eb99f6d9c7221943e40bc33a025071,Sijie Guo,sijie@apache.org,2017-08-01,12,4.5.0,,ISSUE #344: add a releases page
+45e7f08f6a88de2fbb2f23df4c15a88625edff5d,Jia Zhai,zhaijia03@gmail.com,2017-08-01,12,4.5.0,,ISSUE #333: [WEBSITE] add bookkeeper slack channel to README.md and website
+8e0bd2c3d81b522e97434d8646915f36422a104b,kishorekasi,kkasiud1@gmail.com,2017-08-01,12,4.5.0,,BOOKKEEPER-588: SSL Support for Bookkeeper
+41f63c86a3d228887f08946dde14d485a40ac7b9,Sijie Guo,sijie@apache.org,2017-08-02,12,4.5.0,,Address the problem on merging #183
+610b603a34c0d7fbea151f7d1fd4951a6db1ac9b,Jia Zhai,zhaijia03@gmail.com,2017-08-02,12,4.5.0,,ISSUE #351: Apache rat check failed on master
+3b7c06481262d5ac84c1a79fa2479570975100a6,Jia Zhai,zhaijia03@gmail.com,2017-08-02,12,4.5.0,,ISSUE #351: Apache rat check failed on master
+23f9d815f1f7fa6fa3df55883fa2ec22535d1d2b,Luc Perkins,lucperkins@gmail.com,2017-08-02,12,4.5.0,,Fix navbar hover issue on the main page
+8b895d3087130107f4b5714560e7493349c10f5d,zhaijack,zhaijia03@gmail.com,2017-08-03,12,4.5.0,,ISSUE #360: [DOCUMENTATION] configuration settings
+6c340e06bbc13bd5ce7526f3531a9bab23108776,zhaijack,zhaijia03@gmail.com,2017-08-03,12,4.5.0,,ISSUE #362: [DOCUMENTATION] update command line tools
+398d33218eb2d9a4932fa69b9b3a29f02b2dce02,Matteo Merli,mmerli@apache.org,2017-08-03,12,4.5.0,,Issue #377: Make Prometheus stats logger registration idempotent
+464fa55c6debf5fdc835077135846e89729321c6,Matteo Merli,mmerli@apache.org,2017-08-03,12,4.5.0,,Issue #372: Allow to configure advertised address in bookies
+70533f54a7e53a808f56e7a1112d0e0f7d260397,eolivelli,eolivelli@apache.org,2017-08-04,12,4.5.0,,ISSUE #269: upgrade findbugs to 3.0.4
+7a500dc8082580ad4c85c307ef073edae3ae7f7a,eolivelli,eolivelli@apache.org,2017-08-04,12,4.5.0,,ISSUE #376: Skip getSysFileDescriptor if JournalRemovePagesFromCache=false
+423fa658419fe8b4b0731ede52b8f34610a3f663,Sijie Guo,sijie@apache.org,2017-08-04,12,4.5.0,,ISSUE #381: update old releases url to achives
+18f5c6a0a3de8727bcc12a8f6b1747c9a6a3c305,eolivelli,eolivelli@apache.org,2017-08-04,12,4.5.0,,ISSUE #262: Useless option explicitLacInterval is set to 1 in default bk_server.conf
+1c8101ed688d97fa93a8143c697f6c7489d5c6f9,Sijie Guo,sijie@apache.org,2017-08-04,12,4.5.0,,ISSUE #383: mvn release:branch fails
+02580c0c2b2d998e1cdfdffe75458d3b7e85d1fc,Sijie Guo,sijie@apache.org,2017-08-04,12,4.5.0,,ISSUE #391: CI failed with java.lang.ClassNotFoundException: org.hamcrest.SelfDescribing
+31960b027f391ee8ca7400cb3e647c20864966a3,zhaijack,zhaijia03@gmail.com,2017-08-05,12,4.5.0,,ISSUE #367: [DOCUMENTATION] add api readUnconfirmedEntries in website doc
+8986f32db757799ea678fa8c31823566572f3082,Sijie Guo,sijie@apache.org,2017-08-05,12,4.5.0,,ISSUE #393: [CI] publish-website job will be marked as failure if it is an empty commit
+bf1d58f197b9a99863f563ce0fdcb0e1f3483b8d,Sijie Guo,sijie@apache.org,2017-08-05,12,4.5.0,,ISSUE #390: [CI] Test errors in TestRackawareEnsemblePlacementPolicyUsingScript
+1b7ed6be98a2f41dc61fa18c5e678deab933f48e,JV,vjujjuri@salesforce.com,2017-08-05,12,4.5.0,,[maven-release-plugin] prepare branch branch-4.5
+59562a7bb2b300b0706d17e9fc034d6604b71626,JV,vjujjuri@salesforce.com,2017-08-05,12,4.5.0,,[maven-release-plugin] prepare for next development iteration
+cbcc64d6d0fd1a3d6738e4efcb0db3d5005ad0f8,Sijie Guo,sijie@apache.org,2017-08-05,12,4.5.0,,ISSUE #397: [CI] publish-website job failed when mvn:release bump version to 4.6.0-SNAPSHOT
+d107f969a915362dfce8f1b66c221debd434aefd,zhaijack,zhaijia03@gmail.com,2017-08-06,12,4.5.0,,ISSUE #338: add first draft Docker image including community suggestions
+c6e2f75dce44082e1a3b9ba06d1e37ed3ff5998f,zhaijack,zhaijia03@gmail.com,2017-08-07,12,4.5.0,,Fix zkCli issue
+ae1ba84f0935fdac43e7dd500647a70b2c4ca7f3,Sijie Guo,sijie@apache.org,2017-08-07,12,4.5.0,,ISSUE #325: [WEBSITE] how to manage documentation between releases
+188d7e5fb8d8beb137f13a49b7df8a9cd861cefc,Sijie Guo,sijie@apache.org,2017-08-07,12,4.5.0,,ISSUE #366: [DOCUMENTATION] LedgerHandleAdv
+f90fa787522d59114caa3fe8b70345effb627f8e,Sijie Guo,sijie@apache.org,2017-08-07,12,4.5.0,,ISSUE #355: upgrade guide
+49b90a66f830482fc970ba625057c7101c201f62,Sijie Guo,sijie@apache.org,2017-08-07,12,4.5.0,,ISSUE #349: Documentation for security feature in 4.5.0
+bee543487a2dd18034df2030a175b8f437f8fae3,Sijie Guo,sijie@apache.org,2017-08-07,12,4.5.0,,ISSUE #349: Move `security` docs under `latest` (hotfix)
+b7b0a6845e5dc47c30d93d86797deb4aa463df04,Sijie Guo,sijie@apache.org,2017-08-07,12,4.5.0,,Flip apache baseurl from `/test/content` to `/`
+755f8f624e20fb8775b100473c14d9775fe8851c,Francesco Caliumi - Diennea,francesco.caliumi@diennea.com,2017-08-07,12,4.5.0,,406
+bbcf1d8aec197074f707bf3d16684705396322f3,zhaijack,zhaijia03@gmail.com,2017-08-09,12,4.5.0,,Fix typo: TSL should be TLS in server_conf
+6e99bb7344463f6b132dd2df5ecc0f5de31909be,Sijie Guo,sijie@apache.org,2017-08-09,12,4.5.0,,ISSUE #422: Don't use community layout for documentation pages
+eb316394c7d4c4426cfb86d2a9fc794302e5ad0d,Luc Perkins,lucperkins@gmail.com,2017-08-09,12,4.5.0,,Issue #416: Some small post-release documentation fixes
+f5c96ebc9e5952a89f86d0a50093ff65c821701b,Sijie Guo,sijie@apache.org,2017-08-10,12,4.5.0,,ISSUE #427: [WEBSITE] sidebar doesn't work on documentation index page
+4615742cc3947e4794aa0afda668876fd01887b1,Sijie Guo,sijie@apache.org,2017-08-10,12,4.5.0,,release 4.5.0: update website
+3ebd42936c3af4395823e2754155c0088eb6a579,Sijie Guo,sijie@apache.org,2017-08-10,12,4.5.0,,ISSUE #356: Release notes 4.5.0
+88a61eefcc23a72e9ec18d64168dddd0e2e01269,Sijie Guo,sijie@apache.org,2017-08-10,12,4.5.0,,"ISSUE #432: Add ""Google Analytics"" to the website"
+b4a1c76054c54d05d38a89399efa716201a2206b,zhaijack,zhaijia03@gmail.com,2017-08-11,13,4.5.1,,ISSUE #414: use a clone of baseconf in new ServerConfiguration(baseConf)
+1ff17d899f9998cdefc99c47f0f38a75b99d1c0e,Sijie Guo,sijie@apache.org,2017-08-11,13,4.5.1,,ISSUE #431 ISSUE #221: merge scripts should mark milestone when merging pull requests
+caba6b1dbd7eab07c8c6dd518797c55739f3524e,Sijie Guo,sijie@apache.org,2017-08-11,13,4.5.1,,ISSUE #435: Build javadoc for releases
+739540896357e0079a946b95881a3cef4e6f9a72,zhaijack,zhaijia03@gmail.com,2017-08-11,13,4.5.1,,ISSUE #418: bump docker to use bk - 4.5.0
+f657b5e00d2e44a3fa476a4ab2c933c4a404717a,Enrico Olivelli,eolivelli@apache.org,2017-08-11,13,4.5.1,,ISSUE #385: Upgrade to commons-lang 2.6
+e988a3cb876b5939e103e36b985ddab05173569c,zhaijack,zhaijia03@gmail.com,2017-08-14,13,4.5.1,,ISSUE #441: fix typos
+9df2c62f2b1296aaf9e303e5aef26f90fbe184f9,zhaijack,zhaijia03@gmail.com,2017-08-14,13,4.5.1,,ISSUE #444: remove doc directory
+0d1593773041dc8a9484ffcf130cb3678e19e825,Sijie Guo,sijie@apache.org,2017-08-14,13,4.5.1,,"ISSUE #440: Update ""who are we?"" page"
+3b41dca602d87d511c203df61d3463d12f9fe756,Sijie Guo,sijie@apache.org,2017-08-14,13,4.5.1,,ISSUE #443: Update the mailing list
+affc7b073ff229345a5569025f4b65983358a352,Sijie Guo,sijie@apache.org,2017-08-15,13,4.5.1,,ISSUE #434: Move the content from wikis to website
+2bdb069b9ea9bf114d7beed9d3a4502702fc444a,Sijie Guo,sijie@apache.org,2017-08-15,13,4.5.1,,ISSUE #304: New Release Guide
+ab11ad85562b9fed1d4c6f4fbcbd70731a18ef24,Jia Zhai,zhaijia03@gmail.com,2017-08-15,13,4.5.1,,"Issue 141: graduation changes, remove/change incubate related things"
+6a8ed75be57d1ed4ace6bf34910a1093da9c5ef5,Jia Zhai,zhaijia03@gmail.com,2017-08-15,13,4.5.1,,"Issue 141: graduation changes, remove/change incubate related things"
+d318022d356d4468b8ced7f1a97c78cdf11e8f74,Jia Zhai,zhaijia03@gmail.com,2017-08-15,13,4.5.1,,"Issue 141: graduation changes, remove/change incubate related things"
+de9eecc180cc78fb65b509d7ae0e5ea82fd5dc8c,Yiming Zang,yzang@twitter.com,2017-08-16,13,4.5.1,,BOOKKEEPER-1100: Add module for Bookkeeper Http Endpoint
+f5d2ba66d6253fb54811d3ceb40d4ef4591dfb20,Andrey Yegorov,ayegorov@salesforce.com,2017-08-16,13,4.5.1,BOOKKEEPER-1105,BOOKKEEPER-1105: RackAwarePolicy: Failure to map node into rack may result in failure to add other nodes.
+075d5b0e0cf7de9ef676a0a0389f08eb40d2196f,Jia Zhai,zhaijia03@gmail.com,2017-08-17,13,4.5.1,,DL-2: DistributedLog should work with the official apache bookkeeper
+f528fb39918f01551327530f3567fdb36852abc4,Jia Zhai,zhaijia03@gmail.com,2017-08-17,13,4.5.1,,DL-2: DistributedLog should work with the official apache bookkeeper
+eaed168536d09c2e56e52fc4a43aabb41b44e6e2,Jia Zhai,zhaijia03@gmail.com,2017-08-17,13,4.5.1,,DL-2: DistributedLog should work with the official apache bookkeeper
+3e4c02731787e730c039d6da17ab85b69e73daa1,Enrico Olivelli,eolivelli@apache.org,2017-08-21,13,4.5.1,,ISSUE #407: Enable allowLoopback when starting localbookie
+b15e167f49d968d0e990a0eb467ca1f186bdc0a7,Arvin,arvindevel@gmail.com,2017-08-22,13,4.5.1,,ISSUE #254: Remove BookKeeperTools
+35cffdf6a38b5dba702b11e5902d5aa745429b01,Jia Zhai,zhaijia@apache.org,2017-08-22,13,4.5.1,,ISSUE #453: fix image broken in website
+e28ea6baecc181f90b5e26f5456ec3b657938b24,Enrico Olivelli,eolivelli@apache.org,2017-08-22,13,4.5.1,,ISSUE #410: BookKeeper binary distribution package contains a CHANGES.txt file
+f4a9a53ce725f8c495e100430a05dc13942d0837,Jia Zhai,zhaijia@apache.org,2017-08-23,13,4.5.1,,ISSUE #459: fix loadConf in AbstractConfiguration
+13f88fec96258124e7c20f90f9ed3babced5dc81,Yiming Zang,yzang@twitter.com,2017-08-24,13,4.5.1,,DL-206: Delete the log should also delete the underline ledgers
+17c5c445db8a700c595e620ab33275f33c95e4a6,Enrico Olivelli,eolivelli@apache.org,2017-08-24,13,4.5.1,,ISSUE #464: Add JaCoCo code coverage configuration to master pom.xml
+51c660ec87a541a4827742569da72a649e2ed5c7,Jia Zhai,zhaijia@apache.org,2017-08-24,13,4.5.1,,ISSUE #337: Docker image: K8s for bookkeeper and instructions on usage
+160e975a98abfa18a8de9423137763e4a1125b47,Sijie Guo,sijie@apache.org,2017-08-27,13,4.5.1,,ISSUE #466: Move backward compatibility tests into a separate module
+814edb69dda698e6f719bf4b0c970c206064f606,Sijie Guo,sijie@apache.org,2017-08-27,13,4.5.1,,ISSUE #473: Bump protobuf version from 2.x to 3.x
+5c83b6e2ab7329c428b2c63415f3c695f4edaf12,Sijie Guo,sijie@apache.org,2017-08-28,13,4.5.1,,ISSUE #343: TestFencing.testManyOpenParallel
+6e6556f29ecbf966404423b7d67897e5dcba712a,Sijie Guo,sijie@apache.org,2017-08-28,13,4.5.1,,ISSUE #462: TestTLS failures
+b2c2e9e597eb970f511d21adff00fda00b5b6360,Enrico Olivelli,eolivelli@apache.org,2017-08-28,13,4.5.1,,ISSUE #475: Move code-coverage activation to a Maven profile
+c0fdfa5c1a05bd5cadb175928aa02a8e1c3f1e1f,Sijie Guo,sijie@apache.org,2017-08-28,13,4.5.1,,ISSUE #468: Introduce JMH for micro benchmarking
+ae58e92bd3f0c17ed242544a097dd19656d39c42,Sijie Guo,sijie@apache.org,2017-08-29,13,4.5.1,,ISSUE #479: CompactionTest#testCompactionWithEntryLogRollover failed
+dd9680373188948f0e7b8f3b994309626a472856,Sijie Guo,sijie@apache.org,2017-08-29,13,4.5.1,,ISSUE #463: Improve bookkeeper unit test
+29e74229eda138c13c88ec890ce3d2c215972303,arvindkandhare,arvind.kandhare@emc.com,2017-08-30,13,4.5.1,,ISSUE #274: Ensuring the right number of bookies are passed.
+0e76212e2295032b2fad29de58bbeacb9c0018ac,Jia Zhai,zhaijia@apache.org,2017-08-31,13,4.5.1,,ISSUE #156: Provide a shading jar for distributedlog-core
+813c675e8d6a5a92d73821ddd1f49883ff2eb0c7,Sijie Guo,sijie@apache.org,2017-08-31,13,4.5.1,,DL-45: DL should allow ByteBuf based API to avoid copying bytes array
+25abd3675da9a6fc7b47ea80a5f1556eb129de8b,Sijie Guo,sijie@apache.org,2017-08-31,13,4.5.1,,DL-45: DL should allow ByteBuf based API to avoid copying bytes array
+5a5ad4625548a5ba78764e01f83dcdbfe0cbeca2,Sijie Guo,sijie@apache.org,2017-08-31,13,4.5.1,,DL-45: DL should allow ByteBuf based API to avoid copying bytes array
+fd27e99ecbb152ef7bbf05a36a9d85c8997d3744,Arvin,arvindevel@gmail.com,2017-09-01,13,4.5.1,,ISSUE #485: Change 'segment' to 'fragment' in docs
+34b2920f9890f5ab320094b8584f9f93720fd71f,Jia Zhai,zhaijia@apache.org,2017-09-01,13,4.5.1,,y
+efc115af4979a5d2009714586daf5e8651a4be3f,Arvin,arvindevel@gmail.com,2017-09-01,13,4.5.1,,Issue #430: Add an instruction in docker README to run standalone cluster
+e48f9d02924208ad1e929c2876ae2acfcfab0c5d,Jia Zhai,zhaijia@apache.org,2017-09-06,13,4.5.1,,ISSUE #492: set the protobuf syntax to 'proto2'
+8c8338738c8e54087990f25c15d18eafd7935ef4,Sijie Guo,sijie@apache.org,2017-09-06,13,4.5.1,,ISSUE #166: Code cleanup for 0.5.0 release
+7da9187853c12ee6cf64287e0d5fcb56bdd2b6d0,Sijie Guo,sijie@apache.org,2017-09-06,13,4.5.1,,ISSUE #166: Code cleanup for 0.5.0 release
+ae9dbfe9c5f1862af664cb51efaf7446276c16a2,Sijie Guo,sijie@apache.org,2017-09-06,13,4.5.1,,ISSUE #166: Code cleanup for 0.5.0 release
+96a45e2a5733c91d89f9e91755ac3f42fdcea4d4,Sijie Guo,sijie@apache.org,2017-09-06,13,4.5.1,,ISSUE #496: some docker images don't need port forwarding
+abb311cdf839c02a941f416e6f97c8b85afd6fb0,Sijie Guo,sijie@apache.org,2017-09-07,13,4.5.1,,ISSUE #160: Introduce backward compatibility testing
+1459adbe39715c94b012113b58f1be76c99a79b6,Jia Zhai,zhaijia@apache.org,2017-09-07,13,4.5.1,,[maven-release-plugin] prepare branch release-0.5.0
+fae15d4249505003ef940687dd5203d396a12bdf,Jia Zhai,zhaijia@apache.org,2017-09-07,13,4.5.1,,[maven-release-plugin] prepare for next development iteration
+a5c061ce5a99f85b9496c7f010093ee0ccb40052,Jia Zhai,zhaijia@apache.org,2017-09-07,13,4.5.1,,[maven-release-plugin] prepare for next development iteration
+b9af3d5d7cc8961ec839e1f28b1b7495f38fe971,Jia Zhai,zhaijia@apache.org,2017-09-07,13,4.5.1,,[maven-release-plugin] prepare for next development iteration
+d338addc369cbe3b96af4ee4232d0cce7d72d089,Jia Zhai,zhaijia@apache.org,2017-09-07,13,4.5.1,,ISSUE #494: Rename ZkVersion to LongVersion
+131d1272e53e59645f6cf250e84f29da11568a08,Sijie Guo,sijie@apache.org,2017-09-13,14,4.6.0,,ISSUE #507: Introduce @FlakyTest annotation for marking a few tests as flaky
+aa03c523126a2ad9aa0cae3665410bbc4dfb5edd,Sijie Guo,sijie@apache.org,2017-09-16,14,4.6.0,,BOOKKEEPER-31: Project Logo
+eba4d6e5d7eab8beab699c6dba8ac41e5ceec3db,Sijie Guo,sijie@apache.org,2017-09-18,14,4.6.0,,ISSUE #515: Run bookies using hostIP instead of containerIP in k8s
+3ede9c6c507aa93432757c4f1fe47c538fa83e34,Jia Zhai,zhaijia@apache.org,2017-09-19,14,4.6.0,,ISSUE #508: Introduce lifecycle components for managing components in bookie server
+31bef62d7e63d5a8b198dd09ca2e72646a6bffc8,Jia Zhai,zhaijia@apache.org,2017-09-20,14,4.6.0,,ISSUE #499: make a package contains all the jar
+80b7676045c34f4678f754f7f78d77c156ba518d,Jia Zhai,zhaijia@apache.org,2017-09-27,14,4.6.0,,ISSUE #517: port shared-resource-manager utils from distributredlog
+2bbecd7da52824c991e1a28573ccf8c8515ea5dd,Yiming Zang,yzang@twitter.com,2017-10-03,14,4.6.0,,BOOKKEEPER-1106: Introduce write FileInfo cache and read FileInfo cache
+8399707f054e5d387e1af18384efab4cd1b26e57,Jia Zhai,zhaijia@apache.org,2017-10-03,14,4.6.0,,ISSUE #527: Introduce backoff and retry utilities
+029fc609cd4933b55af4d40af69ef59dad83a842,Enrico Olivelli,eolivelli@apache.org,2017-10-04,14,4.6.0,,ISSUE #532: Drop all @Test(timeout) annotations
+d82dc1c3e64e12e27ac8492ecbd4204a5529099c,Sijie Guo,sijie@apache.org,2017-10-04,14,4.6.0,,ISSUE #535: Prometheus metrics provider fails to initialize
+758cdebb655bb68f7fd8017d289ce66ba9072e3e,Sijie Guo,sijie@apache.org,2017-10-04,14,4.6.0,,ISSUE #537: Compilation warning on unchecked cast
+e5cd0fe690f47575f62761f7bd4f3ad35c42c801,Arvin,arvindevel@gmail.com,2017-10-04,14,4.6.0,,ISSUE #181: Enable LogRecord ByteBuf based constructor public
+db06aca15b5bab62500ea973c7626636e2f173a9,Arvin,arvindevel@gmail.com,2017-10-04,14,4.6.0,,ISSUE #165: Enable checkstyle in core module
+32ad7bae8201b3b7ce5fe7431f099fb9380eb8f8,Arvin,arvindevel@gmail.com,2017-10-04,14,4.6.0,,ISSUE #193: Shade Bookkeeper and unshade ZooKeeper in core module
+9694fd263a3ee5e03740f99ca21e99918262f395,Sijie Guo,sijie@apache.org,2017-10-05,14,4.6.0,,ISSUE #540: BookieServer failed to start because lifecycle component name is not provided
+655057cf2fff39dcb1be3d508799080a373efc78,Sijie Guo,sijie@apache.org,2017-10-05,14,4.6.0,,ISSUE #534: Download docs reference old release
+79f359ff9b77cfce23d52d7a99715768497ee00f,Ivan Kelly,ivan@ivankelly.net,2017-10-10,14,4.6.0,,ISSUE #525: Refactor PerChannelBookieClient
+7d3d02e588c1a06f195533c48c5af8149b813978,Sijie Guo,sijie@apache.org,2017-10-11,14,4.6.0,,ISSUE #547: Allow load extra lifecycle components when running a bookie server.
+95373234a273920fadc06742479ddcc4e603fa1b,Jia Zhai,zhaijia@apache.org,2017-10-11,14,4.6.0,,ISSUE #520: Add more http endpoint
+c2bf327c907080e2ec40c460dcf9c768fc0699d1,Sijie Guo,sijie@apache.org,2017-10-11,14,4.6.0,,ISSUE #197: Provide a guide for running on k8s
+2de1f6dbd278e518c19378748606646158e9bad3,Sijie Guo,sijie@apache.org,2017-10-12,14,4.6.0,,Fix the flaky test TestBKDistributedLogManager.deleteDuringRead
+9d0f5b00ac82d37f57a67984c731d95a1895e700,Sijie Guo,sijie@apache.org,2017-10-12,14,4.6.0,,Avoid copying bytebuf for constructing log record to write
+bd50cacd2b759d53b06a2356c5a9369b6100d635,Enrico Olivelli,eolivelli@apache.org,2017-10-13,14,4.6.0,,ISSUE #506: BP-15 New CreateLedger API
+7d7497b70507ea3d31b184ebe04d98c733e2cf5b,Ali Ahmed,a.ahmed@streaml.io,2017-10-17,14,4.6.0,,ISSUE #561: Remove exec commands to start in the shell pid
+40a7f1de440e6aec0b6640fc34a0ec7460c29ab7,Robert Evans,evans@yahoo-inc.com,2017-10-17,14,4.6.0,,BOOKKEEPER-1062: Fixed the race in AuditorLedgerCheckerTest
+1bd7a80bd295b8e9c82281764864ec949222b5cb,Enrico Olivelli,eolivelli@apache.org,2017-10-17,14,4.6.0,,ISSUE #559: Fix findbugs error on SyncCallbackUtils
+7254090d6a822e3c9c244c46fdb354bf56ddb2f3,Ivan Kelly,ivan@midokura.com,2017-10-18,14,4.6.0,,Fix for BookKeeperBuildersTest
+d31dcbf6ba3a737d66ec3958f8443b007d4e5fad,Matteo Merli,mmerli@yahoo-inc.com,2017-10-18,14,4.6.0,,Recycle buffers used in EntryLogger#addEntry
+1dc9789e89a6bf167ed965edb1ab51fbc449d897,Matteo Merli,mmerli@yahoo-inc.com,2017-10-18,14,4.6.0,,Use ByteBuf for entrylogger reads
+4462bc31a6ac40b94efd2184e54e35cbc568199d,Shoukun Huai,shoukunhuai@gmail.com,2017-10-18,14,4.6.0,,ISSUE #213: Correct logger name in BKLogWriteHandler
+ecca567eb7f51355e2196e07b0400e2f8b16d026,Arvin,arvindevel@gmail.com,2017-10-18,14,4.6.0,,ISSUE173: Implement AutoCloseable in BKDistributedLogNamespace
+b737e9c77eaba28d6498691c968901f3c53d2a89,Sijie Guo,guosijie@gmail.com,2017-10-18,14,4.6.0,,Issue 201: Fix the flaky test TestBKDistributedLogManager.deleteDuringRead
+84ecaa8201bb97a041ed733ba015e2fe62d39a56,Sijie Guo,sijie@apache.org,2017-10-18,14,4.6.0,,ISSUE #207: Support getFirstLogRecord
+fd477f6310a512e76fa3284b100d6e11411939b8,Matteo Merli,mmerli@yahoo-inc.com,2017-10-18,14,4.6.0,,Fixed ref counting release on read errors
+9f55ccc7d75a4beedb96aaaeb0a9ca1357977482,Sijie Guo,sijie@apache.org,2017-10-18,14,4.6.0,,ISSUE #211: Support listing logs by prefix
+99bcf09f6d5bbcef2f4c5228cd70e023c2348b03,Matteo Merli,mmerli@yahoo-inc.com,2017-10-18,14,4.6.0,,Fix concurrent v2 reads on the same ledger/entry
+51a58cbe3ad6ca7833f433aa9b845480ee690e57,Ivan Kelly,ivank@apache.org,2017-10-20,14,4.6.0,,Increase timeouts in TestDisableEnsembleChange
+ff6ec1905e645d45e7857cc928c37255a81b592d,Arvin,arvindevel@gmail.com,2017-10-23,14,4.6.0,,ISSUE164: Move findbug settings files to distributedlog-build-tools
+b6852900b5a538a21be816ec8707b4cb8b07d3d0,Arvin,arvindevel@gmail.com,2017-10-23,14,4.6.0,,ISSUE164: Move findbug settings files to distributedlog-build-tools
+346e3a92be09bc294fbd4d964a7fc394795cee4f,Arvin,arvindevel@gmail.com,2017-10-23,14,4.6.0,,ISSUE164: Move findbug settings files to distributedlog-build-tools
+6e7237c751949d101bba2dac93bd3a81200633c7,Sijie Guo,sijie@apache.org,2017-10-23,14,4.6.0,,ISSUE #209: Support rename log
+8ca0dd414c1b4519aeb8014a0b65d60318f84f5c,Ivan Kelly,ivan@midokura.com,2017-10-23,14,4.6.0,,Fix a typo in PCBC logging
+70e4bbe437f81f2b226480d7c20999737f686787,Ivan Kelly,ivan@midokura.com,2017-10-23,14,4.6.0,,Pool the V2 keys
+496843893dfb91c237cbd5ae1f245f90304ea34b,Ivan Kelly,ivan@midokura.com,2017-10-24,14,4.6.0,,Pool AddCompletions
+dfe465cdd0684bbb348d106b737acf431f29351a,Sijie Guo,sijie@apache.org,2017-10-24,14,4.6.0,,Issue 225: Create log should create missing path components
+3a1499044b64832635affcfaf6657725bc01411b,Sijie Guo,sijie@apache.org,2017-10-24,14,4.6.0,,ISSUE #224: listing logs should exclude <default>
+54268cee2960ccba62fc984c4ae86997abb6e572,Sijie Guo,sijie@apache.org,2017-10-24,14,4.6.0,,ISSUE #226: ByteBuf.release() was not called before it's garbage-collected
+0e13f700f662f20445094115a75f00e39f88565d,Enrico Olivelli,eolivelli@apache.org,2017-10-25,14,4.6.0,,ISSUE #606: Enhancements in developer environment
+afcaade7c4c866a595b52ce71ee58b19352b2dbb,Aaron Gresch,agresch@yahoo-inc.com,2017-10-25,14,4.6.0,,Fail earlier when encountering DNS issues
+767e4556b7f5cc523b127e7987cc442f707699d9,Aaron Gresch,agresch@yahoo-inc.com,2017-10-27,14,4.6.0,,Recycle instances of WriteEntryProcessor and ReadEntryProcessor
+e9b857092703719c9ea38a3a74107fe5114af94a,Jia Zhai,zhaijia@apache.org,2017-10-27,14,4.6.0,,ISSUE #662: Introduce Bookie Registration Manager for bookie server
+6fcabfc80c5bd6cdfa9252cdfc4ed209cc0620a6,Sijie Guo,sijie@apache.org,2017-10-27,14,4.6.0,,ISSUE #596 ISSUE #583: Auto replication should honor ensemble placement policy
+3a20fe0ab6c0259ae9143641105c46e48f625f7c,Sijie Guo,sijie@apache.org,2017-10-27,14,4.6.0,,ISSUE #265: Add persistable bookie status
+502c6b1e4b9d65a7ebd373eb6177e925648880f8,Sijie Guo,sijie@apache.org,2017-10-29,14,4.6.0,,ISSUE #675: Enable checkstyle in a few packages
+26680c1507949bd8678af987a60fb3f5342fb1a6,Sijie Guo,sijie@apache.org,2017-10-30,14,4.6.0,,DLFS - A FileSystem API wrapper over dlog API
+8e20a80b3d22ac1d14ba7a8f2046bdbbe5e95a44,Ivan Kelly,ivank@apache.org,2017-10-30,14,4.6.0,,DistributionSchedule uses custom wrapped int[] rather than HashSet
+1c7d103431c15335cc6d6eae0e9c2197b58c1ad3,Matteo Merli,mmerli@yahoo-inc.com,2017-10-30,14,4.6.0,,Recycle instances of callback to obtain a PerChannelBookie client
+c733494bfb42a00a91594730f2241df3ff0fb84f,eolivelli,eolivelli@apache.org,2017-10-31,14,4.6.0,,Copy site from 4.5.0 to 4.5.1
+34e8bf200c6f3797bd6fa4c5d86646e9eb7f0d3b,Ivan Kelly,ivank@apache.org,2017-11-01,14,4.6.0,,Recycle PendingAddOps
+c4c8069456a53669576569389ee45f4ed0e9654c,Jia Zhai,zhaijia@apache.org,2017-11-01,14,4.6.0,,ISSUE #666: Introduce registration client for bookkeeper client to do bookie discover
+f30766e95d5f0b284bb74edf65edee052e257e55,Jia Zhai,zhaijia@apache.org,2017-11-01,14,4.6.0,,Update exception handling in constructing bookkeeper client
+030aefa7dc97483886699efdcf07364f7020ef5e,Sijie Guo,sijie@apache.org,2017-11-01,14,4.6.0,,Fix DistributedSchedule.WriteSet compilation issue
+e202d955a022a501ea49bc5906c36b38bdbc50df,Matteo Merli,mmerli@yahoo-inc.com,2017-11-02,14,4.6.0,,Recycle AddRequest/AddResponse objects
+952cedac10da487c72b7974152242dbc46349978,Sijie Guo,sijie@apache.org,2017-11-02,14,4.6.0,,ISSUE #681: Deploying bookkeeper in k8s using StatefulSets
+4c2e90d2536676f14df944c5d8b4288362aa48b9,Enrico Olivelli,eolivelli@apache.org,2017-11-03,14,4.6.0,,ISSUE #685: Merge script: make DEV_BRANCH_NAME configurable
+3ce2fb7ed510976413df07b00c81c3383f5494d1,Ivan Kelly,ivank@apache.org,2017-11-03,14,4.6.0,,ISSUE #501: Fix race in CompactionTest
+2291b51ab96b4b460b05dbe34fb50c5ccde58e2c,Enrico Olivelli,eolivelli@gmail.com,2017-11-04,14,4.6.0,,fix merge script (#692)
+8b2ead67bc895c9e6bfe18228e949da94583230b,Jia Zhai,zhaijia@apache.org,2017-11-04,14,4.6.0,,ISSUE #696: copy site/docs/4.5.0 to site/docs/4.6.0
+cbf6668af320135af65c4590385a29fcf6d8d6c8,Antonio Ojea,antonio.ojea.garcia@gmail.com,2017-11-06,14,4.6.0,,ISSUE #699: Docker healthchek is failing #699
+0ae8abc354c4c7706232aabf474ea37afea90fc2,Luc Perkins,lucperkins@gmail.com,2017-11-07,14,4.6.0,,Landing pages documentation fixes
+3392beee5c70abe36d36604723e14d97b7764be9,Yiming Zang,yzang@twitter.com,2017-11-08,14,4.6.0,,BOOKKEEPER-1040: Use separate log for compaction and add transaction support
+d0c11d0bf982208008c1f45e62038a33e7d9a73d,eolivelli,eolivelli@apache.org,2017-11-09,14,4.6.0,,ISSUE #707: NOTICE file should not contain references to JLine

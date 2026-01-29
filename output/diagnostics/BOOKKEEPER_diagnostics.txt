@@ -1,0 +1,71 @@
+=== DATASET DIAGNOSTICS FOR BOOKKEEPER ===
+
+1. CLASS IMBALANCE ANALYSIS
+----------------------------
+Total methods: 40534
+Buggy methods: 453 (1.12%)
+Clean methods: 40081 (98.88%)
+Imbalance ratio (clean:buggy): 88.48:1
+
+CRITICAL: Buggy class < 5% - Extreme imbalance!
+
+2. LABELING COVERAGE ANALYSIS
+------------------------------
+Unique methods in dataset: 8413
+Methods labeled buggy (at least once): 276 (3.28%)
+Methods NEVER labeled buggy: 8137 (96.72%)
+
+Total tickets: 435
+Tickets with associated commits: 412 (94.71%)
+
+CRITICAL: < 10% of methods ever labeled buggy!
+    This suggests:
+    - Very few fix commits found
+    - Poor commit-ticket linking
+    - Issues with SZZ/Proportion labeling
+
+3. TEMPORAL DISTRIBUTION OF BUGS
+---------------------------------
+Version | Commits | Total Methods | Buggy Methods | Buggy %
+--------|---------|---------------|---------------|--------
+1       | 92      | 2281          | 121           | 5.30%
+2       | 111     | 2940          | 93            | 3.16%
+3       | 198     | 5865          | 21            | 0.36%
+4       | 0       | 0             | 0             | 0.00%
+5       | 23      | 6924          | 93            | 1.34%
+6       | 51      | 7218          | 53            | 0.73%
+7       | 33      | 7541          | 51            | 0.68%
+8       | 35      | 7765          | 21            | 0.27%
+9       | 73      | 0             | 0             | 0.00%
+10      | 15      | 0             | 0             | 0.00%
+11      | 46      | 0             | 0             | 0.00%
+12      | 324     | 0             | 0             | 0.00%
+13      | 54      | 0             | 0             | 0.00%
+14      | 72      | 0             | 0             | 0.00%
+
+[INFO] 1/14 versions have ZERO commits (no Git history)
+
+4. FEATURE QUALITY ANALYSIS
+---------------------------
+Feature          | Buggy Avg | Clean Avg | Ratio | Discriminative?
+-----------------|-----------|-----------|-------|----------------
+LOC              |     21.53 |      7.17 |  3.00 | YES âœ“
+Complexity       |      4.30 |      1.87 |  2.30 | YES âœ“
+NumRevisions     |      2.11 |      1.24 |  1.70 | YES âœ“
+NumAuthors       |      1.47 |      1.06 |  1.39 | NO âœ—
+MaxChurn         |     17.74 |      6.72 |  2.64 | YES âœ“
+AvgChurn         |     11.70 |      5.66 |  2.07 | YES âœ“
+HasFixHistory    |      0.30 |      0.27 |  1.12 | NO âœ—
+
+5. TICKET-METHOD MAPPING ANALYSIS
+----------------------------------
+Methods with revision history: 39246 (96.82%)
+Methods with fix history: 10767 (26.56%)
+
+6. PROPORTION ACCURACY INDICATORS
+----------------------------------
+Number of valid proportions: 60
+Average proportion (P): 1.365
+Median proportion: 1.000
+Std deviation: 1.208
+
