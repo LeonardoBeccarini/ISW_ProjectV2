@@ -1,0 +1,28 @@
+=== TARGET SELECTOR OUTPUT ===
+Project: BOOKKEEPER
+LatestVersionIndex: 8
+LatestVersionName: 4.2.3
+AFeature: NUM_BRANCHES (csv=NumBranches)
+AFeatureValue: 31.0
+MethodFQN: hedwig-client-jms/src/main/java/org/apache/hedwig/jms/SessionImpl.java/SessionImpl#dispatchReceivedMessagesToSubscribers(MessageListener,List,List)
+LOC: 103
+
+Row snapshot (dataset.csv):
+VersionIndex: 8
+VersionName: 4.2.3
+MethodFQN: hedwig-client-jms/src/main/java/org/apache/hedwig/jms/SessionImpl.java/SessionImpl#dispatchReceivedMessagesToSubscribers(MessageListener,List,List)
+LOC: 103
+NumParameters: 3
+NumBranches: 31
+NestingDepth: 5
+NumCodeSmells: 13
+NumLocalVariables: 10
+NumRevisions: 1
+NumAuthors: 1
+TotalStmtAdded: 103
+TotalStmtDeleted: 0
+MaxChurn: 103
+AvgChurn: 103.0
+HasFixHistory: 0
+Buggy: no
+BodyHash: a4b25257cc7fa6c1f4a9049c10a1b7e6f8dc0a0697dd565423857c44c1f1c865

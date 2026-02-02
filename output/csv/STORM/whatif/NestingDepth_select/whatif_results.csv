@@ -1,0 +1,5 @@
+Project,AFeature,AFMethod,BClassifier,RefBefore,RefAfter,RefFactor,BPlusThreshold,Dataset,N,ActualBuggy,ExpectedDefectsSum_Prob,EstimatedBuggy_Threshold05,EstimatedBuggy_Classify,DeltaExpectedProb_BPlus_to_B,RelDropProbOnBPlus,RelDropProbOnA_latest,DeltaEstimatedClassify_BPlus_to_B
+STORM,NestingDepth,select,"RandomForest | FS=none | Sampling=none | Cost=none",14.000000,1.000000,0.071429,1.000000,A_latest,23100,141,281.627369,64,64,-38.890936,-0.228684,-0.138094,38
+STORM,NestingDepth,select,"RandomForest | FS=none | Sampling=none | Cost=none",14.000000,1.000000,0.071429,1.000000,B_plus,7811,101,170.063923,56,56,-38.890936,-0.228684,-0.138094,38
+STORM,NestingDepth,select,"RandomForest | FS=none | Sampling=none | Cost=none",14.000000,1.000000,0.071429,1.000000,B,7811,101,208.954858,18,18,-38.890936,-0.228684,-0.138094,38
+STORM,NestingDepth,select,"RandomForest | FS=none | Sampling=none | Cost=none",14.000000,1.000000,0.071429,1.000000,C,15289,40,111.563446,8,8,-38.890936,-0.228684,-0.138094,38

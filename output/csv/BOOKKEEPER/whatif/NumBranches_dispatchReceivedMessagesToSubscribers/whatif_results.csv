@@ -1,0 +1,5 @@
+Project,AFeature,AFMethod,BClassifier,RefBefore,RefAfter,RefFactor,BPlusThreshold,Dataset,N,ActualBuggy,ExpectedDefectsSum_Prob,EstimatedBuggy_Threshold05,EstimatedBuggy_Classify,DeltaExpectedProb_BPlus_to_B,RelDropProbOnBPlus,RelDropProbOnA_latest,DeltaEstimatedClassify_BPlus_to_B
+BOOKKEEPER,NumBranches,dispatchReceivedMessagesToSubscribers,"RandomForest | FS=none | Sampling=none | Cost=none",31.000000,7.000000,0.225806,1.000000,A_latest,7765,21,52.665784,16,16,-55.919340,-1.361743,-1.061777,10
+BOOKKEEPER,NumBranches,dispatchReceivedMessagesToSubscribers,"RandomForest | FS=none | Sampling=none | Cost=none",31.000000,7.000000,0.225806,1.000000,B_plus,2697,20,41.064540,16,16,-55.919340,-1.361743,-1.061777,10
+BOOKKEEPER,NumBranches,dispatchReceivedMessagesToSubscribers,"RandomForest | FS=none | Sampling=none | Cost=none",31.000000,7.000000,0.225806,1.000000,B,2697,20,96.983880,6,6,-55.919340,-1.361743,-1.061777,10
+BOOKKEEPER,NumBranches,dispatchReceivedMessagesToSubscribers,"RandomForest | FS=none | Sampling=none | Cost=none",31.000000,7.000000,0.225806,1.000000,C,5068,1,11.601244,0,0,-55.919340,-1.361743,-1.061777,10

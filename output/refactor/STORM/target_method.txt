@@ -1,6 +1,6 @@
 === TARGET SELECTOR OUTPUT ===
 Project: STORM
-LatestVersionIndex: 16
+LatestVersionIndex: 19
 LatestVersionName: 1.0.5
 AFeature: NESTING_DEPTH (csv=NestingDepth)
 AFeatureValue: 16.0
@@ -8,7 +8,7 @@ MethodFQN: external/storm-jdbc/src/main/java/org/apache/storm/jdbc/common/JdbcCl
 LOC: 60
 
 Row snapshot (dataset.csv):
-VersionIndex: 16
+VersionIndex: 19
 VersionName: 1.0.5
 MethodFQN: external/storm-jdbc/src/main/java/org/apache/storm/jdbc/common/JdbcClient.java/JdbcClient#select(String,List)
 LOC: 60
