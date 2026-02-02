@@ -1,8 +1,8 @@
 package org.example.controller;
 
 import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ParseResult;
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.CallableDeclaration;
@@ -20,7 +20,6 @@ import net.sourceforge.pmd.lang.LanguageVersion;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.RawTextComparator;
-import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.ObjectReader;
@@ -37,12 +36,16 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
  * Calcolo metriche statiche e di processo.
  */
 public class MetricsCalc {
+
+    private static final Logger LOGGER = Logger.getLogger(MetricsCalc.class.getName());
 
     private static final String JAVA_EXTENSION = ".java";
     private static final String TEST_DIR_FRAGMENT = "/test/";
@@ -51,7 +54,6 @@ public class MetricsCalc {
     private final Map<String, Version> commitToVersion;
     private final List<Ticket> ticketList;
 
-    // Parser tollerante (evita di buttare via file interi quando c'è qualche problema)
     private final JavaParser javaParser;
 
     private static final String PMD_RULESET_PATH = "rulesets/java/quickstart.xml";
@@ -64,8 +66,9 @@ public class MetricsCalc {
         this.commitToVersion = commitToVersion;
         this.ticketList = (ticketList != null) ? ticketList : new ArrayList<>();
 
-        // usa la stessa configurazione impostata in GitRetriever (BLEEDING_EDGE)
-        this.javaParser = new JavaParser(StaticJavaParser.getConfiguration());
+        ParserConfiguration parserConfig = new ParserConfiguration();
+        parserConfig.setLanguageLevel(ParserConfiguration.LanguageLevel.BLEEDING_EDGE);
+        this.javaParser = new JavaParser(parserConfig);
 
         this.pmdJavaLv = LanguageRegistry.findLanguageByTerseName("java").getVersion("11");
     }
@@ -74,32 +77,19 @@ public class MetricsCalc {
        =             FIRME (metodi + costruttori)               =
        ========================================================= */
 
-    /**
-     * Firma univoca nel file includendo catena dei tipi contenitori.
-     * Gestisce anche anonymous class per evitare collisioni.
-     * Esempio: Outer$Inner#foo(int,String)
-     */
     public String buildMethodSignature(MethodDeclaration md) {
         String owner = buildEnclosingTypeChain(md);
-
         String params = md.getParameters().stream()
                 .map(p -> eraseGenericType(p.getType().asString()))
                 .collect(Collectors.joining(","));
-
         return owner + "#" + md.getNameAsString() + "(" + params + ")";
     }
 
-    /**
-     * Firma univoca per costruttori.
-     * Esempio: Outer$Inner#<init>(int,String)
-     */
     public String buildConstructorSignature(ConstructorDeclaration cd) {
         String owner = buildEnclosingTypeChain(cd);
-
         String params = cd.getParameters().stream()
                 .map(p -> eraseGenericType(p.getType().asString()))
                 .collect(Collectors.joining(","));
-
         return owner + "#<init>(" + params + ")";
     }
 
@@ -154,11 +144,9 @@ public class MetricsCalc {
     }
 
     private int calculateNumLocalVariables(CallableDeclaration<?> cd) {
-        Optional<BlockStmt> body = getBody(cd);
-        if (body.isEmpty()) return 0;
-        return body.get()
-                .findAll(com.github.javaparser.ast.body.VariableDeclarator.class)
-                .size();
+        return getBody(cd)
+                .map(body -> body.findAll(com.github.javaparser.ast.body.VariableDeclarator.class).size())
+                .orElse(0);
     }
 
     /* =========================================================
@@ -174,7 +162,9 @@ public class MetricsCalc {
         }
 
         for (RevCommit commit : sortedCommits) {
-            if (commit.getParentCount() == 0) continue;
+            if (commit.getParentCount() == 0) {
+                continue;
+            }
 
             RevCommit parent = commit.getParent(0);
             List<DiffEntry> diffs = getDiffEntries(parent, commit);
@@ -187,26 +177,35 @@ public class MetricsCalc {
             }
         }
 
-        // Calcolo NAuth e AvgChurn
+        finalizeProcessMetrics(allMethods);
+    }
+
+    private void finalizeProcessMetrics(List<Method> allMethods) {
         for (Method m : allMethods) {
             Metrics metrics = m.getMetrics();
+            computeNumAuthors(m, metrics);
+            computeAvgChurn(metrics);
+        }
+    }
 
-            if (!m.getCommits().isEmpty()) {
-                Set<String> authors = m.getCommits().stream()
-                        .map(c -> c.getAuthorIdent().getName())
-                        .collect(Collectors.toSet());
-                metrics.setNumAuthors(authors.size());
-            } else {
-                metrics.setNumAuthors(0);
-            }
+    private void computeNumAuthors(Method m, Metrics metrics) {
+        if (m.getCommits().isEmpty()) {
+            metrics.setNumAuthors(0);
+            return;
+        }
+        Set<String> authors = m.getCommits().stream()
+                .map(c -> c.getAuthorIdent().getName())
+                .collect(Collectors.toSet());
+        metrics.setNumAuthors(authors.size());
+    }
 
-            if (metrics.getNumRevisions() > 0) {
-                double avg = (double) (metrics.getTotalStmtAdded() + metrics.getTotalStmtDeleted())
-                        / (double) metrics.getNumRevisions();
-                metrics.setAvgChurn(avg);
-            } else {
-                metrics.setAvgChurn(0.0);
-            }
+    private void computeAvgChurn(Metrics metrics) {
+        if (metrics.getNumRevisions() > 0) {
+            double avg = (double) (metrics.getTotalStmtAdded() + metrics.getTotalStmtDeleted())
+                    / (double) metrics.getNumRevisions();
+            metrics.setAvgChurn(avg);
+        } else {
+            metrics.setAvgChurn(0.0);
         }
     }
 
@@ -220,7 +219,7 @@ public class MetricsCalc {
                 ? diff.getOldPath()
                 : diff.getNewPath();
 
-        if (!filePath.endsWith(JAVA_EXTENSION) || filePath.contains(TEST_DIR_FRAGMENT)) {
+        if (!isValidJavaFile(filePath)) {
             return;
         }
 
@@ -245,6 +244,12 @@ public class MetricsCalc {
         }
     }
 
+    private boolean isValidJavaFile(String filePath) {
+        return filePath != null
+                && filePath.endsWith(JAVA_EXTENSION)
+                && !filePath.contains(TEST_DIR_FRAGMENT);
+    }
+
     private void updateMethodMetricsForCommit(List<Method> methodsToUpdate,
                                               RevCommit commit,
                                               CallableDeclaration<?> currentAst,
@@ -259,43 +264,51 @@ public class MetricsCalc {
 
         for (Method method : methodsToUpdate) {
             if (method.getVersion().getIndex() >= commitVersionIndex) {
-                Metrics metrics = method.getMetrics();
-
-                if (!method.getCommits().contains(commit)) {
-                    method.getCommits().add(commit);
-                    metrics.incrementNumRevisions();
-                }
-
-                method.setBodyHash(newBodyHash);
-
-                int locNew = calculateLOC(currentAst);
-                int locOld = (oldAst != null) ? calculateLOC(oldAst) : 0;
-
-                int added = 0;
-                int deleted = 0;
-
-                if (oldAst == null) {
-                    added = locNew;
-                } else {
-                    if (locNew > locOld) {
-                        added = locNew - locOld;
-                    } else if (locOld > locNew) {
-                        deleted = locOld - locNew;
-                    } else {
-                        added = 1;
-                        deleted = 1;
-                    }
-                }
-
-                metrics.addTotalStmtAdded(added);
-                metrics.addTotalStmtDeleted(deleted);
-
-                int churn = added + deleted;
-                if (churn > metrics.getMaxChurn()) {
-                    metrics.setMaxChurn(churn);
-                }
+                updateSingleMethodMetrics(method, commit, currentAst, oldAst, newBodyHash);
             }
         }
+    }
+
+    private void updateSingleMethodMetrics(Method method,
+                                           RevCommit commit,
+                                           CallableDeclaration<?> currentAst,
+                                           CallableDeclaration<?> oldAst,
+                                           String newBodyHash) {
+        Metrics metrics = method.getMetrics();
+
+        if (!method.getCommits().contains(commit)) {
+            method.getCommits().add(commit);
+            metrics.incrementNumRevisions();
+        }
+
+        method.setBodyHash(newBodyHash);
+
+        int locNew = calculateLOC(currentAst);
+        int locOld = (oldAst != null) ? calculateLOC(oldAst) : 0;
+
+        ChurnResult churnResult = computeChurn(locNew, locOld, oldAst == null);
+        metrics.addTotalStmtAdded(churnResult.added);
+        metrics.addTotalStmtDeleted(churnResult.deleted);
+
+        int churn = churnResult.added + churnResult.deleted;
+        if (churn > metrics.getMaxChurn()) {
+            metrics.setMaxChurn(churn);
+        }
+    }
+
+    private record ChurnResult(int added, int deleted) {}
+
+    private ChurnResult computeChurn(int locNew, int locOld, boolean isNewMethod) {
+        if (isNewMethod) {
+            return new ChurnResult(locNew, 0);
+        }
+        if (locNew > locOld) {
+            return new ChurnResult(locNew - locOld, 0);
+        }
+        if (locOld > locNew) {
+            return new ChurnResult(0, locOld - locNew);
+        }
+        return new ChurnResult(1, 1);
     }
 
     /* =========================================================
@@ -307,45 +320,48 @@ public class MetricsCalc {
             return;
         }
 
+        Map<String, Ticket> commitNameToTicket = buildCommitToTicketMap();
+
+        for (Method method : allMethods) {
+            checkMethodFixHistory(method, commitNameToTicket);
+        }
+    }
+
+    private Map<String, Ticket> buildCommitToTicketMap() {
         Map<String, Ticket> commitNameToTicket = new HashMap<>();
         for (Ticket ticket : ticketList) {
-            if (ticket.getAssociatedCommits() == null) continue;
+            if (ticket.getAssociatedCommits() == null) {
+                continue;
+            }
             for (RevCommit commit : ticket.getAssociatedCommits()) {
                 commitNameToTicket.put(commit.getName(), ticket);
             }
         }
+        return commitNameToTicket;
+    }
 
-        for (Method method : allMethods) {
-            Metrics metrics = method.getMetrics();
-            Version methodVersion = method.getVersion();
+    private void checkMethodFixHistory(Method method, Map<String, Ticket> commitNameToTicket) {
+        Metrics metrics = method.getMetrics();
+        Version methodVersion = method.getVersion();
 
-            for (RevCommit commit : method.getCommits()) {
-                Ticket t = commitNameToTicket.get(commit.getName());
-                if (t == null) continue;
+        for (RevCommit commit : method.getCommits()) {
+            Ticket t = commitNameToTicket.get(commit.getName());
+            if (t == null) {
+                continue;
+            }
 
-                Version commitVersion = commitToVersion.get(commit.getName());
-                if (commitVersion != null && commitVersion.getIndex() < methodVersion.getIndex()) {
-                    metrics.setHasFixHistory(1);
-                    break;
-                }
+            Version commitVersion = commitToVersion.get(commit.getName());
+            if (commitVersion != null && commitVersion.getIndex() < methodVersion.getIndex()) {
+                metrics.setHasFixHistory(1);
+                return;
             }
         }
     }
 
-   /* =========================================================
-   =                     LABELING BUGGY                     =
-   ========================================================= */
+    /* =========================================================
+       =                     LABELING BUGGY                     =
+       ========================================================= */
 
-    /**
-     * Reference-like labeling:
-     * - IV dal ticket
-     * - FV dalla release del commit di fix (qui: commitToVersion)
-     * - per ciascun fix commit: diff col parent
-     * - per ciascun diff: usa SOLO newPath
-     * - parse SOLO MethodDeclaration nel file nuovo
-     * - se metodo nuovo o hash corpo diverso => metodo “toccato dal fix”
-     * - label su intervallo [IV, FV)
-     */
     public void setMethodBuggyness(List<Method> allProjectMethods) {
         if (ticketList == null || ticketList.isEmpty()) {
             return;
@@ -354,38 +370,41 @@ public class MetricsCalc {
             return;
         }
 
-        // Itera su ogni ticket considerato come bug
         for (Ticket ticket : ticketList) {
-            Version injectedVersion = ticket.getInjectedVersion();
-            if (injectedVersion == null) continue;
-
-            // Itera sui commit che hanno risolto questo bug
-            List<RevCommit> fixCommits = ticket.getAssociatedCommits();
-            if (fixCommits == null || fixCommits.isEmpty()) continue;
-
-            for (RevCommit fixCommit : fixCommits) {
-                processSingleFixCommit(fixCommit, injectedVersion, allProjectMethods);
-            }
+            processTicketForBuggyness(ticket, allProjectMethods);
         }
     }
 
-    /**
-     * Analizza un singolo commit di fix per trovare i metodi che ha modificato.
-     * FV è ricavata dalla release del commit (come nella reference),
-     * ma qui usiamo commitToVersion (mappa costruita in GitRetriever).
-     */
+    private void processTicketForBuggyness(Ticket ticket, List<Method> allProjectMethods) {
+        Version injectedVersion = ticket.getInjectedVersion();
+        if (injectedVersion == null) {
+            return;
+        }
+
+        List<RevCommit> fixCommits = ticket.getAssociatedCommits();
+        if (fixCommits == null || fixCommits.isEmpty()) {
+            return;
+        }
+
+        for (RevCommit fixCommit : fixCommits) {
+            processSingleFixCommit(fixCommit, injectedVersion, allProjectMethods);
+        }
+    }
+
     private void processSingleFixCommit(RevCommit fixCommit,
                                         Version injectedVersion,
                                         List<Method> allProjectMethods) {
         Version fixedVersion = commitToVersion.get(fixCommit.getName());
-        if (fixedVersion == null) return;
+        if (fixedVersion == null) {
+            return;
+        }
 
         try {
-            if (fixCommit.getParentCount() == 0) return;
+            if (fixCommit.getParentCount() == 0) {
+                return;
+            }
             RevCommit parentOfFix = fixCommit.getParent(0);
 
-            // Ottiene la lista dei file modificati nel commit di fix
-            // (qui aggiungiamo detect renames nel DiffFormatter)
             List<DiffEntry> diffs = getDiffEntries(parentOfFix, fixCommit);
 
             Map<String, String> newFileContentsInFix = getFileContents(diffs, false);
@@ -402,18 +421,11 @@ public class MetricsCalc {
                 );
             }
         } catch (IOException e) {
-            // come reference: se un commit “rompe”, lo saltiamo senza bloccare la pipeline
-            System.err.println("[WARN] Error parsing fix commit " + fixCommit.getName() + ": " + e.getMessage());
+            LOGGER.log(Level.WARNING, "Error parsing fix commit {0}: {1}",
+                    new Object[]{fixCommit.getName(), e.getMessage()});
         }
     }
 
-    /**
-     * Analizza un singolo file modificato da un commit di fix.
-     * Identifica quali metodi nel file sono stati aggiunti o cambiati
-     * e li passa alla funzione finale di labeling.
-     *
-     * Reference: usa SOLO diff.getNewPath().
-     */
     private void processDiffForBuggyness(DiffEntry diff,
                                          Map<String, String> newFileContents,
                                          Map<String, String> oldFileContents,
@@ -422,9 +434,13 @@ public class MetricsCalc {
                                          List<Method> allProjectMethods) {
 
         String filePath = diff.getNewPath();
-        if (filePath == null || DiffEntry.DEV_NULL.equals(filePath)) return;
+        if (filePath == null || DiffEntry.DEV_NULL.equals(filePath)) {
+            return;
+        }
 
-        if (!filePath.endsWith(JAVA_EXTENSION) || filePath.contains(TEST_DIR_FRAGMENT)) return;
+        if (!isValidJavaFile(filePath)) {
+            return;
+        }
 
         String newContent = newFileContents.getOrDefault(filePath, "");
         Map<String, MethodDeclaration> newMethodsInFix = parseMethodsForBuggyness(newContent);
@@ -437,11 +453,9 @@ public class MetricsCalc {
             MethodDeclaration newMd = newMethodEntry.getValue();
             MethodDeclaration oldMd = oldMethodsInFix.get(signature);
 
-            // Confronta l'hash del corpo per determinare se il metodo è cambiato
             String newHash = calculateBodyHash(newMd);
             String oldHash = calculateBodyHash(oldMd);
 
-            // Se il metodo è nuovo o il corpo è cambiato rispetto alla versione precedente, allora è stato toccato dal fix
             if (oldMd == null || !newHash.equals(oldHash)) {
                 String fqn = filePath + "/" + signature;
                 labelBuggyMethods(fqn, injectedVersion, fixedVersion, allProjectMethods);
@@ -449,10 +463,6 @@ public class MetricsCalc {
         }
     }
 
-    /**
-     * Metodo ausiliario per etichettare le istanze di un metodo come buggy.
-     * Reference: scan lineare su tutti i metodi del progetto, intervallo [IV, FV).
-     */
     private void labelBuggyMethods(String fixedMethodFQN,
                                    Version injectedVersion,
                                    Version fixedVersion,
@@ -471,25 +481,22 @@ public class MetricsCalc {
         }
     }
 
-    /**
-     * Parsing "reference-like": SOLO MethodDeclaration e firma coerente col tuo dataset
-     * (usa buildMethodSignature(md), che è la stessa usata in GitRetriever).
-     */
     private Map<String, MethodDeclaration> parseMethodsForBuggyness(String content) {
         Map<String, MethodDeclaration> methods = new HashMap<>();
-        if (content == null || content.isEmpty()) return methods;
+        if (content == null || content.isEmpty()) {
+            return methods;
+        }
 
         content = sanitizeFileContent(content);
 
         try {
             ParseResult<CompilationUnit> pr = javaParser.parse(content);
-            if (pr.getResult().isEmpty()) return methods;
-
-            CompilationUnit cu = pr.getResult().get();
-            for (MethodDeclaration md : cu.findAll(MethodDeclaration.class)) {
-                methods.put(buildMethodSignature(md), md);
-            }
-        } catch (Exception ignored) {
+            pr.getResult().ifPresent(cu -> {
+                for (MethodDeclaration md : cu.findAll(MethodDeclaration.class)) {
+                    methods.put(buildMethodSignature(md), md);
+                }
+            });
+        } catch (Exception _) {
             // reference-like: ignora errori di parsing
         }
         return methods;
@@ -504,39 +511,41 @@ public class MetricsCalc {
             df.setRepository(repository);
             df.setDiffComparator(RawTextComparator.DEFAULT);
             df.setContext(0);
-
-            //detect renames/moves
             df.setDetectRenames(true);
-
             return df.scan(parent.getTree(), commit.getTree());
         }
     }
 
-
-    private Map<String, String> getFileContents(List<DiffEntry> diffs, boolean useOldPath) throws IOException {
+    private Map<String, String> getFileContents(List<DiffEntry> diffs, boolean useOldPath) {
         Map<String, String> contents = new HashMap<>();
         try (ObjectReader reader = repository.newObjectReader()) {
             for (DiffEntry diff : diffs) {
-                String path = useOldPath ? diff.getOldPath() : diff.getNewPath();
-                ObjectId id = useOldPath ? diff.getOldId().toObjectId() : diff.getNewId().toObjectId();
-                if (DiffEntry.DEV_NULL.equals(path)) {
-                    continue;
-                }
-                try {
-                    ObjectLoader loader = reader.open(id);
-                    String txt = new String(loader.getBytes(), StandardCharsets.UTF_8);
-                    contents.put(path, sanitizeFileContent(txt));
-                } catch (MissingObjectException ignored) {
-                    // oggetto mancante: ignora file
-                }
+                loadFileContent(diff, useOldPath, reader, contents);
             }
         }
         return contents;
     }
 
-    /**
-     * Parsing tollerante + include metodi e costruttori.
-     */
+    private void loadFileContent(DiffEntry diff,
+                                 boolean useOldPath,
+                                 ObjectReader reader,
+                                 Map<String, String> contents) {
+        String path = useOldPath ? diff.getOldPath() : diff.getNewPath();
+        ObjectId id = useOldPath ? diff.getOldId().toObjectId() : diff.getNewId().toObjectId();
+
+        if (DiffEntry.DEV_NULL.equals(path)) {
+            return;
+        }
+
+        try {
+            ObjectLoader loader = reader.open(id);
+            String txt = new String(loader.getBytes(), StandardCharsets.UTF_8);
+            contents.put(path, sanitizeFileContent(txt));
+        } catch (IOException _) {
+            // oggetto mancante o errore I/O: ignora file
+        }
+    }
+
     private Map<String, CallableDeclaration<?>> parseCallables(String content) {
         Map<String, CallableDeclaration<?>> callables = new HashMap<>();
         if (content == null || content.isEmpty()) {
@@ -547,29 +556,28 @@ public class MetricsCalc {
 
         try {
             ParseResult<CompilationUnit> pr = javaParser.parse(content);
-            if (pr.getResult().isEmpty()) return callables;
-
-            CompilationUnit cu = pr.getResult().get();
-
-            for (MethodDeclaration md : cu.findAll(MethodDeclaration.class)) {
-                callables.put(buildMethodSignature(md), md);
-            }
-            for (ConstructorDeclaration cd : cu.findAll(ConstructorDeclaration.class)) {
-                callables.put(buildConstructorSignature(cd), cd);
-            }
-        } catch (Exception ignored) {
+            pr.getResult().ifPresent(cu -> {
+                for (MethodDeclaration md : cu.findAll(MethodDeclaration.class)) {
+                    callables.put(buildMethodSignature(md), md);
+                }
+                for (ConstructorDeclaration cd : cu.findAll(ConstructorDeclaration.class)) {
+                    callables.put(buildConstructorSignature(cd), cd);
+                }
+            });
+        } catch (Exception _) {
             // parsing fallito: ignora file
         }
         return callables;
     }
 
     private String sanitizeFileContent(String s) {
-        if (s == null) return "";
+        if (s == null) {
+            return "";
+        }
         if (!s.isEmpty() && s.charAt(0) == '\uFEFF') {
             s = s.substring(1);
         }
-        s = s.replace("\u0000", "");
-        return s;
+        return s.replace("\u0000", "");
     }
 
     /* =========================================================
@@ -577,106 +585,109 @@ public class MetricsCalc {
        ========================================================= */
 
     private int calculateLOC(CallableDeclaration<?> cd) {
-        Optional<BlockStmt> body = getBody(cd);
-        if (body.isEmpty()) {
-            return 0;
-        }
+        return getBody(cd)
+                .map(this::countLinesOfCode)
+                .orElse(0);
+    }
 
-        String[] lines = body.get().toString().split("\\r?\\n");
-        boolean inMulti = false;
+    private int countLinesOfCode(BlockStmt body) {
+        String[] lines = body.toString().split("\\r?\\n");
+        boolean inMultiLineComment = false;
         int loc = 0;
 
         for (String line : lines) {
             String trimmed = line.trim();
-            if (trimmed.isEmpty()) continue;
 
-            if (inMulti) {
-                if (trimmed.contains("*/")) {
-                    inMulti = false;
-                }
-                continue;
+            if (inMultiLineComment) {
+                inMultiLineComment = !trimmed.contains("*/");
+            } else if (trimmed.startsWith("/*")) {
+                inMultiLineComment = !trimmed.contains("*/");
+            } else if (!trimmed.isEmpty() && !trimmed.startsWith("//")) {
+                loc++;
             }
-
-            if (trimmed.startsWith("/*")) {
-                if (!trimmed.contains("*/")) {
-                    inMulti = true;
-                }
-                continue;
-            }
-
-            if (trimmed.startsWith("//")) {
-                continue;
-            }
-
-            loc++;
         }
         return loc;
     }
 
     private int calculateNumBranches(CallableDeclaration<?> cd) {
-        Optional<BlockStmt> body = getBody(cd);
-        if (body.isEmpty()) return 0;
+        return getBody(cd)
+                .map(this::countBranches)
+                .orElse(0);
+    }
 
-        Node b = body.get();
+    private int countBranches(BlockStmt body) {
         int count = 0;
-
-        count += b.findAll(IfStmt.class).size();
-        count += b.findAll(ForStmt.class).size();
-        count += b.findAll(ForEachStmt.class).size();
-        count += b.findAll(WhileStmt.class).size();
-        count += b.findAll(DoStmt.class).size();
-        count += b.findAll(SwitchEntry.class).size(); // ogni case/default
-        count += b.findAll(CatchClause.class).size();
-        count += b.findAll(ConditionalExpr.class).size();
-
+        count += body.findAll(IfStmt.class).size();
+        count += body.findAll(ForStmt.class).size();
+        count += body.findAll(ForEachStmt.class).size();
+        count += body.findAll(WhileStmt.class).size();
+        count += body.findAll(DoStmt.class).size();
+        count += body.findAll(SwitchEntry.class).size();
+        count += body.findAll(CatchClause.class).size();
+        count += body.findAll(ConditionalExpr.class).size();
         return count;
     }
 
     private int calculateNestingDepth(CallableDeclaration<?> cd) {
-        Optional<BlockStmt> body = getBody(cd);
-        if (body.isEmpty()) return 0;
-        return calculateNestingDepth(body.get(), 0);
+        return getBody(cd)
+                .map(body -> calculateNestingDepth(body, 0))
+                .orElse(0);
     }
 
     private int calculateNestingDepth(Node node, int currentDepth) {
         int maxDepth = currentDepth;
         for (Node child : node.getChildNodes()) {
-            int nextDepth = currentDepth;
-            if (child instanceof IfStmt
-                    || child instanceof ForStmt
-                    || child instanceof ForEachStmt
-                    || child instanceof WhileStmt
-                    || child instanceof DoStmt
-                    || child instanceof SwitchStmt
-                    || child instanceof TryStmt) {
-                nextDepth = currentDepth + 1;
-            }
+            int nextDepth = isNestingNode(child) ? currentDepth + 1 : currentDepth;
             int childDepth = calculateNestingDepth(child, nextDepth);
-            if (childDepth > maxDepth) {
-                maxDepth = childDepth;
-            }
+            maxDepth = Math.max(maxDepth, childDepth);
         }
         return maxDepth;
     }
 
+    private boolean isNestingNode(Node node) {
+        return node instanceof IfStmt
+                || node instanceof ForStmt
+                || node instanceof ForEachStmt
+                || node instanceof WhileStmt
+                || node instanceof DoStmt
+                || node instanceof SwitchStmt
+                || node instanceof TryStmt;
+    }
+
     private String calculateBodyHash(CallableDeclaration<?> cd) {
-        Optional<BlockStmt> bodyOpt = getBody(cd);
-        if (cd == null || bodyOpt.isEmpty()) {
+        if (cd == null) {
             return "NULL_METHOD_HASH";
         }
-        String body = bodyOpt.get().toString();
-        body = body.replaceAll("//.*|/\\*(?s:.*?)\\*/", "");
-        body = body.replaceAll("\\s+", " ").trim();
-        if (body.isEmpty()) {
+
+        return getBody(cd)
+                .map(this::computeHashFromBody)
+                .orElse("NULL_METHOD_HASH");
+    }
+
+    private String computeHashFromBody(BlockStmt body) {
+        String normalizedBody = normalizeBodyForHash(body);
+        if (normalizedBody.isEmpty()) {
             return "EMPTY_BODY_HASH";
         }
+        return computeSha256Hash(normalizedBody);
+    }
+
+    private String normalizeBodyForHash(BlockStmt body) {
+        String bodyStr = body.toString();
+        bodyStr = bodyStr.replaceAll("//.*|/\\*[\\s\\S]*?\\*/", "");
+        return bodyStr.replaceAll("\\s+", " ").trim();
+    }
+
+    private String computeSha256Hash(String input) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] encoded = digest.digest(body.getBytes(StandardCharsets.UTF_8));
+            byte[] encoded = digest.digest(input.getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder(2 * encoded.length);
             for (byte b : encoded) {
                 String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) sb.append('0');
+                if (hex.length() == 1) {
+                    sb.append('0');
+                }
                 sb.append(hex);
             }
             return sb.toString();
@@ -709,7 +720,7 @@ public class MetricsCalc {
                 result.merge(rv.getBeginLine(), 1, Integer::sum);
             }
         } catch (Exception e) {
-            System.err.println("Errore PMD: " + e.getMessage());
+            LOGGER.log(Level.WARNING, "Errore PMD: {0}", e.getMessage());
         }
 
         return result;
@@ -740,26 +751,12 @@ public class MetricsCalc {
        =             UTILITY PER LA FIRMA UNIVOCA               =
        ========================================================= */
 
-    /**
-     * Costruisce una catena di tipi contenitori.
-     * Include anche identificatori per anonymous class per evitare collisioni.
-     */
     private String buildEnclosingTypeChain(Node start) {
         List<String> parts = new ArrayList<>();
 
         Node n = start;
         while (n != null) {
-            if (n instanceof com.github.javaparser.ast.body.ClassOrInterfaceDeclaration c) {
-                parts.add(c.getNameAsString());
-            } else if (n instanceof com.github.javaparser.ast.body.EnumDeclaration e) {
-                parts.add(e.getNameAsString());
-            } else if (n instanceof com.github.javaparser.ast.body.RecordDeclaration r) {
-                parts.add(r.getNameAsString());
-            } else if (n instanceof com.github.javaparser.ast.body.AnnotationDeclaration a) {
-                parts.add(a.getNameAsString());
-            } else if (n instanceof ObjectCreationExpr oce && oce.getAnonymousClassBody().isPresent()) {
-                parts.add(buildAnonymousQualifier(oce));
-            }
+            extractTypeName(n, parts);
             n = n.getParentNode().orElse(null);
         }
 
@@ -771,44 +768,59 @@ public class MetricsCalc {
         return String.join("$", parts);
     }
 
+    private void extractTypeName(Node n, List<String> parts) {
+        if (n instanceof com.github.javaparser.ast.body.ClassOrInterfaceDeclaration c) {
+            parts.add(c.getNameAsString());
+        } else if (n instanceof com.github.javaparser.ast.body.EnumDeclaration e) {
+            parts.add(e.getNameAsString());
+        } else if (n instanceof com.github.javaparser.ast.body.RecordDeclaration r) {
+            parts.add(r.getNameAsString());
+        } else if (n instanceof com.github.javaparser.ast.body.AnnotationDeclaration a) {
+            parts.add(a.getNameAsString());
+        } else if (n instanceof ObjectCreationExpr oce && oce.getAnonymousClassBody().isPresent()) {
+            parts.add(buildAnonymousQualifier(oce));
+        }
+    }
+
     private String buildAnonymousQualifier(ObjectCreationExpr oce) {
         String typeName = eraseGenericType(oce.getType().asString());
-        String ctx = "pos";
+        String ctx = resolveAnonymousContext(oce);
+        return "<anon:" + typeName + "@" + ctx + ">";
+    }
 
+    private String resolveAnonymousContext(ObjectCreationExpr oce) {
         Node parent = oce.getParentNode().orElse(null);
-        if (parent instanceof com.github.javaparser.ast.body.VariableDeclarator vd) {
-            ctx = vd.getNameAsString();
-        } else if (parent instanceof com.github.javaparser.ast.expr.AssignExpr ae) {
-            ctx = ae.getTarget().toString();
-        } else if (parent instanceof com.github.javaparser.ast.body.FieldDeclaration fd
-                && !fd.getVariables().isEmpty()) {
-            ctx = fd.getVariable(0).getNameAsString();
-        } else if (parent instanceof com.github.javaparser.ast.expr.MethodCallExpr mce) {
-            int idx = mce.getArguments().indexOf(oce);
-            ctx = "arg" + idx;
-        } else if (parent instanceof ObjectCreationExpr oce2) {
-            int idx = oce2.getArguments().indexOf(oce);
-            ctx = "arg" + idx;
-        } else {
-            int line = oce.getBegin().map(p -> p.line).orElse(-1);
-            int col = oce.getBegin().map(p -> p.column).orElse(-1);
-            ctx = "pos" + line + "_" + col;
-        }
+        String ctx = extractContextFromParent(parent, oce);
 
         ctx = ctx.replaceAll("[^a-zA-Z0-9_.$-]", "_");
         if (ctx.length() > 40) {
             ctx = ctx.substring(0, 40);
         }
-
-        return "<anon:" + typeName + "@" + ctx + ">";
+        return ctx;
     }
 
-    /**
-     * "Erasure" semplice: rimuove tutto ciò che è tra <...> gestendo nesting.
-     * Esempio: Map<String, List<Integer>> -> Map
-     */
+    private String extractContextFromParent(Node parent, ObjectCreationExpr oce) {
+        return switch (parent) {
+            case com.github.javaparser.ast.body.VariableDeclarator vd -> vd.getNameAsString();
+            case com.github.javaparser.ast.expr.AssignExpr ae -> ae.getTarget().toString();
+            case com.github.javaparser.ast.body.FieldDeclaration fd when !fd.getVariables().isEmpty() ->
+                    fd.getVariable(0).getNameAsString();
+            case com.github.javaparser.ast.expr.MethodCallExpr mce -> "arg" + mce.getArguments().indexOf(oce);
+            case ObjectCreationExpr oce2 -> "arg" + oce2.getArguments().indexOf(oce);
+            case null, default -> buildPositionContext(oce);
+        };
+    }
+
+    private String buildPositionContext(ObjectCreationExpr oce) {
+        int line = oce.getBegin().map(p -> p.line).orElse(-1);
+        int col = oce.getBegin().map(p -> p.column).orElse(-1);
+        return "pos" + line + "_" + col;
+    }
+
     private String eraseGenericType(String typeStr) {
-        if (typeStr == null) return "";
+        if (typeStr == null) {
+            return "";
+        }
 
         String s = typeStr.replaceAll("\\s+", "");
         StringBuilder out = new StringBuilder(s.length());
@@ -818,19 +830,13 @@ public class MetricsCalc {
             char ch = s.charAt(i);
             if (ch == '<') {
                 depth++;
-                continue;
-            }
-            if (ch == '>') {
+            } else if (ch == '>') {
                 depth = Math.max(0, depth - 1);
-                continue;
-            }
-            if (depth == 0) {
+            } else if (depth == 0) {
                 out.append(ch);
             }
         }
-        String res = out.toString();
-        // normalizza varargs
-        res = res.replace("...", "[]");
-        return res;
+
+        return out.toString().replace("...", "[]");
     }
 }

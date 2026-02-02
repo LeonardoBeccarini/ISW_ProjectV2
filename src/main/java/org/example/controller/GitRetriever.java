@@ -30,13 +30,15 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  * Recupera informazioni dal repository Git e calcola le metriche richieste
  * per ogni metodo Java in ogni Version.
  */
 public class GitRetriever {
+
+    private static final Logger LOGGER = Logger.getLogger(GitRetriever.class.getName());
 
     private static final String JAVA_EXTENSION = ".java";
     private static final String TEST_DIR_FRAGMENT = "/test/";
@@ -105,10 +107,6 @@ public class GitRetriever {
         this.metricsCalc = new MetricsCalc(this.repository, this.commitToVersion, this.ticketList);
     }
 
-    public List<Version> getAnalysisVersions() {
-        return Collections.unmodifiableList(analysisVersionList);
-    }
-
 
     /* =========================================================
        =                 COMMIT --> VERSION                       =
@@ -150,62 +148,94 @@ public class GitRetriever {
 
     private void prepareAnalysisVersionList() {
         analysisVersionList.clear();
-        if (versionList == null || versionList.isEmpty()) return;
+        if (versionList == null || versionList.isEmpty()) {
+            return;
+        }
 
+        int maxFixedVersionIndex = maxFixedVersionIndex(ticketList);
+        List<Version> ordered = orderedVersionsForAnalysis(versionList, maxFixedVersionIndex);
+
+        List<Version> candidatesWithCommits = filterVersionsWithCommits(
+                ordered,
+                "0 commit associati alla release (baseline/milestone o bucket temporale vuoto)"
+        );
+
+        if (candidatesWithCommits.isEmpty()) {
+            // Fallback: prova a prendere tutte le versioni con commit senza vincolo su maxFixedVersionIndex
+            List<Version> allOrdered = orderedVersionsForAnalysis(versionList, 0);
+            candidatesWithCommits = filterVersionsWithCommits(allOrdered, "0 commit associati alla release (fallback)");
+        }
+
+        int numToConsider = numAnalysisVersionsToConsider(candidatesWithCommits.size());
+        if (numToConsider > 0) {
+            analysisVersionList.addAll(candidatesWithCommits.subList(0, numToConsider));
+        }
+    }
+
+    private static int maxFixedVersionIndex(List<Ticket> tickets) {
+        if (tickets == null || tickets.isEmpty()) {
+            return 0;
+        }
         // Trova l'indice massimo della fixed version tra i ticket (se presente).
-        int maxFixedVersionIndex = ticketList.stream()
+        return tickets.stream()
                 .filter(Objects::nonNull)
                 .map(Ticket::getFixedVersion)
                 .filter(Objects::nonNull)
                 .mapToInt(Version::getIndex)
                 .max()
                 .orElse(0);
+    }
 
-        // Considera le versioni fino alla max fixed version (se definita), altrimenti tutte.
-        List<Version> ordered = versionList.stream()
+    private static List<Version> orderedVersionsForAnalysis(List<Version> versions, int maxFixedVersionIndex) {
+        if (versions == null || versions.isEmpty()) {
+            return List.of();
+        }
+
+        List<Version> filtered = versions.stream()
                 .filter(Objects::nonNull)
-                .filter(v -> maxFixedVersionIndex == 0 || v.getIndex() <= maxFixedVersionIndex)
+                .filter(v -> maxFixedVersionIndex <= 0 || v.getIndex() <= maxFixedVersionIndex)
                 .sorted(Comparator.comparingInt(Version::getIndex))
-                .collect(Collectors.toList());
+                .toList();
 
-        if (ordered.isEmpty()) {
-            ordered = versionList.stream()
-                    .filter(Objects::nonNull)
-                    .sorted(Comparator.comparingInt(Version::getIndex))
-                    .toList();
+        if (!filtered.isEmpty()) {
+            return filtered;
         }
 
-        // Costruisce la lista dei candidati con commit, ma stampa warning per le versioni senza commit.
-        List<Version> candidatesWithCommits = new ArrayList<>();
+        // Nessuna versione entro maxFixedVersionIndex: usa tutte le versioni disponibili.
+        return versions.stream()
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparingInt(Version::getIndex))
+                .toList();
+    }
+
+    private List<Version> filterVersionsWithCommits(List<Version> ordered, String warnReasonIfNoCommits) {
+        List<Version> out = new ArrayList<>();
+        if (ordered == null || ordered.isEmpty()) {
+            return out;
+        }
+
         for (Version v : ordered) {
-            List<RevCommit> commits = (v != null) ? v.getCommitList() : null;
-            if (commits == null || commits.isEmpty()) {
-                warnSkipVersion(v, "0 commit associati alla release (baseline/milestone o bucket temporale vuoto)");
-                continue;
-            }
-            candidatesWithCommits.add(v);
-        }
-
-        if (candidatesWithCommits.isEmpty()) {
-            // Fallback: prova a prendere tutte le versioni con commit senza vincolo su maxFixedVersionIndex
-            for (Version v : versionList.stream()
-                    .filter(Objects::nonNull)
-                    .sorted(Comparator.comparingInt(Version::getIndex))
-                    .toList()) {
-
-                List<RevCommit> commits = v.getCommitList();
-                if (commits == null || commits.isEmpty()) {
-                    warnSkipVersion(v, "0 commit associati alla release (fallback)");
-                    continue;
-                }
-                candidatesWithCommits.add(v);
+            if (hasCommits(v)) {
+                out.add(v);
+            } else {
+                warnSkipVersion(v, warnReasonIfNoCommits);
             }
         }
 
-        int numToConsider = (int) Math.ceil(candidatesWithCommits.size() * GitRetriever.ANALYSIS_FRACTION);
-        if (numToConsider == 0 && !candidatesWithCommits.isEmpty()) numToConsider = 1;
+        return out;
+    }
 
-        analysisVersionList.addAll(candidatesWithCommits.subList(0, numToConsider));
+    private static boolean hasCommits(Version v) {
+        List<RevCommit> commits = (v != null) ? v.getCommitList() : null;
+        return commits != null && !commits.isEmpty();
+    }
+
+    private static int numAnalysisVersionsToConsider(int candidateCount) {
+        if (candidateCount <= 0) {
+            return 0;
+        }
+        int numToConsider = (int) Math.ceil(candidateCount * GitRetriever.ANALYSIS_FRACTION);
+        return Math.max(1, numToConsider);
     }
 
     /* =========================================================
@@ -219,70 +249,144 @@ public class GitRetriever {
 
         loadAllCommits();
 
-        Map<String, Ticket> byKey = new LinkedHashMap<>();
-        LocalDate minC = null, maxR = null;
-
         final int DATE_SLACK_DAYS = 3;
-
-        for (Ticket t : tickets) {
-            if (t == null) continue;
-            String key = safeTicketKey(t);
-            if (key == null || key.isBlank()) continue;
-
-            byKey.put(key.toUpperCase(), t);
-
-            if (t.getCreationDate() != null) {
-                minC = (minC == null || t.getCreationDate().isBefore(minC))
-                        ? t.getCreationDate()
-                        : minC;
-            }
-            if (t.getResolutionDate() != null) {
-                maxR = (maxR == null || t.getResolutionDate().isAfter(maxR))
-                        ? t.getResolutionDate()
-                        : maxR;
-            }
-
-            t.setAssociatedCommits(new ArrayList<>());
-        }
-
-        if (byKey.isEmpty()) {
+        TicketIndex index = buildTicketIndex(tickets, DATE_SLACK_DAYS);
+        if (index.byKey.isEmpty()) {
             return;
         }
 
         Pattern pattern = Pattern.compile(projectName + "-\\d+", Pattern.CASE_INSENSITIVE);
 
         Iterable<RevCommit> log = git.log().add(repository.resolve("HEAD")).call();
-        for (RevCommit c : log) {
-            if (c.getParentCount() == 0) continue;
-
-            String msg = Optional.ofNullable(c.getFullMessage()).orElse("");
-
-            LocalDate d = Instant.ofEpochSecond(c.getCommitTime())
-                    .atZone(ZoneOffset.UTC)
-                    .toLocalDate();
-
-            if (minC != null && d.isBefore(minC.minusDays(DATE_SLACK_DAYS))) continue;
-            if (maxR != null && d.isAfter(maxR.plusDays(DATE_SLACK_DAYS))) continue;
-
-            Matcher m = pattern.matcher(msg);
-            while (m.find()) {
-                String key = m.group().toUpperCase();
-                Ticket t = byKey.get(key);
-                if (t == null) continue;
-
-                LocalDate cmin = t.getCreationDate();
-                LocalDate cmax = t.getResolutionDate();
-
-                if (cmin != null && d.isBefore(cmin.minusDays(DATE_SLACK_DAYS))) continue;
-                if (cmax != null && d.isAfter(cmax.plusDays(DATE_SLACK_DAYS))) continue;
-
-                t.getAssociatedCommits().add(c);
+        for (RevCommit commit : log) {
+            if (commit != null) {
+                attachCommitIfMatchesTickets(commit, index, pattern);
             }
         }
     }
 
-    private String safeTicketKey(Ticket t) {
-        return (t.getKey() != null) ? t.getKey().trim() : null;
+    private static final class TicketIndex {
+        final Map<String, Ticket> byKey;
+        final LocalDate minCreation;
+        final LocalDate maxResolution;
+        final int slackDays;
+
+        TicketIndex(Map<String, Ticket> byKey, LocalDate minCreation, LocalDate maxResolution, int slackDays) {
+            this.byKey = byKey;
+            this.minCreation = minCreation;
+            this.maxResolution = maxResolution;
+            this.slackDays = slackDays;
+        }
+    }
+
+    private TicketIndex buildTicketIndex(List<Ticket> tickets, int slackDays) {
+        Map<String, Ticket> byKey = new LinkedHashMap<>();
+        LocalDate minC = null;
+        LocalDate maxR = null;
+
+        for (Ticket t : tickets) {
+            String key = normalizeTicketKey(t);
+            if (key == null) {
+                continue;
+            }
+
+            byKey.put(key, t);
+            minC = minDate(minC, t.getCreationDate());
+            maxR = maxDate(maxR, t.getResolutionDate());
+
+            // Reset solo per ticket validi (coerente con la versione precedente).
+            resetAssociatedCommits(t);
+        }
+
+        return new TicketIndex(byKey, minC, maxR, slackDays);
+    }
+
+
+    private void attachCommitIfMatchesTickets(RevCommit commit, TicketIndex index, Pattern pattern) {
+        if (commit.getParentCount() == 0) {
+            return;
+        }
+
+        LocalDate commitDate = commitDate(commit);
+        if (!isWithinDateWindow(commitDate, index.minCreation, index.maxResolution, index.slackDays)) {
+            return;
+        }
+
+        String msg = safeCommitMessage(commit);
+        Matcher matcher = pattern.matcher(msg);
+        while (matcher.find()) {
+            String key = matcher.group().toUpperCase(Locale.ROOT);
+            Ticket ticket = index.byKey.get(key);
+            if (ticket != null && isWithinTicketWindow(commitDate, ticket, index.slackDays)) {
+                ticket.getAssociatedCommits().add(commit);
+            }
+        }
+    }
+
+    private static String safeCommitMessage(RevCommit commit) {
+        String m = (commit != null) ? commit.getFullMessage() : null;
+        return (m != null) ? m : "";
+    }
+
+    private static LocalDate commitDate(RevCommit commit) {
+        return Instant.ofEpochSecond(commit.getCommitTime())
+                .atZone(ZoneOffset.UTC)
+                .toLocalDate();
+    }
+
+    private static boolean isWithinDateWindow(LocalDate d, LocalDate min, LocalDate max, int slackDays) {
+        if (d == null) {
+            return false;
+        }
+        if (min != null && d.isBefore(min.minusDays(slackDays))) {
+            return false;
+        }
+        return max == null || !d.isAfter(max.plusDays(slackDays));
+    }
+
+    private static boolean isWithinTicketWindow(LocalDate commitDate, Ticket t, int slackDays) {
+        if (t == null || commitDate == null) {
+            return false;
+        }
+
+        LocalDate cmin = t.getCreationDate();
+        LocalDate cmax = t.getResolutionDate();
+
+        return (cmin == null || !commitDate.isBefore(cmin.minusDays(slackDays)))
+                && (cmax == null || !commitDate.isAfter(cmax.plusDays(slackDays)));
+    }
+
+    private static String normalizeTicketKey(Ticket t) {
+        if (t == null) {
+            return null;
+        }
+        String raw = t.getKey();
+        if (raw == null) {
+            return null;
+        }
+        String trimmed = raw.trim();
+        if (trimmed.isBlank()) {
+            return null;
+        }
+        return trimmed.toUpperCase(Locale.ROOT);
+    }
+
+    private static LocalDate minDate(LocalDate current, LocalDate candidate) {
+        if (candidate == null) {
+            return current;
+        }
+        return (current == null || candidate.isBefore(current)) ? candidate : current;
+    }
+
+    private static LocalDate maxDate(LocalDate current, LocalDate candidate) {
+        if (candidate == null) {
+            return current;
+        }
+        return (current == null || candidate.isAfter(current)) ? candidate : current;
+    }
+
+    private static void resetAssociatedCommits(Ticket t) {
+        t.setAssociatedCommits(new ArrayList<>());
     }
 
     /* =========================================================
@@ -307,62 +411,13 @@ public class GitRetriever {
         List<Integer> acceptedMethodCounts = new ArrayList<>();
 
         for (Version version : candidates) {
-            List<RevCommit> versionCommits = version.getCommitList();
-            if (versionCommits == null || versionCommits.isEmpty()) {
-                // In teoria già filtrato in prepareAnalysisVersionList(), ma manteniamo robustezza.
-                warnSkipVersion(version, "0 commit associati alla release");
+            RevCommit snapshotCommit = latestCommitOrNull(version);
+            if (snapshotCommit == null) {
                 continue;
             }
 
-            // In associateCommitToVersion() la lista è già ordinata per commitTime.
-            RevCommit snapshotCommit = versionCommits.getLast();
-
-            // Estrazione in strutture temporanee: se la versione è outlier, non facciamo merge.
-            List<Method> tmpMethods = new ArrayList<>();
-            Map<String, List<Method>> tmpByFqn = new HashMap<>();
-
-            try (TreeWalk treeWalk = new TreeWalk(repository)) {
-                treeWalk.addTree(snapshotCommit.getTree());
-                treeWalk.setRecursive(true);
-
-                while (treeWalk.next()) {
-                    String path = treeWalk.getPathString();
-                    if (!path.endsWith(JAVA_EXTENSION) || path.contains(TEST_DIR_FRAGMENT)) {
-                        continue;
-                    }
-                    processJavaFile(treeWalk, version, path, tmpMethods, tmpByFqn);
-                }
-            }
-
-            int extractedCount = tmpMethods.size();
-            if (shouldSkipByMethodCount(extractedCount, acceptedMethodCounts)) {
-                String baselineStr = acceptedMethodCounts.size() < BASELINE_WINDOW
-                        ? "n/a"
-                        : String.valueOf(medianOfLast(acceptedMethodCounts));
-
-                warnSkipVersion(
-                        version,
-                        String.format(
-                                "metodi estratti=%d (baseline mediana=%s). Versione esclusa dall'analisi.",
-                                extractedCount,
-                                baselineStr
-                        )
-                );
-                continue;
-            }
-
-            // Versione accettata: ora è davvero "in analisi"
-            analysisVersionList.add(version);
-
-            // merge in strutture globali
-            allMethods.addAll(tmpMethods);
-            for (Map.Entry<String, List<Method>> e : tmpByFqn.entrySet()) {
-                methodsByFqn
-                        .computeIfAbsent(e.getKey(), k -> new ArrayList<>(e.getValue().size()))
-                        .addAll(e.getValue());
-            }
-
-            acceptedMethodCounts.add(extractedCount);
+            VersionExtraction extraction = extractStaticMetricsAtCommit(version, snapshotCommit);
+            handleVersionExtraction(version, extraction, acceptedMethodCounts, allMethods, methodsByFqn);
         }
 
         // allCommits è già ordinata cronologicamente da loadAllCommits()
@@ -373,6 +428,100 @@ public class GitRetriever {
 
         return allMethods;
     }
+
+    private static final class VersionExtraction {
+        final List<Method> methods = new ArrayList<>();
+        final Map<String, List<Method>> methodsByFqn = new HashMap<>();
+    }
+
+    private RevCommit latestCommitOrNull(Version version) {
+        List<RevCommit> versionCommits = (version != null) ? version.getCommitList() : null;
+        if (versionCommits == null || versionCommits.isEmpty()) {
+            // In teoria già filtrato in prepareAnalysisVersionList(), ma manteniamo robustezza.
+            warnSkipVersion(version, "0 commit associati alla release");
+            return null;
+        }
+        return versionCommits.getLast();
+    }
+
+    private VersionExtraction extractStaticMetricsAtCommit(Version version, RevCommit snapshotCommit) throws IOException {
+        VersionExtraction extraction = new VersionExtraction();
+
+        try (TreeWalk treeWalk = new TreeWalk(repository)) {
+            treeWalk.addTree(snapshotCommit.getTree());
+            treeWalk.setRecursive(true);
+
+            while (treeWalk.next()) {
+                String path = treeWalk.getPathString();
+                if (!isAnalyzableJavaFile(path)) {
+                    continue;
+                }
+                processJavaFile(treeWalk, version, path, extraction.methods, extraction.methodsByFqn);
+            }
+        }
+
+        return extraction;
+    }
+
+    private static boolean isAnalyzableJavaFile(String path) {
+        return path != null
+                && path.endsWith(JAVA_EXTENSION)
+                && !path.contains(TEST_DIR_FRAGMENT);
+    }
+
+    private void handleVersionExtraction(Version version,
+                                         VersionExtraction extraction,
+                                         List<Integer> acceptedMethodCounts,
+                                         List<Method> allMethods,
+                                         Map<String, List<Method>> methodsByFqn) {
+
+        int extractedCount = (extraction != null) ? extraction.methods.size() : 0;
+
+        if (shouldSkipByMethodCount(extractedCount, acceptedMethodCounts)) {
+            warnOutlierVersion(version, extractedCount, acceptedMethodCounts);
+            return;
+        }
+
+        acceptVersionExtraction(version, extraction, extractedCount, acceptedMethodCounts, allMethods, methodsByFqn);
+    }
+
+    private void warnOutlierVersion(Version version, int extractedCount, List<Integer> acceptedMethodCounts) {
+        String baselineStr = baselineString(acceptedMethodCounts);
+        String reason = "metodi estratti=" + extractedCount
+                + " (baseline mediana=" + baselineStr + "). Versione esclusa dall'analisi.";
+        warnSkipVersion(version, reason);
+    }
+
+    private String baselineString(List<Integer> acceptedMethodCounts) {
+        if (acceptedMethodCounts == null || acceptedMethodCounts.size() < BASELINE_WINDOW) {
+            return "n/a";
+        }
+        return String.valueOf(medianOfLast(acceptedMethodCounts));
+    }
+
+    private void acceptVersionExtraction(Version version,
+                                         VersionExtraction extraction,
+                                         int extractedCount,
+                                         List<Integer> acceptedMethodCounts,
+                                         List<Method> allMethods,
+                                         Map<String, List<Method>> methodsByFqn) {
+
+        // Versione accettata: ora è davvero "in analisi"
+        analysisVersionList.add(version);
+
+        if (extraction != null) {
+            allMethods.addAll(extraction.methods);
+
+            for (Map.Entry<String, List<Method>> e : extraction.methodsByFqn.entrySet()) {
+                methodsByFqn
+                        .computeIfAbsent(e.getKey(), k -> new ArrayList<>(e.getValue().size()))
+                        .addAll(e.getValue());
+            }
+        }
+
+        acceptedMethodCounts.add(extractedCount);
+    }
+
 
 
     /* =========================================================
@@ -399,9 +548,10 @@ public class GitRetriever {
         // Parsing tollerante: se c'Ã¨ un AST parziale lo usiamo comunque
         try {
             ParseResult<CompilationUnit> pr = javaParser.parse(fileContent);
-            if (pr.getResult().isEmpty()) return;
+            Optional<CompilationUnit> cuOpt = pr.getResult();
+            if (cuOpt.isEmpty()) return;
 
-            CompilationUnit cu = pr.getResult().get();
+            CompilationUnit cu = cuOpt.get();
 
             // 1) Metodi
             for (MethodDeclaration md : cu.findAll(MethodDeclaration.class)) {
@@ -427,7 +577,7 @@ public class GitRetriever {
                 methodsByFqn.computeIfAbsent(fqn, k -> new ArrayList<>()).add(ctor);
             }
 
-        } catch (ParseProblemException | StackOverflowError e) {
+        } catch (ParseProblemException | StackOverflowError _) {
             // Se proprio fallisce tutto, ignora il file (ma ora succede molto meno)
         }
     }
@@ -448,11 +598,18 @@ public class GitRetriever {
        ========================================================= */
 
     private void warnSkipVersion(Version v, String reason) {
+        if (!LOGGER.isLoggable(Level.WARNING)) {
+            return;
+        }
+
         String name = (v != null && v.getName() != null) ? v.getName() : "<unknown>";
         int idx = (v != null) ? v.getIndex() : -1;
-        System.err.printf("[WARN] [%s] Versione %d (%s) esclusa dall'analisi: %s%n",
-                projectName, idx, name, reason);
+
+        LOGGER.log(Level.WARNING,
+                "[{0}] Versione {1} ({2}) esclusa dall''analisi: {3}",
+                new Object[]{projectName, idx, name, reason});
     }
+
 
     private boolean shouldSkipByMethodCount(int extractedCount, List<Integer> acceptedCounts) {
         int hardMin = hardMinMethodsForProject();

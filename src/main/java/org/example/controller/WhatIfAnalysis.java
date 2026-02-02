@@ -192,41 +192,7 @@ public class WhatIfAnalysis {
                 rA, rBPlus, rB, rC,
                 deltaExpectedProb, relOnBPlusProb, relOnAProb,
                 deltaEstimatedClassify);
-
-        // Console summary
-        System.out.println("\n=== WHAT-IF ANALYSIS (latest release) ===");
-        System.out.println("Project: " + projectName);
-        System.out.println("AFeature: " + actionableFeature);
-        System.out.println("AFMethod: " + baseMethodName);
-        System.out.println("Latest VersionIndex: " + latestVersion);
-        System.out.println("BClassifier(best spec): " + best);
-
-        System.out.printf(Locale.US, "Refactor delta on AFeature: BEFORE=%.3f AFTER=%.3f factor=%.3f%n",
-                delta.before, delta.after, delta.factor);
-
-        System.out.printf(Locale.US, "B+ threshold: %.3f (rule: %s)%n", threshold, ruleDescription(actionableFeature));
-
-        System.out.println("\nReport-style (probabilities): ExpectedDefectsSum = Σ P(yes)");
-        System.out.printf(Locale.US, "A_latest: %.3f (n=%d)%n", rA.expectedDefectsSum, rA.n);
-        System.out.printf(Locale.US, "B_plus:   %.3f (n=%d)%n", rBPlus.expectedDefectsSum, rBPlus.n);
-        System.out.printf(Locale.US, "B:        %.3f (n=%d)%n", rB.expectedDefectsSum, rB.n);
-        System.out.printf(Locale.US, "C:        %.3f (n=%d)%n", rC.expectedDefectsSum, rC.n);
-
-        System.out.println("\nPaper-like (counts): EstimatedBuggy_Classify = count(classifyInstance==yes)");
-        System.out.printf(Locale.US, "A_latest: %d%n", rA.estimatedBuggyClassify);
-        System.out.printf(Locale.US, "B_plus:   %d%n", rBPlus.estimatedBuggyClassify);
-        System.out.printf(Locale.US, "B:        %d%n", rB.estimatedBuggyClassify);
-        System.out.printf(Locale.US, "C:        %d%n", rC.estimatedBuggyClassify);
-
-        System.out.println("\nReductions:");
-        System.out.printf(Locale.US, "Δprob(B+->B): %.3f (rel on B+: %.2f%%, rel on A_latest: %.2f%%)%n",
-                deltaExpectedProb, relOnBPlusProb * 100.0, relOnAProb * 100.0);
-        System.out.printf(Locale.US, "Δcount(B+->B) via classifyInstance: %d%n", deltaEstimatedClassify);
-
-        System.out.println("\nSaved: " + resCsv);
-        System.out.println("Saved datasets in: " + outDir);
     }
-
     /* =========================================================
        =                   Core helpers                        =
        ========================================================= */
