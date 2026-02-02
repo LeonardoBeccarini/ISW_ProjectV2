@@ -12,11 +12,15 @@ import java.util.Objects;
 
 public class JiraUtils {
 
+    private JiraUtils(){
+        // Add a private constructor to hide the implicit public one.
+    }
 
     public static Version getReleaseAfterOrEqualDate(LocalDate specificDate, List<Version> versionList) {
         if (specificDate == null || versionList == null || versionList.isEmpty()) return null;
 
-        int lo = 0, hi = versionList.size() - 1;
+        int lo = 0;
+        int hi = versionList.size() - 1;
         while (lo <= hi) {
             int mid = (lo + hi) >>> 1;
             LocalDate d = versionList.get(mid).getDate();

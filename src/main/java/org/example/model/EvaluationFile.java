@@ -45,9 +45,9 @@ public class EvaluationFile {
                 if (this.description.equals("details")) {
                     r.append(e.getTrainingSize()).append(",").append(e.getTestingSize()).append(",");
                 }
-                r.append(csv(e.getModel())).append(",")
+                r.append(csv(e.getClassifier())).append(",")
                         .append(csv(e.getFeatureSelection())).append(",")
-                        .append(csv(e.getBalancing())).append(",")
+                        .append(csv(e.getSampling())).append(",")
                         .append(csv(e.getCostSensitive())).append(",")
                         .append(csv(e.getThresholdStrategy())).append(",")
                         .append(csv(e.getThreshold())).append(",")

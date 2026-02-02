@@ -1,6 +1,10 @@
 package org.example.controller;
 
 import org.example.model.ClassifierEvaluation;
+import org.example.utilities.CsvExporter;
+import org.example.utilities.CsvExporter.RefactorDelta;
+import org.example.utilities.CsvExporter.WhatIfContext;
+import org.example.utilities.CsvExporter.WhatIfResult;
 import weka.classifiers.Classifier;
 import weka.classifiers.rules.ZeroR;
 import weka.core.*;
@@ -11,20 +15,14 @@ import weka.filters.unsupervised.attribute.Normalize;
 import weka.filters.unsupervised.attribute.Remove;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 
 /**
- * What-If analysis (method-level) allineata al report:
- * - ExpectedDefectsSum(X) = Σ P(buggy="yes") su X
- * - Riduzione attesa = ExpectedDefectsSum(B+) - ExpectedDefectsSum(B)
- * <p>
- * Patch principali:
- * 1) Parser CSV eval robusto (MODEL/BALANCING... + legacy Classifier/Sampling...)
- * 2) Niente clamp a 1.0 sul refactor factor (AFTER/BEFORE)
- * 3) Aggiunta metrica paper-like: EstimatedBuggy_Classify (count via classifyInstance)
- * 4) Fallback per B+ degenerato (vuoto o =A_latest): top-k per AFeature
+ * What-If analysis (method-level) allineata al report.
+ *
+ * Responsabilità UNICA: logica di analisi What-If con modelli ML.
+ * Delega TUTTO l'I/O CSV a CsvExporter.
  */
 public class WhatIfAnalysis {
 
@@ -34,12 +32,12 @@ public class WhatIfAnalysis {
     private static final String COL_BODY_HASH = "BodyHash";
     private static final String COL_BUGGY = "Buggy";
 
-    private static final double DEFAULT_TOP_QUANTILE_FOR_BPLUS = 0.75; // top 25%
+    private static final double DEFAULT_TOP_QUANTILE_FOR_BPLUS = 0.75;
     private static final double EPS = 1e-9;
 
-    private final String projectName;          // expected UPPERCASE in your project
-    private final String actionableFeature;    // AFeature
-    private final String baseMethodName;       // AFMethod base name (used by RefactorAnalyzer for refactor_metrics_<M>.csv)
+    private final String projectName;
+    private final String actionableFeature;
+    private final String baseMethodName;
 
     public WhatIfAnalysis(String projectNameUpperCase, String actionableFeature, String baseMethodName) {
         this.projectName = Objects.requireNonNull(projectNameUpperCase, "projectNameUpperCase").trim().toUpperCase();
@@ -49,68 +47,167 @@ public class WhatIfAnalysis {
         if (this.baseMethodName.isBlank()) throw new IllegalArgumentException("baseMethodName is blank");
     }
 
+    // ================================================================
+    //                    ENTRY POINT
+    // ================================================================
+
     public void execute() throws Exception {
         Path projectCsvDir = Paths.get("output", "csv", projectName);
+        ExecuteContext ctx = loadAndValidateInputs(projectCsvDir);
+
+        // Temporal split and filtering
+        SplitResult splitResult = performTemporalSplit(ctx.raw, ctx.versionAttr, ctx.latestVersion);
+        Instances train = applyRemoveMetaFilter(splitResult.trainRaw);
+        Instances test = applyRemoveMetaFilter(splitResult.testRaw, splitResult.trainRaw);
+
+        // Build B+, B, C from TEST
+        Attribute aFeatAttr = validateActionableFeature(test);
+        int aFeatIndex = aFeatAttr.index();
+
+        double threshold = chooseBPlusThreshold(test, actionableFeature, DEFAULT_TOP_QUANTILE_FOR_BPLUS);
+        BPlusSplit bPlusSplit = buildBPlusSets(test, aFeatIndex, threshold);
+
+        // B = copy of B+ with AFeature transformed
+        Instances b = new Instances(bPlusSplit.bPlus);
+        applyWhatIfTransformation(b, aFeatIndex, ctx.delta);
+
+        // Normalize and evaluate
+        NormalizedSets normSets = normalizeAllSets(train, test, bPlusSplit.bPlus, b, bPlusSplit.c);
+        EvaluationResults evalResults = evaluateAndCompute(normSets, ctx.evalPath);
+
+        // Save outputs (delega a CsvExporter)
+        saveAllOutputs(projectCsvDir, normSets, evalResults, ctx.delta, bPlusSplit.threshold);
+    }
+
+    // ================================================================
+    //                    CONTEXT CLASSES
+    // ================================================================
+
+    private static final class ExecuteContext {
+        Instances raw;
+        Attribute versionAttr;
+        int latestVersion;
+        RefactorDelta delta;
+        Path evalPath;
+    }
+
+    private static final class SplitResult {
+        Instances trainRaw;
+        Instances testRaw;
+    }
+
+    private static final class BPlusSplit {
+        Instances bPlus;
+        Instances c;
+        double threshold;
+    }
+
+    private static final class NormalizedSets {
+        Instances trainN;
+        Instances testN;
+        Instances bPlusN;
+        Instances bN;
+        Instances cN;
+    }
+
+    private static final class EvaluationResults {
+        WhatIfResult rA;
+        WhatIfResult rBPlus;
+        WhatIfResult rB;
+        WhatIfResult rC;
+        WekaProcessor.ModelSpec bestSpec;
+        double deltaExpectedProb;
+        double relOnBPlusProb;
+        double relOnAProb;
+        int deltaEstimatedClassify;
+    }
+
+    // ================================================================
+    //                    INPUT LOADING (usa CsvExporter)
+    // ================================================================
+
+    private ExecuteContext loadAndValidateInputs(Path projectCsvDir) throws IOException {
+        ExecuteContext ctx = new ExecuteContext();
         Path datasetPath = projectCsvDir.resolve("dataset.csv");
-        Path evalPath = projectCsvDir.resolve("weka_walkforward.csv");
+        ctx.evalPath = projectCsvDir.resolve("weka_walkforward.csv");
         Path refPath = projectCsvDir.resolve("refactor_metrics_" + baseMethodName + ".csv");
 
         if (!Files.exists(datasetPath)) throw new FileNotFoundException("Missing dataset: " + datasetPath);
-        if (!Files.exists(evalPath)) throw new FileNotFoundException("Missing evaluations: " + evalPath);
+        if (!Files.exists(ctx.evalPath)) throw new FileNotFoundException("Missing evaluations: " + ctx.evalPath);
         if (!Files.exists(refPath)) throw new FileNotFoundException("Missing refactor metrics: " + refPath);
 
-        // --- Load raw dataset (keeps VersionIndex for temporal split)
-        Instances raw = loadCsvAsInstances(datasetPath);
-        if (raw.isEmpty()) throw new IllegalStateException("Dataset is empty: " + datasetPath);
+        ctx.raw = loadCsvAsInstances(datasetPath);
+        if (ctx.raw.isEmpty()) throw new IllegalStateException("Dataset is empty: " + datasetPath);
 
-        Attribute versionAttr = raw.attribute(COL_VERSION_INDEX);
-        Attribute buggyAttr = raw.attribute(COL_BUGGY);
-        if (versionAttr == null) throw new IllegalArgumentException("Dataset missing column: " + COL_VERSION_INDEX);
+        ctx.versionAttr = ctx.raw.attribute(COL_VERSION_INDEX);
+        Attribute buggyAttr = ctx.raw.attribute(COL_BUGGY);
+        if (ctx.versionAttr == null) throw new IllegalArgumentException("Dataset missing column: " + COL_VERSION_INDEX);
         if (buggyAttr == null) throw new IllegalArgumentException("Dataset missing column: " + COL_BUGGY);
 
-        int latestVersion = findMaxInt(raw, versionAttr);
-        if (latestVersion < 2)
-            throw new IllegalStateException("Not enough releases for what-if (latestVersion=" + latestVersion + ")");
+        ctx.latestVersion = findMaxInt(ctx.raw, ctx.versionAttr);
+        if (ctx.latestVersion < 2)
+            throw new IllegalStateException("Not enough releases for what-if (latestVersion=" + ctx.latestVersion + ")");
 
-        // Temporal split: train = all releases < latest, test(A_latest) = latest
-        Instances trainRaw = new Instances(raw, 0);
-        Instances testRaw = new Instances(raw, 0);
+        // Delega lettura refactor delta a CsvExporter
+        ctx.delta = CsvExporter.readRefactorDelta(refPath, actionableFeature);
+        return ctx;
+    }
+
+    // ================================================================
+    //                    TEMPORAL SPLIT
+    // ================================================================
+
+    private static SplitResult performTemporalSplit(Instances raw, Attribute versionAttr, int latestVersion) {
+        SplitResult result = new SplitResult();
+        result.trainRaw = new Instances(raw, 0);
+        result.testRaw = new Instances(raw, 0);
+
         for (int i = 0; i < raw.numInstances(); i++) {
             Instance inst = raw.instance(i);
             int v = (int) Math.round(inst.value(versionAttr));
-            if (v < latestVersion) trainRaw.add(inst);
-            else if (v == latestVersion) testRaw.add(inst);
-        }
-        if (trainRaw.isEmpty() || testRaw.isEmpty()) {
-            throw new IllegalStateException("Temporal split produced empty train or test: train=" + trainRaw.size() + ", test=" + testRaw.size());
+            if (v < latestVersion) result.trainRaw.add(inst);
+            else if (v == latestVersion) result.testRaw.add(inst);
         }
 
-        // Remove meta columns (no leakage / no identifiers)
+        if (result.trainRaw.isEmpty() || result.testRaw.isEmpty()) {
+            throw new IllegalStateException("Temporal split produced empty train or test: train=" +
+                    result.trainRaw.size() + ", test=" + result.testRaw.size());
+        }
+        return result;
+    }
+
+    // ================================================================
+    //                    FILTERING
+    // ================================================================
+
+    private static Instances applyRemoveMetaFilter(Instances data) throws Exception {
+        Remove rm = buildRemoveMetaFilter(data);
+        Instances filtered = Filter.useFilter(data, rm);
+        ensureClassIsLastAndSet(filtered, COL_BUGGY);
+        return filtered;
+    }
+
+    private static Instances applyRemoveMetaFilter(Instances data, Instances trainRaw) throws Exception {
         Remove rm = buildRemoveMetaFilter(trainRaw);
-        Instances train = Filter.useFilter(trainRaw, rm);
-
         Remove rmCopy = (Remove) Filter.makeCopy(rm);
-        rmCopy.setInputFormat(testRaw);
-        Instances test = Filter.useFilter(testRaw, rmCopy);
+        rmCopy.setInputFormat(data);
+        Instances filtered = Filter.useFilter(data, rmCopy);
+        ensureClassIsLastAndSet(filtered, COL_BUGGY);
+        return filtered;
+    }
 
-        // Ensure class is last and set classIndex
-        ensureClassIsLastAndSet(train, COL_BUGGY);
-        ensureClassIsLastAndSet(test, COL_BUGGY);
-
-        // Read refactor delta (BEFORE vs AFTER) for actionableFeature
-        RefactorDelta delta = readRefactorDelta(refPath, actionableFeature);
-
-        // Build B+, B, C from TEST (latest release)
+    private Attribute validateActionableFeature(Instances test) {
         Attribute aFeatAttr = test.attribute(actionableFeature);
         if (aFeatAttr == null)
             throw new IllegalArgumentException("Actionable feature not found in dataset: " + actionableFeature);
         if (!aFeatAttr.isNumeric())
             throw new IllegalArgumentException("Actionable feature is not numeric: " + actionableFeature);
+        return aFeatAttr;
+    }
 
-        int aFeatIndex = aFeatAttr.index();
-
-        // Primary rule: threshold-based (quantile or NumCodeSmells>0 special case)
-        double threshold = chooseBPlusThreshold(test, actionableFeature, DEFAULT_TOP_QUANTILE_FOR_BPLUS);
+    private BPlusSplit buildBPlusSets(Instances test, int aFeatIndex, double threshold) {
+        BPlusSplit result = new BPlusSplit();
+        result.threshold = threshold;
 
         Instances bPlus = new Instances(test, 0);
         Instances c = new Instances(test, 0);
@@ -123,84 +220,151 @@ public class WhatIfAnalysis {
             else c.add((Instance) src.copy());
         }
 
-        // Fallback: avoid degenerate B+ (empty or equals all)
         if (bPlus.isEmpty() || bPlus.size() == test.size()) {
             SplitBC split = splitByTopK(test, aFeatIndex, DEFAULT_TOP_QUANTILE_FOR_BPLUS);
-            bPlus = split.bPlus;
-            c = split.c;
-            threshold = split.effectiveThreshold;
+            result.bPlus = split.bPlus;
+            result.c = split.c;
+            result.threshold = split.effectiveThreshold;
+        } else {
+            result.bPlus = bPlus;
+            result.c = c;
         }
+        return result;
+    }
 
-        // B = copy of B+ with AFeature transformed using observed factor
-        Instances b = new Instances(bPlus);
-        applyWhatIfTransformation(b, aFeatIndex, delta);
+    private static NormalizedSets normalizeAllSets(Instances train, Instances test,
+                                                   Instances bPlus, Instances b, Instances c) throws Exception {
+        NormalizedSets sets = new NormalizedSets();
 
-        // Normalize (fit on train, apply to others) - same pattern as WekaProcessor (no leakage)
         Normalize norm = new Normalize();
         norm.setInputFormat(train);
 
-        Instances trainN = applyTrainedFilter(norm, train);
+        sets.trainN = applyTrainedFilter(norm, train);
+        sets.testN = applyTrainedFilter(Filter.makeCopy(norm), test);
+        sets.bPlusN = applyTrainedFilter(Filter.makeCopy(norm), bPlus);
+        sets.bN = applyTrainedFilter(Filter.makeCopy(norm), b);
+        sets.cN = applyTrainedFilter(Filter.makeCopy(norm), c);
 
-        Filter normCopyA = Filter.makeCopy(norm);
-        Instances testN = applyTrainedFilter(normCopyA, test);
+        return sets;
+    }
 
-        Filter normCopyBPlus = Filter.makeCopy(norm);
-        Instances bPlusN = applyTrainedFilter(normCopyBPlus, bPlus);
+    // ================================================================
+    //                    EVALUATION
+    // ================================================================
 
-        Filter normCopyB = Filter.makeCopy(norm);
-        Instances bN = applyTrainedFilter(normCopyB, b);
+    private EvaluationResults evaluateAndCompute(NormalizedSets sets, Path evalPath) throws Exception {
+        EvaluationResults results = new EvaluationResults();
 
-        Filter normCopyC = Filter.makeCopy(norm);
-        Instances cN = applyTrainedFilter(normCopyC, c);
-
-        // Load evaluations and pick best spec (BClassifier)
-        List<ClassifierEvaluation> evals = readEvaluationsCsvProjectFormat(projectName, evalPath);
-        WekaProcessor.ModelSpec best = WekaProcessor.pickBestSpec(evals);
+        // Delega lettura evaluations a CsvExporter
+        List<ClassifierEvaluation> evals = CsvExporter.readEvaluationsCsv(projectName, evalPath);
+        results.bestSpec = WekaProcessor.pickBestSpec(evals);
 
         WekaProcessor wp = new WekaProcessor(projectName, Collections.emptyList());
-        Classifier model = buildSafeClassifier(wp, trainN, best);
+        Classifier model = buildSafeClassifier(wp, sets.trainN, results.bestSpec);
 
-        int posIndex = positiveClassIndex(trainN, "yes");
+        int posIndex = positiveClassIndex(sets.trainN, "yes");
 
-        // Evaluate datasets
-        Result rA = evaluateDataset("A_latest", testN, model, posIndex);
-        Result rBPlus = evaluateDataset("B_plus", bPlusN, model, posIndex);
-        Result rB = evaluateDataset("B", bN, model, posIndex);
-        Result rC = evaluateDataset("C", cN, model, posIndex);
+        results.rA = evaluateDataset("A_latest", sets.testN, model, posIndex);
+        results.rBPlus = evaluateDataset("B_plus", sets.bPlusN, model, posIndex);
+        results.rB = evaluateDataset("B", sets.bN, model, posIndex);
+        results.rC = evaluateDataset("C", sets.cN, model, posIndex);
 
-        // Probabilistic reduction (report-style)
-        double deltaExpectedProb = rBPlus.expectedDefectsSum - rB.expectedDefectsSum;
-        double relOnBPlusProb = (rBPlus.expectedDefectsSum > EPS) ? (deltaExpectedProb / rBPlus.expectedDefectsSum) : 0.0;
-        double relOnAProb = (rA.expectedDefectsSum > EPS) ? (deltaExpectedProb / rA.expectedDefectsSum) : 0.0;
+        results.deltaExpectedProb = results.rBPlus.expectedDefectsSum() - results.rB.expectedDefectsSum();
+        results.relOnBPlusProb = (results.rBPlus.expectedDefectsSum() > EPS)
+                ? (results.deltaExpectedProb / results.rBPlus.expectedDefectsSum()) : 0.0;
+        results.relOnAProb = (results.rA.expectedDefectsSum() > EPS)
+                ? (results.deltaExpectedProb / results.rA.expectedDefectsSum()) : 0.0;
 
-        // Paper-like reduction (count predicted buggy via classifyInstance)
-        int deltaEstimatedClassify = rBPlus.estimatedBuggyClassify - rB.estimatedBuggyClassify;
+        results.deltaEstimatedClassify = results.rBPlus.estimatedBuggyClassify() - results.rB.estimatedBuggyClassify();
 
-        // Output dir
-        Path outDir = projectCsvDir.resolve(Paths.get("whatif", sanitize(actionableFeature) + "_" + sanitize(baseMethodName)));
+        return results;
+    }
+
+    private static WhatIfResult evaluateDataset(String name, Instances data, Classifier model, int posIndex) throws Exception {
+        int n = data.numInstances();
+        int actualBuggy = countActualBuggy(data, posIndex);
+
+        double sumProb = 0.0;
+        int hardPredThreshold = 0;
+        int hardPredClassify = 0;
+
+        for (int i = 0; i < n; i++) {
+            Instance inst = data.instance(i);
+
+            double[] dist = model.distributionForInstance(inst);
+            double pYes = (dist != null && dist.length > posIndex) ? dist[posIndex] : 0.0;
+            if (Double.isNaN(pYes) || Double.isInfinite(pYes)) pYes = 0.0;
+
+            sumProb += pYes;
+            if (pYes >= 0.5) hardPredThreshold++;
+
+            double cls = model.classifyInstance(inst);
+            if ((int) Math.round(cls) == posIndex) hardPredClassify++;
+        }
+
+        return new WhatIfResult(name, n, actualBuggy, sumProb, hardPredThreshold, hardPredClassify);
+    }
+
+    // ================================================================
+    //                    OUTPUT (delega a CsvExporter)
+    // ================================================================
+
+    private void saveAllOutputs(Path projectCsvDir, NormalizedSets sets, EvaluationResults results,
+                                RefactorDelta delta, double threshold) throws IOException {
+        Path outDir = projectCsvDir.resolve(Paths.get("whatif",
+                CsvExporter.sanitizeFilename(actionableFeature) + "_" + CsvExporter.sanitizeFilename(baseMethodName)));
         Files.createDirectories(outDir);
 
-        // Save intermediate datasets (for inspection)
-        saveInstancesAsCsv(testN, outDir.resolve("A_latest.csv"));
-        saveInstancesAsCsv(bPlusN, outDir.resolve("B_plus.csv"));
-        saveInstancesAsCsv(bN, outDir.resolve("B.csv"));
-        saveInstancesAsCsv(cN, outDir.resolve("C.csv"));
+        saveInstancesAsCsv(sets.testN, outDir.resolve("A_latest.csv"));
+        saveInstancesAsCsv(sets.bPlusN, outDir.resolve("B_plus.csv"));
+        saveInstancesAsCsv(sets.bN, outDir.resolve("B.csv"));
+        saveInstancesAsCsv(sets.cN, outDir.resolve("C.csv"));
 
-        // Save results
-        Path resCsv = outDir.resolve("whatif_results.csv");
-        writeResultsCsv(resCsv, projectName, actionableFeature, baseMethodName, best, delta, threshold,
-                rA, rBPlus, rB, rC,
-                deltaExpectedProb, relOnBPlusProb, relOnAProb,
-                deltaEstimatedClassify);
+        // Delega scrittura risultati a CsvExporter
+        WhatIfContext ctx = new WhatIfContext(
+                projectName,
+                actionableFeature,
+                baseMethodName,
+                results.bestSpec.toString(),
+                delta,
+                threshold,
+                results.deltaExpectedProb,
+                results.relOnBPlusProb,
+                results.relOnAProb,
+                results.deltaEstimatedClassify
+        );
+
+        CsvExporter.writeWhatIfResults(
+                outDir.resolve("whatif_results.csv"),
+                ctx,
+                results.rA,
+                results.rBPlus,
+                results.rB,
+                results.rC
+        );
     }
-    /* =========================================================
-       =                   Core helpers                        =
-       ========================================================= */
+
+    // ================================================================
+    //                    WEKA HELPERS
+    // ================================================================
 
     private static Instances loadCsvAsInstances(Path csvPath) throws IOException {
         CSVLoader loader = new CSVLoader();
         loader.setSource(csvPath.toFile());
         return loader.getDataSet();
+    }
+
+    private static void saveInstancesAsCsv(Instances data, Path outPath) throws IOException {
+        CSVSaver saver = new CSVSaver();
+        saver.setInstances(data);
+        saver.setFile(outPath.toFile());
+        try {
+            saver.writeBatch();
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IOException("Failed to save CSV: " + outPath, e);
+        }
     }
 
     private static int findMaxInt(Instances data, Attribute attr) {
@@ -218,7 +382,7 @@ public class WhatIfAnalysis {
         List<Integer> idx1Based = new ArrayList<>();
         for (String name : metaNames) {
             Attribute a = trainRaw.attribute(name);
-            if (a != null) idx1Based.add(a.index() + 1); // Remove uses 1-based indices
+            if (a != null) idx1Based.add(a.index() + 1);
         }
 
         Remove rm = new Remove();
@@ -232,7 +396,6 @@ public class WhatIfAnalysis {
             rm.setAttributeIndices(sb.toString());
             rm.setInvertSelection(false);
         } else {
-            // keep all attributes (no-op)
             rm.setAttributeIndices("1");
             rm.setInvertSelection(true);
         }
@@ -248,38 +411,50 @@ public class WhatIfAnalysis {
         int last = data.numAttributes() - 1;
 
         if (clsIndex != last) {
-            // rebuild with class last (safe using DenseInstance)
-            ArrayList<Attribute> attrs = new ArrayList<>();
-            for (int i = 0; i < data.numAttributes(); i++) {
-                if (i != clsIndex) attrs.add((Attribute) data.attribute(i).copy());
-            }
-            attrs.add((Attribute) cls.copy());
-
-            Instances rebuilt = new Instances(data.relationName(), attrs, data.numInstances());
-
-            for (int i = 0; i < data.numInstances(); i++) {
-                Instance old = data.instance(i);
-                double[] vals = new double[rebuilt.numAttributes()];
-
-                int k = 0;
-                for (int j = 0; j < data.numAttributes(); j++) {
-                    if (j == clsIndex) continue;
-                    vals[k++] = old.value(j);
-                }
-                vals[vals.length - 1] = old.value(clsIndex);
-
-                DenseInstance ni = new DenseInstance(old.weight(), vals);
-                ni.setDataset(rebuilt);
-                rebuilt.add(ni);
-            }
-
-            // replace in-place
-            while (data.numInstances() > 0) data.delete(0);
-            for (int i = 0; i < rebuilt.numInstances(); i++) data.add(rebuilt.instance(i));
-            for (int i = 0; i < rebuilt.numAttributes(); i++) data.renameAttribute(i, rebuilt.attribute(i).name());
+            Instances rebuilt = rebuildWithClassLast(data, clsIndex, cls);
+            replaceDatasetInPlace(data, rebuilt);
         }
 
         data.setClassIndex(data.numAttributes() - 1);
+    }
+
+    private static Instances rebuildWithClassLast(Instances data, int clsIndex, Attribute cls) {
+        ArrayList<Attribute> attrs = buildReorderedAttributes(data, clsIndex, cls);
+        Instances rebuilt = new Instances(data.relationName(), attrs, data.numInstances());
+        copyInstancesWithReorderedClass(data, rebuilt, clsIndex);
+        return rebuilt;
+    }
+
+    private static ArrayList<Attribute> buildReorderedAttributes(Instances data, int clsIndex, Attribute cls) {
+        ArrayList<Attribute> attrs = new ArrayList<>();
+        for (int i = 0; i < data.numAttributes(); i++) {
+            if (i != clsIndex) attrs.add((Attribute) data.attribute(i).copy());
+        }
+        attrs.add((Attribute) cls.copy());
+        return attrs;
+    }
+
+    private static void copyInstancesWithReorderedClass(Instances source, Instances target, int clsIndex) {
+        for (int i = 0; i < source.numInstances(); i++) {
+            Instance old = source.instance(i);
+            double[] vals = new double[target.numAttributes()];
+
+            int k = 0;
+            for (int j = 0; j < source.numAttributes(); j++) {
+                if (j != clsIndex) vals[k++] = old.value(j);
+            }
+            vals[vals.length - 1] = old.value(clsIndex);
+
+            DenseInstance ni = new DenseInstance(old.weight(), vals);
+            ni.setDataset(target);
+            target.add(ni);
+        }
+    }
+
+    private static void replaceDatasetInPlace(Instances data, Instances rebuilt) {
+        while (data.numInstances() > 0) data.delete(0);
+        for (int i = 0; i < rebuilt.numInstances(); i++) data.add(rebuilt.instance(i));
+        for (int i = 0; i < rebuilt.numAttributes(); i++) data.renameAttribute(i, rebuilt.attribute(i).name());
     }
 
     private static int positiveClassIndex(Instances data, String positiveLabel) {
@@ -323,14 +498,17 @@ public class WhatIfAnalysis {
         return c;
     }
 
-    /* =========================================================
-       =            B+, B, C construction rules                =
-       ========================================================= */
-
-    private static String ruleDescription(String aFeature) {
-        if ("NumCodeSmells".equalsIgnoreCase(aFeature)) return "NumCodeSmells > 0";
-        return "AFeature >= quantile(0.75) on latest release (fallback: top-k if ties/degenerate)";
+    private static int countActualBuggy(Instances data, int posIndex) {
+        int c = 0;
+        for (int i = 0; i < data.numInstances(); i++) {
+            if ((int) Math.round(data.instance(i).classValue()) == posIndex) c++;
+        }
+        return c;
     }
+
+    // ================================================================
+    //                    B+/B/C LOGIC
+    // ================================================================
 
     private static boolean isInBPlus(String aFeature, double value, double threshold) {
         if ("NumCodeSmells".equalsIgnoreCase(aFeature)) return value > 0.0;
@@ -350,9 +528,9 @@ public class WhatIfAnalysis {
         Arrays.sort(vals);
         if (vals.length == 0) return 0.0;
 
-        double qq = Math.max(0.0, Math.min(1.0, q));
+        double qq = Math.clamp(q, 0.0, 1.0);
         int idx = (int) Math.floor(qq * (vals.length - 1));
-        idx = Math.max(0, Math.min(idx, vals.length - 1));
+        idx = Math.clamp(idx, 0, vals.length - 1);
         return vals[idx];
     }
 
@@ -364,7 +542,7 @@ public class WhatIfAnalysis {
 
     private static SplitBC splitByTopK(Instances test, int aFeatIndex, double topQuantile) {
         int n = test.numInstances();
-        int k = Math.max(1, (int) Math.ceil((1.0 - topQuantile) * n)); // top 25% if q=0.75
+        int k = Math.max(1, (int) Math.ceil((1.0 - topQuantile) * n));
 
         List<Integer> idx = new ArrayList<>(n);
         for (int i = 0; i < n; i++) idx.add(i);
@@ -398,370 +576,10 @@ public class WhatIfAnalysis {
         for (int i = 0; i < b.numInstances(); i++) {
             Instance inst = b.instance(i);
             double oldV = inst.value(aFeatIndex);
-            double newV = oldV * d.factor;
+            double newV = oldV * d.factor();
             if (Double.isNaN(newV) || Double.isInfinite(newV)) newV = oldV;
             if (newV < 0.0) newV = 0.0;
             inst.setValue(aFeatIndex, newV);
         }
-    }
-
-    /* =========================================================
-       =                Estimation metrics                      =
-       ========================================================= */
-
-    private static Result evaluateDataset(String name, Instances data, Classifier model, int posIndex) throws Exception {
-        Result r = new Result();
-        r.name = name;
-        r.n = data.numInstances();
-        r.actualBuggy = countActualBuggy(data, posIndex);
-
-        double sumProb = 0.0;
-        int hardPredThreshold = 0;
-        int hardPredClassify = 0;
-
-        for (int i = 0; i < data.numInstances(); i++) {
-            Instance inst = data.instance(i);
-
-            // report-like: sum of probabilities
-            double[] dist = model.distributionForInstance(inst);
-            double pYes = (dist != null && dist.length > posIndex) ? dist[posIndex] : 0.0;
-            if (Double.isNaN(pYes) || Double.isInfinite(pYes)) pYes = 0.0;
-
-            sumProb += pYes;
-            if (pYes >= 0.5) hardPredThreshold++;
-
-            // paper-like: classifyInstance (argmax)
-            double cls = model.classifyInstance(inst);
-            if ((int) Math.round(cls) == posIndex) hardPredClassify++;
-        }
-
-        r.expectedDefectsSum = sumProb;
-        r.estimatedBuggyThreshold05 = hardPredThreshold;
-        r.estimatedBuggyClassify = hardPredClassify;
-        return r;
-    }
-
-    private static int countActualBuggy(Instances data, int posIndex) {
-        int c = 0;
-        for (int i = 0; i < data.numInstances(); i++) {
-            if ((int) Math.round(data.instance(i).classValue()) == posIndex) c++;
-        }
-        return c;
-    }
-
-    /* =========================================================
-       =                 I/O: eval + refactor CSV               =
-       ========================================================= */
-
-    /**
-     * Parser SOLO per il CSV generato dalla tua pipeline:
-     * header atteso (case-sensitive):
-     * PROJ,WF_ITER,MODEL,FEATURE_SELECTION,BALANCING,COST_SENSITIVE,...,MCC,...,AUC,...
-     */
-    private static List<ClassifierEvaluation> readEvaluationsCsvProjectFormat(String projectName, Path evalCsv) throws IOException {
-        List<ClassifierEvaluation> out = new ArrayList<>();
-        List<String> lines = Files.readAllLines(evalCsv, StandardCharsets.UTF_8);
-        if (lines.isEmpty()) return out;
-
-        String[] header = splitCsvLine(lines.get(0));
-        Map<String, Integer> idx = new HashMap<>();
-        for (int i = 0; i < header.length; i++) {
-            idx.put(header[i].trim(), i);
-        }
-
-        // Required columns (your exact format)
-        int iIter = requireIdx(idx, "WF_ITER");
-        int iModel = requireIdx(idx, "MODEL");
-        int iFs = requireIdx(idx, "FEATURE_SELECTION");
-        int iBal = requireIdx(idx, "BALANCING");
-        int iCost = requireIdx(idx, "COST_SENSITIVE");
-        int iAuc = requireIdx(idx, "AUC");
-        int iMcc = requireIdx(idx, "MCC");
-
-        // Optional (not needed by pickBestSpec, but harmless if present)
-        int iProj = idx.getOrDefault("PROJ", -1);
-
-        for (int r = 1; r < lines.size(); r++) {
-            String line = lines.get(r).trim();
-            if (line.isEmpty()) continue;
-
-            String[] p = splitCsvLine(line);
-            if (p.length < header.length) continue;
-
-            int iter = safeInt(p, iIter, -1);
-            if (iter < 0) continue;
-
-            // (Optional) skip rows not matching project, if PROJ column exists
-            if (iProj >= 0) {
-                String projInRow = safeStr(p, iProj).trim();
-                if (!projInRow.isEmpty() && !projInRow.equalsIgnoreCase(projectName)) {
-                    continue;
-                }
-            }
-
-            ClassifierEvaluation ce = new ClassifierEvaluation(projectName, iter);
-
-            ce.setModel(safeStr(p, iModel));
-            ce.setFeatureSelection(safeStr(p, iFs));
-            ce.setBalancing(safeStr(p, iBal));     // maps to sampling
-            ce.setCostSensitive(safeStr(p, iCost));
-
-            ce.setAuc(safeDouble(p, iAuc));
-            ce.setMcc(safeDouble(p, iMcc));
-
-            out.add(ce);
-        }
-
-        return out;
-    }
-
-    private static int requireIdx(Map<String, Integer> idx, String colName) {
-        Integer v = idx.get(colName);
-        if (v == null) {
-            throw new IllegalArgumentException("weka_walkforward.csv missing required column: " + colName);
-        }
-        return v;
-    }
-
-
-    private static int firstIdx(Map<String, Integer> idx, String... keysCanon) {
-        for (String k : keysCanon) {
-            Integer v = idx.get(canon(k));
-            if (v != null) return v;
-        }
-        return -1;
-    }
-
-    private static String canon(String s) {
-        if (s == null) return "";
-        String t = s.trim().toLowerCase(Locale.ROOT);
-        // remove all non-alphanumeric to unify "COST_SENSITIVE" / "CostSensitive" / "F1-Score" etc.
-        return t.replaceAll("[^a-z0-9]+", "");
-    }
-
-    private static String safeStr(String[] arr, int i) {
-        if (i < 0 || i >= arr.length) return "";
-        return arr[i] == null ? "" : arr[i].trim();
-    }
-
-    private static int safeInt(String[] arr, int i, int def) {
-        try {
-            String s = safeStr(arr, i);
-            if (s.isEmpty()) return def;
-            return (int) Math.round(Double.parseDouble(s));
-        } catch (Exception e) {
-            return def;
-        }
-    }
-
-    private static double safeDouble(String[] arr, int i) {
-        try {
-            String s = safeStr(arr, i);
-            if (s.isEmpty()) return Double.NaN;
-            return Double.parseDouble(s);
-        } catch (Exception e) {
-            return Double.NaN;
-        }
-    }
-
-    private static RefactorDelta readRefactorDelta(Path refactorCsv, String aFeature) throws IOException {
-        List<String> lines = Files.readAllLines(refactorCsv, StandardCharsets.UTF_8);
-        if (lines.size() < 2) throw new IllegalArgumentException("Refactor metrics CSV too short: " + refactorCsv);
-
-        String[] header = splitCsvLine(lines.get(0));
-        Map<String, Integer> idx = new HashMap<>();
-        for (int i = 0; i < header.length; i++) idx.put(header[i].trim(), i);
-
-        Integer iTag = idx.get("Tag");
-        Integer iFeat = idx.get(aFeature);
-        if (iTag == null) throw new IllegalArgumentException("Refactor CSV missing column: Tag");
-        if (iFeat == null) throw new IllegalArgumentException("Refactor CSV missing column for AFeature: " + aFeature);
-
-        Double before = null, after = null;
-
-        for (int r = 1; r < lines.size(); r++) {
-            String line = lines.get(r).trim();
-            if (line.isEmpty()) continue;
-
-            String[] p = splitCsvLine(line);
-            if (p.length < header.length) continue;
-
-            String tag = p[iTag].trim();
-            double v = parseDoubleOrNaN(p[iFeat]);
-
-            if ("BEFORE".equalsIgnoreCase(tag)) before = v;
-            if ("AFTER".equalsIgnoreCase(tag)) after = v;
-        }
-
-        if (before == null || after == null || Double.isNaN(before) || Double.isNaN(after)) {
-            throw new IllegalStateException("Could not read BEFORE/AFTER values for " + aFeature + " from " + refactorCsv);
-        }
-
-        RefactorDelta d = new RefactorDelta();
-        d.before = before;
-        d.after = after;
-
-        // NO clamp to <= 1.0: respect actual delta
-        if (Math.abs(before) > EPS) d.factor = after / before;
-        else d.factor = 0.0;
-
-        if (Double.isNaN(d.factor) || Double.isInfinite(d.factor)) d.factor = 1.0;
-        if (d.factor < 0.0) d.factor = 0.0;
-        return d;
-    }
-
-    private static double parseDoubleOrNaN(String s) {
-        try {
-            return Double.parseDouble(s.trim());
-        } catch (Exception e) {
-            return Double.NaN;
-        }
-    }
-
-    private static String[] splitCsvLine(String line) {
-        List<String> out = new ArrayList<>();
-        StringBuilder cur = new StringBuilder();
-        boolean inQ = false;
-
-        for (int i = 0; i < line.length(); i++) {
-            char ch = line.charAt(i);
-
-            if (ch == '"') {
-                if (inQ && i + 1 < line.length() && line.charAt(i + 1) == '"') {
-                    cur.append('"');
-                    i++;
-                } else {
-                    inQ = !inQ;
-                }
-            } else if (ch == ',' && !inQ) {
-                out.add(cur.toString());
-                cur.setLength(0);
-            } else {
-                cur.append(ch);
-            }
-        }
-        out.add(cur.toString());
-        return out.toArray(new String[0]);
-    }
-
-    /* =========================================================
-       =                     Output CSVs                       =
-       ========================================================= */
-
-    private static void saveInstancesAsCsv(Instances data, Path outPath) throws Exception {
-        CSVSaver saver = new CSVSaver();
-        saver.setInstances(data);
-        saver.setFile(outPath.toFile());
-        saver.writeBatch();
-    }
-
-    private static void writeResultsCsv(Path out,
-                                        String project,
-                                        String aFeature,
-                                        String method,
-                                        WekaProcessor.ModelSpec spec,
-                                        RefactorDelta delta,
-                                        double bPlusThreshold,
-                                        Result rA, Result rBPlus, Result rB, Result rC,
-                                        double deltaExpectedProb,
-                                        double relOnBPlusProb,
-                                        double relOnAProb,
-                                        int deltaEstimatedClassify) throws IOException {
-
-        Files.createDirectories(out.getParent());
-        try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(out.toFile()), StandardCharsets.UTF_8))) {
-
-            pw.println(String.join(",",
-                    "Project", "AFeature", "AFMethod", "BClassifier",
-                    "RefBefore", "RefAfter", "RefFactor",
-                    "BPlusThreshold", "Dataset",
-                    "N", "ActualBuggy",
-                    "ExpectedDefectsSum_Prob",
-                    "EstimatedBuggy_Threshold05",
-                    "EstimatedBuggy_Classify",
-                    "DeltaExpectedProb_BPlus_to_B",
-                    "RelDropProbOnBPlus",
-                    "RelDropProbOnA_latest",
-                    "DeltaEstimatedClassify_BPlus_to_B"
-            ));
-
-            writeRow(pw, project, aFeature, method, spec, delta, bPlusThreshold, rA,
-                    deltaExpectedProb, relOnBPlusProb, relOnAProb, deltaEstimatedClassify);
-            writeRow(pw, project, aFeature, method, spec, delta, bPlusThreshold, rBPlus,
-                    deltaExpectedProb, relOnBPlusProb, relOnAProb, deltaEstimatedClassify);
-            writeRow(pw, project, aFeature, method, spec, delta, bPlusThreshold, rB,
-                    deltaExpectedProb, relOnBPlusProb, relOnAProb, deltaEstimatedClassify);
-            writeRow(pw, project, aFeature, method, spec, delta, bPlusThreshold, rC,
-                    deltaExpectedProb, relOnBPlusProb, relOnAProb, deltaEstimatedClassify);
-        }
-    }
-
-    private static void writeRow(PrintWriter pw,
-                                 String project,
-                                 String aFeature,
-                                 String method,
-                                 WekaProcessor.ModelSpec spec,
-                                 RefactorDelta delta,
-                                 double bPlusThreshold,
-                                 Result r,
-                                 double deltaExpectedProb,
-                                 double relOnBPlusProb,
-                                 double relOnAProb,
-                                 int deltaEstimatedClassify) {
-
-        pw.printf(Locale.US,
-                "%s,%s,%s,\"%s\",%.6f,%.6f,%.6f,%.6f,%s,%d,%d,%.6f,%d,%d,%.6f,%.6f,%.6f,%d%n",
-                esc(project),
-                esc(aFeature),
-                esc(method),
-                spec,
-                delta.before,
-                delta.after,
-                delta.factor,
-                bPlusThreshold,
-                esc(r.name),
-                r.n,
-                r.actualBuggy,
-                r.expectedDefectsSum,
-                r.estimatedBuggyThreshold05,
-                r.estimatedBuggyClassify,
-                deltaExpectedProb,
-                relOnBPlusProb,
-                relOnAProb,
-                deltaEstimatedClassify
-        );
-    }
-
-    private static String esc(String s) {
-        if (s == null) return "";
-        return s.replace(",", " ");
-    }
-
-    private static String sanitize(String s) {
-        if (s == null) return "x";
-        return s.replaceAll("[^A-Za-z0-9_\\-.]", "_");
-    }
-
-    /* =========================================================
-       =                      Data types                       =
-       ========================================================= */
-
-    private static final class RefactorDelta {
-        double before;
-        double after;
-        double factor;
-    }
-
-    private static final class Result {
-        String name;
-        int n;
-        int actualBuggy;
-
-        // report-like
-        double expectedDefectsSum;
-
-        // auxiliary
-        int estimatedBuggyThreshold05;
-        int estimatedBuggyClassify;
     }
 }

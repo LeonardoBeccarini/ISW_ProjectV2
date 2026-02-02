@@ -6,7 +6,6 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import org.example.model.Method;
 import org.example.model.Metrics;
 import org.example.model.Version;
-import org.example.model.Ticket;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -27,11 +26,13 @@ import java.util.logging.Logger;
  *  - AFTER
  *  - HELPERS (tutti i metodi diversi dal BEFORE)
  *  - AGG_AFTER_PLUS_HELPERS (somma LOC/branches/smells/vars/CC, max nesting)
- *
+ *<p></p>
  * Output: output/csv/<PROJECT>/refactor_metrics_<baseMethodName>.csv
  */
 public class RefactorAnalyzer {
 
+    private static final String SANDBOX = "SANDBOX";
+    private static final String AFTER = "AFTER";
     private final String projectName;     // atteso uppercase
     private final String baseMethodName;  // es. dispatchReceivedMessagesToSubscribers
 
@@ -56,7 +57,7 @@ public class RefactorAnalyzer {
             if (Files.exists(alt)) {
                 inputFile = alt;
             } else {
-                LOGGER.log(Level.SEVERE, "ERROR: Input file not found: {0}", inputFile.toString());
+                LOGGER.log(Level.SEVERE, "ERROR: Input file not found: {0}", inputFile);
                 return;
             }
         }
@@ -65,10 +66,8 @@ public class RefactorAnalyzer {
         Files.createDirectories(outDir);
 
         Path outputFile = outDir.resolve("refactor_metrics_" + baseMethodName + ".csv");
-
-        System.out.println("Analyzing file: " + inputFile.toString());
-        System.out.println("Saving report to: " + outputFile.toString() + "\n");
-
+        LOGGER.log(Level.INFO, "Analyzing file: {0}", inputFile);
+        LOGGER.log(Level.INFO, "Saving report to: {0}", inputFile);
         String rawCode = Files.readString(inputFile, StandardCharsets.UTF_8);
 
         // Prova parse diretto; se fallisce (tipico di file con metodi top-level), wrappa in wrapper
@@ -81,7 +80,7 @@ public class RefactorAnalyzer {
         }
 
         if (cu == null) {
-            LOGGER.log(Level.SEVERE, "PARSING ERROR: Check if file {0} contains valid Java code", inputFile.toString());
+            LOGGER.log(Level.SEVERE, "PARSING ERROR: Check if file {0} contains valid Java code", inputFile);
             return;
         }
 
@@ -107,7 +106,7 @@ public class RefactorAnalyzer {
                 .toList();
 
         // ===== METRICS ENGINE: usa MetricsCalc (PMD incluso) =====
-        MetricsCalc mc = new MetricsCalc(null, Collections.emptyMap(), Collections.<Ticket>emptyList());
+        MetricsCalc mc = new MetricsCalc(null, Collections.emptyMap(), Collections.emptyList());
         Map<Integer, Integer> smellsByLine = mc.calculateCodeSmellsByLine(codeToParse);
 
         try (FileWriter fileWriter = new FileWriter(outputFile.toFile());
@@ -116,26 +115,25 @@ public class RefactorAnalyzer {
             writer.println("MethodName,Tag,LOC,NumParameters,NumBranches,CyclomaticComplexity,NestingDepth,NumCodeSmells,NumLocalVariables");
 
             // BEFORE
-            printMetrics(mc, smellsByLine, originalMethodOpt.get(), "BEFORE", writer);
+            String before = "BEFORE";
+            printMetrics(mc, smellsByLine, originalMethodOpt.get(), before, writer);
 
-            // AFTER
-            printMetrics(mc, smellsByLine, refactoredEntryPointOpt.get(), "AFTER", writer);
+            printMetrics(mc, smellsByLine, refactoredEntryPointOpt.get(), AFTER, writer);
 
             // Helpers + aggregate
             printHelpersAndAggregate(mc, smellsByLine, refactoredEntryPointOpt.get(), allRefactoredMethods, baseMethodName, writer);
 
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "ERROR: Impossible to write CSV file");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "ERROR: Impossible to write CSV file: {0}", e.getMessage());
         }
 
-        System.out.println("Analysis completed. CSV report generated successfully");
+        LOGGER.log(Level.INFO, "Analysis completed. CSV report generated successfully");
     }
 
     private static CompilationUnit tryParse(String code) {
         try {
             return StaticJavaParser.parse(code);
-        } catch (Exception e) {
+        } catch (Exception _) {
             return null;
         }
     }
@@ -172,7 +170,7 @@ public class RefactorAnalyzer {
                                      String tag,
                                      PrintWriter writer) {
 
-        Version dummy = new Version("SANDBOX", "SANDBOX", LocalDate.now());
+        Version dummy = new Version(SANDBOX, SANDBOX, LocalDate.now());
         dummy.setIndex(0);
 
         Method tmp = new Method("Dummy/" + md.getNameAsString(), dummy);
@@ -209,16 +207,15 @@ public class RefactorAnalyzer {
         // Dettaglio helpers (escludo AFTER dalla lista helper, ma lo considero comunque nell'aggregato)
         for (MethodDeclaration md : allNonBefore) {
             String tag = md.getNameAsString().equals(mainAfter.getNameAsString())
-                    ? "AFTER"     // ridondante ma utile se vuoi vedere che AFTER è incluso nel “sistema”
+                    ? AFTER     // ridondante ma utile se vuoi vedere che AFTER è incluso nel “sistema”
                     : "HELPER";
 
-            // Se non vuoi duplicare la riga AFTER (già stampata sopra), commenta questo if:
-            if (!tag.equals("AFTER")) {
+            if (!tag.equals(AFTER)) {
                 printMetrics(mc, smellsByLine, md, tag, writer);
             }
 
             // Metriche per aggregato
-            Version dummy = new Version("SANDBOX", "SANDBOX", LocalDate.now());
+            Version dummy = new Version(SANDBOX, SANDBOX, LocalDate.now());
             dummy.setIndex(0);
             Method tmp = new Method("Dummy/" + md.getNameAsString(), dummy);
             mc.computeStaticMetricsForMethod(tmp, md, smellsByLine);

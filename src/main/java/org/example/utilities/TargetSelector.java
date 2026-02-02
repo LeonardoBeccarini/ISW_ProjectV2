@@ -227,7 +227,7 @@ public final class TargetSelector {
             String t = s.trim();
             if (t.isEmpty()) return def;
             return Integer.parseInt(t);
-        } catch (Exception ex) {
+        } catch (Exception _) {
             return def;
         }
     }
@@ -238,7 +238,7 @@ public final class TargetSelector {
             String t = s.trim();
             if (t.isEmpty()) return def;
             return Double.parseDouble(t);
-        } catch (Exception ex) {
+        } catch (Exception _) {
             return def;
         }
     }

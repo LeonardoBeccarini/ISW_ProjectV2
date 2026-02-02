@@ -8,8 +8,8 @@ package org.example.model;
 public class ClassifierEvaluation {
 
     // Identification
-    private String projName;
-    private int walkForwardIterationIndex;
+    private final String projName;
+    private final int walkForwardIterationIndex;
 
     // Dataset sizes (optional, may be 0 if not set)
     private int trainingSize;
@@ -49,9 +49,6 @@ public class ClassifierEvaluation {
     }
 
     /* ----------------------- Setters (with aliases) ----------------------- */
-
-    public void setProjName(String projName) { this.projName = projName; }
-    public void setWalkForwardIterationIndex(int idx) { this.walkForwardIterationIndex = idx; }
 
     public void setTrainingSize(int trainingSize) { this.trainingSize = trainingSize; }
     public void setTestingSize(int testingSize) { this.testingSize = testingSize; }
@@ -93,22 +90,16 @@ public class ClassifierEvaluation {
 
     public int getTrainingSize() { return trainingSize; }
     public int getTestingSize() { return testingSize; }
-
     public String getClassifier() { return classifier; }
-    // alias for backwards CSV writers expecting getModel()
-    public String getModel() { return classifier; }
 
     public String getFeatureSelection() { return featureSelection; }
 
     public String getSampling() { return sampling; }
-    // alias for writers expecting "Balancing"
-    public String getBalancing() { return sampling; }
 
     public String getCostSensitive() { return costSensitive; }
 
     public String getThresholdStrategy() { return thresholdStrategy; }
     public String getThreshold() { return Double.toString(threshold); }
-    public double getThresholdValue() { return threshold; }
 
     public String getPrecision() { return Double.toString(precision); }
     public String getRecall() { return Double.toString(recall); }
@@ -127,14 +118,7 @@ public class ClassifierEvaluation {
 
     // Also expose numeric getters if needed elsewhere
     public double precision() { return precision; }
-    public double recall() { return recall; }
     public double f1() { return f1; }
-    public double specificity() { return specificity; }
-    public double balancedAccuracy() { return balancedAccuracy; }
-    public double gMean() { return gMean; }
-    public double mcc() { return mcc; }
-    public double kappa() { return kappa; }
-    public double auc() { return auc; }
 
     public int tp() { return tp; }
     public int fp() { return fp; }

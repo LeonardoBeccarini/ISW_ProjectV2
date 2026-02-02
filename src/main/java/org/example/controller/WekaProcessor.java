@@ -36,7 +36,13 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- * Motore di classificazione WEKA (walk-forward temporale)
+ * Motore di classificazione WEKA (walk-forward temporale), allineato al progetto reference.
+ * Differenze chiave rispetto alla versione precedente:
+ * - Dataset per WEKA senza VersionIndex come feature (niente data leakage).
+ * - Classificatori e strategie 1:1 con reference:
+ *     baseline + feature selection (CFS+BestFirst backward) + SMOTE + cost-sensitive.
+ * - Solo 3 modelli base: RandomForest, NaiveBayes, IBk.
+ * - Niente tuning di soglia / Standardize / combinazioni SMOTE+CostSensitive.
  */
 public class WekaProcessor {
 
@@ -48,6 +54,22 @@ public class WekaProcessor {
     private static final String SAMPLING_SMOTE = "SMOTE";
     private static final String COST_NONE = "none";
     private static final String COST_SENSITIVE = "CostSensitive";
+
+    private static final String MODEL_RANDOM_FOREST = "RandomForest";
+    private static final String MODEL_NAIVE_BAYES = "NaiveBayes";
+    private static final String MODEL_IBK = "IBk";
+    private static final String CLASS_YES = "yes";
+
+    private record EvalSpec(Classifier classifier,
+                            String modelName,
+                            String featureSelection,
+                            String sampling,
+                            String costSensitive) {
+    }
+
+    // Usato solo nella parte "what-if"
+    private record Agg(double aucSum, int aucN, double mccSum, int mccN) {
+    }
 
     private final String projectName;
     private final List<Method> allMethods;
@@ -69,18 +91,10 @@ public class WekaProcessor {
             return evaluations;
         }
 
-        // Ordine deterministico: versione, poi nome metodo
-        allMethods.sort(Comparator
-                .comparingInt((Method m) -> (m.getVersion() != null) ? m.getVersion().getIndex() : Integer.MAX_VALUE)
-                .thenComparing(Method::getFullyQualifiedName, Comparator.nullsLast(String::compareTo)));
+        sortMethodsDeterministic();
 
-        // Raggruppa per release effettivamente presenti
-        java.util.Map<Integer, List<Method>> byRelease = allMethods.stream()
-                .filter(m -> m.getVersion() != null)
-                .collect(Collectors.groupingBy(m -> m.getVersion().getIndex()));
-
-        List<Integer> releaseIds = new ArrayList<>(byRelease.keySet());
-        releaseIds.sort(Integer::compareTo);
+        java.util.Map<Integer, List<Method>> byRelease = groupMethodsByRelease(allMethods);
+        List<Integer> releaseIds = sortedReleaseIds(byRelease);
 
         if (releaseIds.size() < 2) {
             return evaluations;
@@ -92,68 +106,125 @@ public class WekaProcessor {
         // STORM: parto solo quando posso avere 5 release in training + 1 in test
         int startPos = isStorm ? (windowSize - 1) : 0;
 
+        logFormat(Level.INFO,
+                "Walk-forward: %d releases disponibili, startPos=%d, isStorm=%b",
+                releaseIds.size(), startPos, isStorm);
+
+        executeWalkForward(startPos, releaseIds, byRelease, isStorm, windowSize, evaluations);
+
+        saveEvaluationCSVs(evaluations);
+        return evaluations;
+    }
+
+    private void sortMethodsDeterministic() {
+        // Ordine deterministico: versione, poi nome metodo
+        allMethods.sort(Comparator
+                .comparingInt((Method m) -> (m.getVersion() != null) ? m.getVersion().getIndex() : Integer.MAX_VALUE)
+                .thenComparing(Method::getFullyQualifiedName, Comparator.nullsLast(String::compareTo)));
+    }
+
+    private static java.util.Map<Integer, List<Method>> groupMethodsByRelease(List<Method> methods) {
+        return methods.stream()
+                .filter(m -> m.getVersion() != null)
+                .collect(Collectors.groupingBy(m -> m.getVersion().getIndex()));
+    }
+
+    private static List<Integer> sortedReleaseIds(java.util.Map<Integer, List<Method>> byRelease) {
+        List<Integer> releaseIds = new ArrayList<>(byRelease.keySet());
+        releaseIds.sort(Integer::compareTo);
+        return releaseIds;
+    }
+
+    private void executeWalkForward(int startPos,
+                                    List<Integer> releaseIds,
+                                    java.util.Map<Integer, List<Method>> byRelease,
+                                    boolean isStorm,
+                                    int windowSize,
+                                    List<ClassifierEvaluation> evaluations) {
+
         // Contatore sequenziale per le iterazioni (1, 2, 3, ...)
         int iterationCounter = 1;
-
-        LOGGER.info(String.format("Walk-forward: %d releases disponibili, startPos=%d, isStorm=%b",
-                releaseIds.size(), startPos, isStorm));
 
         for (int pos = startPos; pos < releaseIds.size() - 1; pos++) {
             int nextReleaseId = releaseIds.get(pos + 1);
 
-            // Training: cumulativo (da 0 a pos) per tutti; per STORM si parte solo da pos=4
-            List<Integer> trainReleaseIds = releaseIds.subList(0, pos + 1);
+            List<Integer> trainReleaseIds = isStorm
+                    ? releaseIds.subList(pos - windowSize + 1, pos + 1) // SEMPRE 5 release presenti
+                    : releaseIds.subList(0, pos + 1);                   // cumulative
 
+            // (Sonar) toList(): lista non modificata dopo la creazione
             List<Method> trainingMethods = trainReleaseIds.stream()
                     .flatMap(rid -> byRelease.getOrDefault(rid, List.of()).stream())
-                    .collect(Collectors.toList());
+                    .toList();
 
             List<Method> testingMethods = byRelease.getOrDefault(nextReleaseId, List.of());
 
-            LOGGER.info(String.format("Iteration %d: train releases %s (%d methods), test release %d (%d methods)",
-                    iterationCounter, trainReleaseIds, trainingMethods.size(), nextReleaseId, testingMethods.size()));
+            logFormat(Level.INFO,
+                    "Iteration %d: train releases %s (%d methods), test release %d (%d methods)",
+                    iterationCounter, trainReleaseIds, trainingMethods.size(), nextReleaseId, testingMethods.size());
 
             if (trainingMethods.isEmpty() || testingMethods.isEmpty()) {
-                LOGGER.warning(String.format("Skipping iteration %d: empty train/test set", iterationCounter));
-                iterationCounter++; // Conta comunque per mantenere coerenza con pos
-                continue;
+                logFormat(Level.WARNING, "Skipping iteration %d: empty train/test set", iterationCounter);
+            } else {
+                executeIteration(iterationCounter, trainReleaseIds, nextReleaseId, trainingMethods, testingMethods, evaluations);
             }
 
-            try {
-                // Usa iterationCounter per la directory (sequenziale)
-                String iterDir = String.format("output/arff/%s/temporal/iteration_%d",
-                        projectName.toUpperCase(), iterationCounter);
-                Path iterPath = Paths.get(iterDir);
-                Files.createDirectories(iterPath);
-
-                Instances trainingSet = ArffExporter.methodsToInstances(trainingMethods, "training");
-                Instances testingSet = ArffExporter.methodsToInstances(testingMethods, "testing");
-
-                // Salva sempre per inspection
-                ArffExporter.saveInstancesAsArff(trainingSet, iterPath.resolve("training.arff").toString());
-                ArffExporter.saveInstancesAsArff(testingSet, iterPath.resolve("testing.arff").toString());
-
-                if (testingSet.isEmpty()) {
-                    LOGGER.warning(String.format("Skipping iteration %d: testingSet empty after conversion", iterationCounter));
-                    iterationCounter++; // Conta comunque l'iterazione saltata per coerenza
-                    continue;
-                }
-
-                // Usa iterationCounter (sequenziale) invece di currentReleaseId
-                runAllClassifiersForIteration(iterationCounter, trainingSet, testingSet, evaluations);
-
-                iterationCounter++;
-
-            } catch (Exception e) {
-                LOGGER.log(Level.SEVERE,
-                        String.format("Failed temporal iteration %d (train releases=%s, test=%d)",
-                                iterationCounter, trainReleaseIds, nextReleaseId), e);
-                iterationCounter++; // Incrementa anche in caso di errore per mantenere la sequenza
-            }
+            // Conta comunque per mantenere coerenza con pos (come nell'originale)
+            iterationCounter++;
         }
+    }
 
-        saveEvaluationCSVs(evaluations);
-        return evaluations;
+    private void executeIteration(int iteration,
+                                  List<Integer> trainReleaseIds,
+                                  int nextReleaseId,
+                                  List<Method> trainingMethods,
+                                  List<Method> testingMethods,
+                                  List<ClassifierEvaluation> evaluations) {
+        try {
+            // Usa iterationCounter per la directory (sequenziale) - identico all'originale
+            String iterDir = String.format("output/arff/%s/temporal/iteration_%d",
+                    projectName.toUpperCase(), iteration);
+            Path iterPath = Paths.get(iterDir);
+            Files.createDirectories(iterPath);
+
+            Instances trainingSet = ArffExporter.methodsToInstances(trainingMethods, "training");
+            Instances testingSet = ArffExporter.methodsToInstances(testingMethods, "testing");
+
+            // Salva sempre per inspection (identico all'originale)
+            ArffExporter.saveInstancesAsArff(trainingSet, iterPath.resolve("training.arff").toString());
+            ArffExporter.saveInstancesAsArff(testingSet, iterPath.resolve("testing.arff").toString());
+
+            if (testingSet.isEmpty()) {
+                logFormat(Level.WARNING, "Skipping iteration %d: testingSet empty after conversion", iteration);
+                return;
+            }
+
+            // Usa iteration (sequenziale) invece di currentReleaseId (come nell'originale)
+            runAllClassifiersForIteration(iteration, trainingSet, testingSet, evaluations);
+
+        } catch (Exception e) {
+            logFormat(Level.SEVERE,
+                    e,
+                    "Failed temporal iteration %d (train releases=%s, test=%d)",
+                    iteration, trainReleaseIds, nextReleaseId);
+        }
+    }
+
+    /**
+     * Evita chiamate costose (String.format) se il livello non è abilitato.
+     */
+    private static void logFormat(Level level, String format, Object... args) {
+        if (!LOGGER.isLoggable(level)) {
+            return;
+        }
+        LOGGER.log(level, String.format(format, args));
+    }
+
+    private static void logFormat(Level level, Throwable thrown, String format, Object... args) {
+        if (!LOGGER.isLoggable(level)) {
+            return;
+        }
+        LOGGER.log(level, String.format(format, args), thrown);
     }
 
 
@@ -168,85 +239,80 @@ public class WekaProcessor {
 
         // Baseline
         evaluateAndAppend(iteration, trainingSet, testingSet,
-                createRandomForest(), "RandomForest", FS_NONE, SAMPLING_NONE, COST_NONE, out);
+                new EvalSpec(createRandomForest(), MODEL_RANDOM_FOREST, FS_NONE, SAMPLING_NONE, COST_NONE), out);
         evaluateAndAppend(iteration, trainingSet, testingSet,
-                createNaiveBayes(), "NaiveBayes", FS_NONE, SAMPLING_NONE, COST_NONE, out);
+                new EvalSpec(createNaiveBayes(), MODEL_NAIVE_BAYES, FS_NONE, SAMPLING_NONE, COST_NONE), out);
         evaluateAndAppend(iteration, trainingSet, testingSet,
-                createIBk(), "IBk", FS_NONE, SAMPLING_NONE, COST_NONE, out);
+                new EvalSpec(createIBk(), MODEL_IBK, FS_NONE, SAMPLING_NONE, COST_NONE), out);
 
         // Feature Selection (CFS + BestFirst backward)
         evaluateAndAppend(iteration, trainingSet, testingSet,
-                wrapWithFeatureSelection(createRandomForest()), "RandomForest", FS_BEST_FIRST, SAMPLING_NONE, COST_NONE, out);
+                new EvalSpec(wrapWithFeatureSelection(createRandomForest()), MODEL_RANDOM_FOREST, FS_BEST_FIRST, SAMPLING_NONE, COST_NONE), out);
         evaluateAndAppend(iteration, trainingSet, testingSet,
-                wrapWithFeatureSelection(createNaiveBayes()), "NaiveBayes", FS_BEST_FIRST, SAMPLING_NONE, COST_NONE, out);
+                new EvalSpec(wrapWithFeatureSelection(createNaiveBayes()), MODEL_NAIVE_BAYES, FS_BEST_FIRST, SAMPLING_NONE, COST_NONE), out);
         evaluateAndAppend(iteration, trainingSet, testingSet,
-                wrapWithFeatureSelection(createIBk()), "IBk", FS_BEST_FIRST, SAMPLING_NONE, COST_NONE, out);
+                new EvalSpec(wrapWithFeatureSelection(createIBk()), MODEL_IBK, FS_BEST_FIRST, SAMPLING_NONE, COST_NONE), out);
 
         // SMOTE
         evaluateAndAppend(iteration, trainingSet, testingSet,
-                wrapWithSmote(trainingSet, createRandomForest()), "RandomForest", FS_NONE, SAMPLING_SMOTE, COST_NONE, out);
+                new EvalSpec(wrapWithSmote(trainingSet, createRandomForest()), MODEL_RANDOM_FOREST, FS_NONE, SAMPLING_SMOTE, COST_NONE), out);
         evaluateAndAppend(iteration, trainingSet, testingSet,
-                wrapWithSmote(trainingSet, createNaiveBayes()), "NaiveBayes", FS_NONE, SAMPLING_SMOTE, COST_NONE, out);
+                new EvalSpec(wrapWithSmote(trainingSet, createNaiveBayes()), MODEL_NAIVE_BAYES, FS_NONE, SAMPLING_SMOTE, COST_NONE), out);
         evaluateAndAppend(iteration, trainingSet, testingSet,
-                wrapWithSmote(trainingSet, createIBk()), "IBk", FS_NONE, SAMPLING_SMOTE, COST_NONE, out);
+                new EvalSpec(wrapWithSmote(trainingSet, createIBk()), MODEL_IBK, FS_NONE, SAMPLING_SMOTE, COST_NONE), out);
 
         // Feature Selection + SMOTE
         evaluateAndAppend(iteration, trainingSet, testingSet,
-                wrapWithFeatureSelectionAndSmote(trainingSet, createRandomForest()),
-                "RandomForest", FS_BEST_FIRST, SAMPLING_SMOTE, COST_NONE, out);
+                new EvalSpec(wrapWithFeatureSelectionAndSmote(trainingSet, createRandomForest()),
+                        MODEL_RANDOM_FOREST, FS_BEST_FIRST, SAMPLING_SMOTE, COST_NONE), out);
 
         evaluateAndAppend(iteration, trainingSet, testingSet,
-                wrapWithFeatureSelectionAndSmote(trainingSet, createNaiveBayes()),
-                "NaiveBayes", FS_BEST_FIRST, SAMPLING_SMOTE, COST_NONE, out);
+                new EvalSpec(wrapWithFeatureSelectionAndSmote(trainingSet, createNaiveBayes()),
+                        MODEL_NAIVE_BAYES, FS_BEST_FIRST, SAMPLING_SMOTE, COST_NONE), out);
 
         evaluateAndAppend(iteration, trainingSet, testingSet,
-                wrapWithFeatureSelectionAndSmote(trainingSet, createIBk()),
-                "IBk", FS_BEST_FIRST, SAMPLING_SMOTE, COST_NONE, out);
+                new EvalSpec(wrapWithFeatureSelectionAndSmote(trainingSet, createIBk()),
+                        MODEL_IBK, FS_BEST_FIRST, SAMPLING_SMOTE, COST_NONE), out);
 
         // Cost Sensitive
         evaluateAndAppend(iteration, trainingSet, testingSet,
-                wrapWithCostSensitive(createRandomForest()), "RandomForest", FS_NONE, SAMPLING_NONE, COST_SENSITIVE, out);
+                new EvalSpec(wrapWithCostSensitive(createRandomForest()), MODEL_RANDOM_FOREST, FS_NONE, SAMPLING_NONE, COST_SENSITIVE), out);
         evaluateAndAppend(iteration, trainingSet, testingSet,
-                wrapWithCostSensitive(createNaiveBayes()), "NaiveBayes", FS_NONE, SAMPLING_NONE, COST_SENSITIVE, out);
+                new EvalSpec(wrapWithCostSensitive(createNaiveBayes()), MODEL_NAIVE_BAYES, FS_NONE, SAMPLING_NONE, COST_SENSITIVE), out);
         evaluateAndAppend(iteration, trainingSet, testingSet,
-                wrapWithCostSensitive(createIBk()), "IBk", FS_NONE, SAMPLING_NONE, COST_SENSITIVE, out);
+                new EvalSpec(wrapWithCostSensitive(createIBk()), MODEL_IBK, FS_NONE, SAMPLING_NONE, COST_SENSITIVE), out);
     }
 
     private void evaluateAndAppend(int iteration,
                                    Instances trainingSet,
                                    Instances testingSet,
-                                   Classifier classifier,
-                                   String modelName,
-                                   String featureSelection,
-                                   String sampling,
-                                   String costSensitive,
+                                   EvalSpec spec,
                                    List<ClassifierEvaluation> out) {
         try {
-            ClassifierEvaluation e = evaluateClassifier(iteration, trainingSet, testingSet, classifier, modelName, featureSelection, sampling, costSensitive);
+            ClassifierEvaluation e = evaluateClassifier(iteration, trainingSet, testingSet, spec);
             if (e != null) {
                 out.add(e);
             }
-        } catch (Exception ex) {
-            LOGGER.log(Level.WARNING, "Could not evaluate classifier {0} at iteration {1}", new Object[]{modelName, iteration});
+        } catch (Exception _) {
+            LOGGER.log(Level.WARNING, "Could not evaluate classifier {0} at iteration {1}",
+                    new Object[]{spec.modelName(), iteration});
         }
     }
 
     private ClassifierEvaluation evaluateClassifier(int iteration,
                                                     Instances trainingSet,
                                                     Instances testingSet,
-                                                    Classifier classifier,
-                                                    String modelName,
-                                                    String featureSelection,
-                                                    String sampling,
-                                                    String costSensitive) throws Exception {
+                                                    EvalSpec spec) throws Exception {
         if (trainingSet == null || testingSet == null || trainingSet.isEmpty() || testingSet.isEmpty()) {
             return null;
         }
 
+        Classifier classifier = spec.classifier();
+
         trainingSet.setClassIndex(trainingSet.numAttributes() - 1);
         testingSet.setClassIndex(testingSet.numAttributes() - 1);
 
-        int posIndex = trainingSet.classAttribute().indexOfValue("yes");
+        int posIndex = trainingSet.classAttribute().indexOfValue(CLASS_YES);
         if (posIndex < 0) posIndex = 1; // fallback
         int negIndex = (posIndex == 0) ? 1 : 0;
 
@@ -280,10 +346,10 @@ public class WekaProcessor {
         ClassifierEvaluation ce = new ClassifierEvaluation(projectName, iteration);
         ce.setTrainingSize(trainingSet.numInstances());
         ce.setTestingSize(testingSet.numInstances());
-        ce.setClassifier(modelName);
-        ce.setFeatureSelection(featureSelection);
-        ce.setSampling(sampling);
-        ce.setCostSensitive(costSensitive);
+        ce.setClassifier(spec.modelName());
+        ce.setFeatureSelection(spec.featureSelection());
+        ce.setSampling(spec.sampling());
+        ce.setCostSensitive(spec.costSensitive());
 
         // nessun tuning soglia (default)
         ce.setThresholdStrategy("DEFAULT");
@@ -390,6 +456,7 @@ public class WekaProcessor {
         cs.setMinimizeExpectedCost(false);
         return cs;
     }
+
     private static FilteredClassifier wrapWithFeatureSelectionAndSmote(Instances trainingSet, Classifier base) {
         FilteredClassifier fc = new FilteredClassifier();
         fc.setFilter(createFeatureSelectionAndSmoteFilter(trainingSet));
@@ -406,9 +473,6 @@ public class WekaProcessor {
         return mf;
     }
 
-
-
-
     private static Filter createFeatureSelectionFilter() {
         AttributeSelection attributeSelection = new AttributeSelection();
         attributeSelection.setEvaluator(new CfsSubsetEval());
@@ -417,7 +481,7 @@ public class WekaProcessor {
         try {
             // -D 0 => backward (come reference)
             bestFirst.setOptions(new String[]{"-D", "0"});
-        } catch (Exception ignored) {
+        } catch (Exception _) {
             // fallback: default BestFirst
         }
         attributeSelection.setSearch(bestFirst);
@@ -486,8 +550,9 @@ public class WekaProcessor {
             LOGGER.log(Level.SEVERE, "Could not write evaluation CSV files", e);
         }
     }
+
     /* =========================================================
-       =                    FOR 'WHAT IF' ANALYSIS                        =
+       =                    FOR 'WHAT IF' ANALYSIS              =
        ========================================================= */
 
     public record ModelSpec(String classifier, String featureSelection, String sampling, String costSensitive) {
@@ -500,61 +565,103 @@ public class WekaProcessor {
 
     public static ModelSpec pickBestSpec(List<org.example.model.ClassifierEvaluation> evals) {
         if (evals == null || evals.isEmpty()) {
-            return new ModelSpec("RandomForest", FS_NONE, SAMPLING_NONE, COST_NONE);
+            return new ModelSpec(MODEL_RANDOM_FOREST, FS_NONE, SAMPLING_NONE, COST_NONE);
         }
 
-        record Agg(double aucSum, int aucN, double mccSum, int mccN) {}
+        java.util.Map<String, Agg> aggregates = aggregateBySpec(evals);
+        String bestKey = selectBestKey(aggregates);
+
+        if (bestKey == null) {
+            return new ModelSpec(MODEL_RANDOM_FOREST, FS_NONE, SAMPLING_NONE, COST_NONE);
+        }
+        return specFromKey(bestKey);
+    }
+
+    private static java.util.Map<String, Agg> aggregateBySpec(List<org.example.model.ClassifierEvaluation> evals) {
         java.util.Map<String, Agg> m = new java.util.HashMap<>();
 
         for (org.example.model.ClassifierEvaluation e : evals) {
-            String key = String.join("|",
-                    nz(e.getClassifier()),
-                    nz(e.getFeatureSelection()),
-                    nz(e.getSampling()),
-                    nz(e.getCostSensitive())
-            );
-
-            Agg a = m.getOrDefault(key, new Agg(0, 0, 0, 0));
+            String key = buildSpecKey(e);
             double auc = parseOrNaN(e.getAuc());
             double mcc = parseOrNaN(e.getMcc());
 
-            double aucSum = a.aucSum + (Double.isNaN(auc) ? 0 : auc);
-            int aucN = a.aucN + (Double.isNaN(auc) ? 0 : 1);
-
-            double mccSum = a.mccSum + (Double.isNaN(mcc) ? 0 : mcc);
-            int mccN = a.mccN + (Double.isNaN(mcc) ? 0 : 1);
-
-            m.put(key, new Agg(aucSum, aucN, mccSum, mccN));
+            Agg current = m.getOrDefault(key, new Agg(0, 0, 0, 0));
+            m.put(key, updatedAgg(current, auc, mcc));
         }
 
+        return m;
+    }
+
+    private static String buildSpecKey(org.example.model.ClassifierEvaluation e) {
+        return String.join("|",
+                nz(e.getClassifier()),
+                nz(e.getFeatureSelection()),
+                nz(e.getSampling()),
+                nz(e.getCostSensitive())
+        );
+    }
+
+    private static Agg updatedAgg(Agg current, double auc, double mcc) {
+        double aucSum = current.aucSum();
+        int aucN = current.aucN();
+        if (!Double.isNaN(auc)) {
+            aucSum += auc;
+            aucN += 1;
+        }
+
+        double mccSum = current.mccSum();
+        int mccN = current.mccN();
+        if (!Double.isNaN(mcc)) {
+            mccSum += mcc;
+            mccN += 1;
+        }
+
+        return new Agg(aucSum, aucN, mccSum, mccN);
+    }
+
+    private static String selectBestKey(java.util.Map<String, Agg> aggregates) {
         String bestKey = null;
         double bestScore = Double.NEGATIVE_INFINITY;
 
-        for (var ent : m.entrySet()) {
-            Agg a = ent.getValue();
-            double meanAuc = (a.aucN > 0) ? (a.aucSum / a.aucN) : Double.NaN;
-            double meanMcc = (a.mccN > 0) ? (a.mccSum / a.mccN) : Double.NaN;
-
-            double score = !Double.isNaN(meanAuc) ? meanAuc
-                    : (!Double.isNaN(meanMcc) ? meanMcc : Double.NEGATIVE_INFINITY);
-
+        for (var ent : aggregates.entrySet()) {
+            double score = score(ent.getValue());
             if (score > bestScore) {
                 bestScore = score;
                 bestKey = ent.getKey();
             }
         }
 
-        if (bestKey == null) return new ModelSpec("RandomForest", FS_NONE, SAMPLING_NONE, COST_NONE);
+        return bestKey;
+    }
 
-        String[] p = bestKey.split("\\|", -1);
+    private static double score(Agg a) {
+        double meanAuc = mean(a.aucSum(), a.aucN());
+        if (!Double.isNaN(meanAuc)) {
+            return meanAuc;
+        }
+
+        double meanMcc = mean(a.mccSum(), a.mccN());
+        if (!Double.isNaN(meanMcc)) {
+            return meanMcc;
+        }
+
+        return Double.NEGATIVE_INFINITY;
+    }
+
+    private static double mean(double sum, int n) {
+        return (n > 0) ? (sum / n) : Double.NaN;
+    }
+
+    private static ModelSpec specFromKey(String key) {
+        String[] p = key.split("\\|", -1);
         return new ModelSpec(p[0], p[1], p[2], p[3]);
     }
 
     public weka.classifiers.Classifier buildClassifier(weka.core.Instances training, ModelSpec spec) {
         weka.classifiers.Classifier base;
         switch (spec.classifier) {
-            case "NaiveBayes" -> base = createNaiveBayes();
-            case "IBk" -> base = createIBk();
+            case MODEL_NAIVE_BAYES -> base = createNaiveBayes();
+            case MODEL_IBK -> base = createIBk();
             default -> base = createRandomForest();
         }
 
@@ -573,9 +680,16 @@ public class WekaProcessor {
         return model;
     }
 
-    private static String nz(String s) { return (s == null) ? "" : s; }
+    private static String nz(String s) {
+        return (s == null) ? "" : s;
+    }
+
     private static double parseOrNaN(String s) {
-        try { return Double.parseDouble(s); } catch (Exception ex) { return Double.NaN; }
+        try {
+            return Double.parseDouble(s);
+        } catch (Exception _) {
+            return Double.NaN;
+        }
     }
 
 }
