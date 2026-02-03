@@ -74,7 +74,7 @@ public class Proportion {
         if (!t.hasIV()) {
             return;
         }
-        // Se non possiamo calcolare una proporzione valida, l'IV è da considerarsi sporca -> stima
+        // Se non possiamo calcolare una proporzione valida, l'IV è da considerarsi sporca -> va stimata
         if (computeTicketProportion(t) == null) {
             t.setInjectedVersion(null);
         }
@@ -179,7 +179,7 @@ public class Proportion {
             return mean(ps);
 
         } catch (IOException | JSONException _) {
-            // ignore donor failures
+            // ignora donor failures
             return null;
         }
     }
@@ -190,7 +190,6 @@ public class Proportion {
             return ps;
         }
 
-        // Nessun continue/break nel loop: condizione incapsulata
         for (Ticket t : tickets) {
             if (isEligibleDonorTicket(t, cutoffResolutionDate)) {
                 Double p = computeTicketProportion(t);

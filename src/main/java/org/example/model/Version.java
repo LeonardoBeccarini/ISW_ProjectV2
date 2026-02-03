@@ -12,21 +12,13 @@ public class Version {
     private String id;
     private String name;
     private LocalDate date;
-    private List<RevCommit> commitList;
+    private final List<RevCommit>  commitList;
 
     public Version( String id, String name, LocalDate date) {
         this.id = id;
         this.name = name;
         this.date = date;
         this.commitList = new ArrayList<>();
-    }
-
-    public void addCommit(RevCommit commit){
-        this.commitList.add(commit);
-    }
-
-    public boolean isCommitListEmpty(){
-        return this.commitList.isEmpty();
     }
 
     public void setIndex(int index) {

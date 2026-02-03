@@ -7,9 +7,9 @@ import java.util.List;
 
 public class Ticket {
     private String key;
-    private LocalDate creationDate;
-    private LocalDate resolutionDate;
-    private List<Version> affectedVersions;
+    private final LocalDate creationDate;
+    private final LocalDate resolutionDate;
+    private final List<Version> affectedVersions;
     private Version injectedVersion;
     private Version openingVersion;
     private Version fixedVersion;
@@ -22,8 +22,6 @@ public class Ticket {
         this.affectedVersions = affectedVersions;
     }
 
-    public Ticket() {
-    }
 
     public boolean hasIV() {
         return injectedVersion != null;
@@ -67,7 +65,7 @@ public class Ticket {
 
     /**
      * Imposta una IV "temporanea" a partire dalla prima AV, solo se coerente.
-     *
+     * <p>
      * Regola (option 2): se la IV candidata non è valida rispetto a OV/FV,
      * lasciamo IV=null così Proportion farà la stima.
      */
@@ -108,14 +106,6 @@ public class Ticket {
         this.key = key;
     }
 
-    public void setCreationDate(LocalDate creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    public void setResolutionDate(LocalDate resolutionDate) {
-        this.resolutionDate = resolutionDate;
-    }
-
     public void setInjectedVersion(Version injectedVersion) {
         this.injectedVersion = injectedVersion;
     }
@@ -128,7 +118,4 @@ public class Ticket {
         this.fixedVersion = fixedVersion;
     }
 
-    public void setAffectedVersions(List<Version> affectedVersions) {
-        this.affectedVersions = affectedVersions;
-    }
 }

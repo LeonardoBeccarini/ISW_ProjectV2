@@ -12,7 +12,6 @@ import static org.example.utilities.CsvExporter.*;
 /**
  * Calcola la correlazione di Spearman tra feature "actionable" e la colonna target "Buggy".
  * <p></p>
- * Responsabilità UNICA: calcoli statistici (Spearman, Pearson, Rank).
  * Delega TUTTO l'I/O CSV a CsvExporter.
  */
 public final class SpearmanDatasetAnalyzer {
@@ -89,7 +88,7 @@ public final class SpearmanDatasetAnalyzer {
             Double target = parseBuggy(row, targetIdx);
             Map<String, Double> rowFeatures = (target != null) ? extractRowFeatures(row, csvData.columnIndex()) : null;
 
-            if (target != null && rowFeatures != null) {
+            if (target != null) {
                 targetValues.add(target);
                 for (String feature : ACTIONABLE_FEATURES) {
                     featureValues.get(feature).add(rowFeatures.get(feature));

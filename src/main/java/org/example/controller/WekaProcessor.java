@@ -142,7 +142,7 @@ public class WekaProcessor {
                                     int windowSize,
                                     List<ClassifierEvaluation> evaluations) {
 
-        // Contatore sequenziale per le iterazioni (1, 2, 3, ...)
+        // Contatore sequenziale per le iterazioni
         int iterationCounter = 1;
 
         for (int pos = startPos; pos < releaseIds.size() - 1; pos++) {
@@ -169,7 +169,7 @@ public class WekaProcessor {
                 executeIteration(iterationCounter, trainReleaseIds, nextReleaseId, trainingMethods, testingMethods, evaluations);
             }
 
-            // Conta comunque per mantenere coerenza con pos (come nell'originale)
+            // Conta comunque per mantenere coerenza con pos
             iterationCounter++;
         }
     }
@@ -181,7 +181,6 @@ public class WekaProcessor {
                                   List<Method> testingMethods,
                                   List<ClassifierEvaluation> evaluations) {
         try {
-            // Usa iterationCounter per la directory (sequenziale) - identico all'originale
             String iterDir = String.format("output/arff/%s/temporal/iteration_%d",
                     projectName.toUpperCase(), iteration);
             Path iterPath = Paths.get(iterDir);
@@ -190,7 +189,6 @@ public class WekaProcessor {
             Instances trainingSet = ArffExporter.methodsToInstances(trainingMethods, "training");
             Instances testingSet = ArffExporter.methodsToInstances(testingMethods, "testing");
 
-            // Salva sempre per inspection (identico all'originale)
             ArffExporter.saveInstancesAsArff(trainingSet, iterPath.resolve("training.arff").toString());
             ArffExporter.saveInstancesAsArff(testingSet, iterPath.resolve("testing.arff").toString());
 
@@ -199,7 +197,6 @@ public class WekaProcessor {
                 return;
             }
 
-            // Usa iteration (sequenziale) invece di currentReleaseId (come nell'originale)
             runAllClassifiersForIteration(iteration, trainingSet, testingSet, evaluations);
 
         } catch (Exception e) {
@@ -479,7 +476,7 @@ public class WekaProcessor {
 
         BestFirst bestFirst = new BestFirst();
         try {
-            // -D 0 => backward (come reference)
+            // -D 0 => backward
             bestFirst.setOptions(new String[]{"-D", "0"});
         } catch (Exception _) {
             // fallback: default BestFirst
@@ -525,7 +522,7 @@ public class WekaProcessor {
         cm.setCell(1, 1, 0.0);
         // FP cost
         cm.setCell(0, 1, 1.0);
-        // FN cost (miss a buggy method) â€“ fixed 10 as reference
+        // FN cost (miss a buggy method)
         cm.setCell(1, 0, 10.0);
         return cm;
     }

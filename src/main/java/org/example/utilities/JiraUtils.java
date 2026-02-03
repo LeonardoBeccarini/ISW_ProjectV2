@@ -34,11 +34,11 @@ public class JiraUtils {
     public static List<Version> getAffectedVersions(JSONArray affectedVersionsArray, List<Version> versionList) throws JSONException {
         List<Version> existingAffectedVersions = new ArrayList<>();
 
-        //iterating through the names of the affected versions
+        //itera sui nomi
         for (int i = 0; i < affectedVersionsArray.length(); i++) {
             String affectedVersionName = affectedVersionsArray.getJSONObject(i).get("name").toString();
 
-            //iterating through the releases to find the corresponding one
+            //itera sulle release per trovarne una corrispondente
             for (Version release : versionList) {
                 if (Objects.equals(affectedVersionName, release.getName())) {
                     existingAffectedVersions.add(release);

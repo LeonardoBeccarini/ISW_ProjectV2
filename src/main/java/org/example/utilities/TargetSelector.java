@@ -70,6 +70,94 @@ public final class TargetSelector {
             Map<String, String> row
     ) {}
 
+    /* ===================== Helper: Parsed Row ===================== */
+
+    /** Parsed values di una riga del CSV. */
+    private record ParsedRow(int versionIndex, double featureValue, int loc, String fqn, String versionName,
+                             Map<String, String> rowMap) {
+
+        boolean isValid() {
+            return versionIndex != Integer.MIN_VALUE;
+        }
+    }
+
+    /* ===================== Helper: Best Candidate Tracker ===================== */
+
+    /** Tiene traccia del candidato migliore */
+    private static final class BestCandidate {
+        int latestVersion = Integer.MIN_VALUE;
+        double featVal = Double.NEGATIVE_INFINITY;
+        int loc = Integer.MIN_VALUE;
+        String fqn = null;
+        String versionName = "";
+        Map<String, String> rowMap = null;
+
+        boolean isFound() {
+            return rowMap != null && latestVersion != Integer.MIN_VALUE;
+        }
+
+        boolean hasFqn() {
+            return fqn != null && !fqn.isBlank();
+        }
+
+        /**
+         * Aggiorna il candidato se la riga è migliore
+         * Tie-break: 1) max version, 2) max feature, 3) max LOC, 4) lexicographic FQN.
+         */
+        void updateIfBetter(ParsedRow row) {
+            if (row.isValid() && isBetterThan(row)) {
+                acceptRow(row);
+            }
+        }
+
+        private boolean isBetterThan(ParsedRow row) {
+            if (row.versionIndex() != latestVersion) {
+                return row.versionIndex() > latestVersion;
+            }
+            int cmpFeat = Double.compare(row.featureValue(), featVal);
+            if (cmpFeat != 0) {
+                return cmpFeat > 0;
+            }
+            if (row.loc() != loc) {
+                return row.loc() > loc;
+            }
+            return compareFqn(row.fqn(), fqn) < 0;
+        }
+
+        private void acceptRow(ParsedRow row) {
+            latestVersion = row.versionIndex();
+            featVal = row.featureValue();
+            loc = row.loc();
+            fqn = row.fqn();
+            versionName = row.versionName();
+            rowMap = row.rowMap();
+        }
+
+        private static int compareFqn(String a, String b) {
+            String sa = (a == null) ? "" : a;
+            String sb = (b == null) ? "" : b;
+            return sa.compareTo(sb);
+        }
+    }
+
+    /* ===================== Helper: Column Indices ===================== */
+
+    /** Contiene indici richiesti per il parsing del CSV */
+    private record ColumnIndices(int version, int versionName, int fqn, int loc, int feature) {
+
+        static ColumnIndices from(Map<String, Integer> idx, AFeature aFeature) throws IOException {
+            return new ColumnIndices(
+                    requireIdx(idx, "VersionIndex"),
+                    requireIdx(idx, "VersionName"),
+                    requireIdx(idx, "MethodFQN"),
+                    requireIdx(idx, "LOC"),
+                    requireIdx(idx, aFeature.csvHeader)
+            );
+        }
+    }
+
+    /* ===================== Main Method ===================== */
+
     /**
      * Seleziona il metodo con valore massimo della AFeature nella release più recente (max VersionIndex).
      * <p>
@@ -79,118 +167,97 @@ public final class TargetSelector {
      *  3) MethodFQN lessicografico
      */
     public static String selectAFMethod(String projectName, String aFeatureName) throws IOException {
-        if (projectName == null || projectName.isBlank()) {
-            throw new IllegalArgumentException("projectName null/blank");
-        }
+        validateProjectName(projectName);
         AFeature aFeature = AFeature.fromString(aFeatureName);
         Objects.requireNonNull(aFeature, "aFeature");
 
         String proj = projectName.toUpperCase(Locale.ROOT);
         Path csv = Paths.get("output", "csv", proj, "dataset.csv");
+        validateCsvExists(csv);
+
+        AFMethod result = processDataset(csv, proj, aFeature);
+        writeSelectionInfo(result);
+        return methodNameFromMethodFqn(result.methodFqn());
+    }
+
+    private static void validateProjectName(String projectName) {
+        if (projectName == null || projectName.isBlank()) {
+            throw new IllegalArgumentException("projectName null/blank");
+        }
+    }
+
+    private static void validateCsvExists(Path csv) throws IOException {
         if (!Files.exists(csv)) {
             throw new IOException("Missing dataset CSV: " + csv);
         }
+    }
 
-
+    private static AFMethod processDataset(Path csv, String proj, AFeature aFeature) throws IOException {
         try (BufferedReader br = Files.newBufferedReader(csv, StandardCharsets.UTF_8)) {
-            String headerLine = br.readLine();
-            if (headerLine == null || headerLine.isBlank()) {
-                throw new IOException("Empty dataset CSV (missing header): " + csv);
-            }
+            List<String> header = readAndValidateHeader(br, csv);
+            ColumnIndices cols = ColumnIndices.from(headerIndex(header), aFeature);
+            BestCandidate best = findBestCandidate(br, header, cols);
 
-            List<String> header = CsvExporter.parseCsvLine(headerLine);
-            Map<String, Integer> idx = headerIndex(header);
-
-            int iVersion = requireIdx(idx, "VersionIndex");
-            int iVName   = requireIdx(idx, "VersionName");
-            int iFqn     = requireIdx(idx, "MethodFQN");
-            int iLoc     = requireIdx(idx, "LOC");
-            int iFeat    = requireIdx(idx, aFeature.csvHeader);
-
-            int bestLatestVersion = Integer.MIN_VALUE;
-            double bestFeatVal = Double.NEGATIVE_INFINITY;
-            int bestLoc = Integer.MIN_VALUE;
-            String bestFqn = null;
-            String bestVName = "";
-            Map<String, String> bestRow = null;
-
-            String line;
-            while ((line = br.readLine()) != null) {
-                if (line.isBlank()) continue;
-
-                List<String> row = CsvExporter.parseCsvLine(line);
-                if (row.size() < header.size()) {
-                    row = pad(row, header.size());
-                }
-
-                int vIdx = parseIntSafe(get(row, iVersion), Integer.MIN_VALUE);
-                if (vIdx == Integer.MIN_VALUE) continue;
-
-                double featVal = parseDoubleSafe(get(row, iFeat), Double.NEGATIVE_INFINITY);
-                int locVal = parseIntSafe(get(row, iLoc), 0);
-                String fqn = safe(get(row, iFqn));
-                String vName = safe(get(row, iVName));
-
-                if (vIdx > bestLatestVersion) {
-                    bestLatestVersion = vIdx;
-                    bestFeatVal = featVal;
-                    bestLoc = locVal;
-                    bestFqn = fqn;
-                    bestVName = vName;
-                    bestRow = toRowMap(header, row);
-                    continue;
-                }
-
-                if (vIdx != bestLatestVersion) {
-                    continue;
-                }
-
-                if (featVal > bestFeatVal) {
-                    bestFeatVal = featVal;
-                    bestLoc = locVal;
-                    bestFqn = fqn;
-                    bestVName = vName;
-                    bestRow = toRowMap(header, row);
-                } else if (Double.compare(featVal, bestFeatVal) == 0) {
-                    if (locVal > bestLoc) {
-                        bestLoc = locVal;
-                        bestFqn = fqn;
-                        bestVName = vName;
-                        bestRow = toRowMap(header, row);
-                    } else if (locVal == bestLoc) {
-                        String curFqn = (fqn == null) ? "" : fqn;
-                        String oldFqn = (bestFqn == null) ? "" : bestFqn;
-                        if (curFqn.compareTo(oldFqn) < 0) {
-                            bestFqn = fqn;
-                            bestVName = vName;
-                            bestRow = toRowMap(header, row);
-                        }
-                    }
-                }
-            }
-
-            if (bestRow == null || bestLatestVersion == Integer.MIN_VALUE) {
-                throw new IllegalStateException("No valid rows found in: " + csv);
-            }
-            if (bestFqn == null || bestFqn.isBlank()) {
-                throw new IllegalStateException("Best row has empty MethodFQN in: " + csv);
-            }
-
-            AFMethod out = new AFMethod(
-                    proj,
-                    bestLatestVersion,
-                    bestVName,
-                    aFeature,
-                    bestFeatVal,
-                    bestFqn,
-                    bestLoc,
-                    Collections.unmodifiableMap(bestRow)
-            );
-
-            writeSelectionInfo(out);
-            return methodNameFromMethodFqn(out.methodFqn);
+            validateResult(best, csv);
+            return buildResult(proj, aFeature, best);
         }
+    }
 
+    private static List<String> readAndValidateHeader(BufferedReader br, Path csv) throws IOException {
+        String headerLine = br.readLine();
+        if (headerLine == null || headerLine.isBlank()) {
+            throw new IOException("Empty dataset CSV (missing header): " + csv);
+        }
+        return CsvExporter.parseCsvLine(headerLine);
+    }
+
+    private static BestCandidate findBestCandidate(BufferedReader br, List<String> header, ColumnIndices cols) throws IOException {
+        BestCandidate best = new BestCandidate();
+        String line;
+        while ((line = br.readLine()) != null) {
+            if (!line.isBlank()) {
+                ParsedRow row = parseRow(line, header, cols);
+                best.updateIfBetter(row);
+            }
+        }
+        return best;
+    }
+
+    private static ParsedRow parseRow(String line, List<String> header, ColumnIndices cols) {
+        List<String> row = CsvExporter.parseCsvLine(line);
+        if (row.size() < header.size()) {
+            row = pad(row, header.size());
+        }
+        return new ParsedRow(
+                parseIntSafe(get(row, cols.version()), Integer.MIN_VALUE),
+                parseDoubleSafe(get(row, cols.feature()), Double.NEGATIVE_INFINITY),
+                parseIntSafe(get(row, cols.loc()), 0),
+                safe(get(row, cols.fqn())),
+                safe(get(row, cols.versionName())),
+                toRowMap(header, row)
+        );
+    }
+
+    private static void validateResult(BestCandidate best, Path csv) {
+        if (!best.isFound()) {
+            throw new IllegalStateException("No valid rows found in: " + csv);
+        }
+        if (!best.hasFqn()) {
+            throw new IllegalStateException("Best row has empty MethodFQN in: " + csv);
+        }
+    }
+
+    private static AFMethod buildResult(String proj, AFeature aFeature, BestCandidate best) {
+        return new AFMethod(
+                proj,
+                best.latestVersion,
+                best.versionName,
+                aFeature,
+                best.featVal,
+                best.fqn,
+                best.loc,
+                Collections.unmodifiableMap(best.rowMap)
+        );
     }
 
     /* ===================== Helpers ===================== */

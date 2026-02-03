@@ -20,7 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
- * Classe responsabile delle le operazioni I/O su file CSV.
+ * Classe responsabile delle operazioni I/O su file CSV.
  */
 public final class CsvExporter {
 
@@ -40,15 +40,6 @@ public final class CsvExporter {
             List<String> headerNames,
             List<List<String>> rows
     ) {
-        public String getValue(int rowIndex, String columnName) {
-            Integer colIdx = columnIndex.get(columnName);
-            if (colIdx == null || rowIndex < 0 || rowIndex >= rows.size()) {
-                return "";
-            }
-            List<String> row = rows.get(rowIndex);
-            return (colIdx < row.size()) ? row.get(colIdx) : "";
-        }
-
         public int getRowCount() {
             return rows.size();
         }
@@ -63,19 +54,15 @@ public final class CsvExporter {
      */
     public record RefactorDelta(double before, double after, double factor) {
         public static RefactorDelta compute(double before, double after) {
-            double factor;
-            if (Math.abs(before) > 1e-9) {
-                factor = after / before;
-            } else {
-                factor = 0.0;
-            }
-            if (Double.isNaN(factor) || Double.isInfinite(factor)) {
-                factor = 1.0;
-            }
-            if (factor < 0.0) {
-                factor = 0.0;
-            }
-            return new RefactorDelta(before, after, factor);
+            double f = computeFactor(before, after);
+            return new RefactorDelta(before, after, f);
+        }
+
+        private static double computeFactor(double before, double after) {
+            if (Math.abs(before) <= 1e-9) return 0.0;
+            double f = after / before;
+            if (Double.isNaN(f) || Double.isInfinite(f)) return 1.0;
+            return Math.max(f, 0.0);
         }
     }
 
@@ -91,8 +78,24 @@ public final class CsvExporter {
             int estimatedBuggyClassify
     ) {}
 
+    /**
+     * Contesto per la scrittura dei risultati What-If.
+     */
+    public record WhatIfContext(
+            String project,
+            String aFeature,
+            String method,
+            String classifierSpec,
+            RefactorDelta delta,
+            double bPlusThreshold,
+            double deltaExpectedProb,
+            double relOnBPlusProb,
+            double relOnAProb,
+            int deltaEstimatedClassify
+    ) {}
+
     // ================================================================
-    //                 LETTURA FILE CSV - GENERICA
+    //                 LETTURA FILE CSV
     // ================================================================
 
     /**
@@ -121,16 +124,13 @@ public final class CsvExporter {
         return new CsvData(columnIndex, headerNames, rows);
     }
 
-    /**
-     * Legge tutte le righe di un file CSV con validazione.
-     */
-    public static List<String> readAllLines(Path csvPath) throws IOException {
+    private static List<String> readAllLines(Path csvPath) throws IOException {
         if (!Files.exists(csvPath)) {
-            throw new IOException("File CSV non trovato: " + csvPath);
+            throw new IOException(String.format("File CSV non trovato: %s", csvPath));
         }
         List<String> lines = Files.readAllLines(csvPath, StandardCharsets.UTF_8);
         if (lines.isEmpty()) {
-            throw new IOException("File CSV vuoto: " + csvPath);
+            throw new IOException(String.format("File CSV vuoto: %s", csvPath));
         }
         return lines;
     }
@@ -141,30 +141,8 @@ public final class CsvExporter {
     public static void validateColumns(CsvData data, Path filePath, String... requiredColumns) throws IOException {
         for (String col : requiredColumns) {
             if (!data.hasColumn(col)) {
-                throw new IOException("Colonna mancante nel CSV: " + col + " (file: " + filePath + ")");
+                throw new IOException(String.format("Colonna mancante nel CSV: %s (file: %s)", col, filePath));
             }
-        }
-    }
-
-    // ================================================================
-    //              LETTURA SPECIALIZZATA - EVALUATIONS
-    // ================================================================
-
-    /**
-     * Record per gli indici delle colonne di valutazione.
-     */
-    public record EvalColumnIndices(int proj, int iter, int model, int fs, int bal, int cost, int auc, int mcc) {
-        public static EvalColumnIndices fromHeader(Map<String, Integer> idx) {
-            return new EvalColumnIndices(
-                    idx.getOrDefault("PROJ", -1),
-                    requireColumnIndex(idx, "WF_ITER"),
-                    requireColumnIndex(idx, "MODEL"),
-                    requireColumnIndex(idx, "FEATURE_SELECTION"),
-                    requireColumnIndex(idx, "BALANCING"),
-                    requireColumnIndex(idx, "COST_SENSITIVE"),
-                    requireColumnIndex(idx, "AUC"),
-                    requireColumnIndex(idx, "MCC")
-            );
         }
     }
 
@@ -176,7 +154,7 @@ public final class CsvExporter {
         CsvData data = readCsvFile(evalCsv);
         if (data.getRowCount() == 0) return out;
 
-        EvalColumnIndices colIdx = EvalColumnIndices.fromHeader(data.columnIndex());
+        int[] colIdx = getEvalColumnIndices(data.columnIndex());
 
         for (List<String> row : data.rows()) {
             ClassifierEvaluation ce = parseEvaluationRow(row, projectName, colIdx);
@@ -187,31 +165,40 @@ public final class CsvExporter {
         return out;
     }
 
-    private static ClassifierEvaluation parseEvaluationRow(List<String> row, String projectName, EvalColumnIndices col) {
-        int iter = safeInt(row, col.iter(), -1);
+    private static int[] getEvalColumnIndices(Map<String, Integer> idx) {
+        return new int[] {
+                idx.getOrDefault("PROJ", -1),
+                requireColumnIndex(idx, "WF_ITER"),
+                requireColumnIndex(idx, "MODEL"),
+                requireColumnIndex(idx, "FEATURE_SELECTION"),
+                requireColumnIndex(idx, "BALANCING"),
+                requireColumnIndex(idx, "COST_SENSITIVE"),
+                requireColumnIndex(idx, "AUC"),
+                requireColumnIndex(idx, "MCC")
+        };
+    }
+
+    private static ClassifierEvaluation parseEvaluationRow(List<String> row, String projectName, int[] col) {
+        int iter = safeInt(row, col[1], -1);
         if (iter < 0) return null;
 
-        if (col.proj() >= 0) {
-            String projInRow = safeStr(row, col.proj());
+        if (col[0] >= 0) {
+            String projInRow = safeStr(row, col[0]);
             if (!projInRow.isEmpty() && !projInRow.equalsIgnoreCase(projectName)) {
                 return null;
             }
         }
 
         ClassifierEvaluation ce = new ClassifierEvaluation(projectName, iter);
-        ce.setModel(safeStr(row, col.model()));
-        ce.setFeatureSelection(safeStr(row, col.fs()));
-        ce.setBalancing(safeStr(row, col.bal()));
-        ce.setCostSensitive(safeStr(row, col.cost()));
-        ce.setAuc(safeDouble(row, col.auc()));
-        ce.setMcc(safeDouble(row, col.mcc()));
+        ce.setModel(safeStr(row, col[2]));
+        ce.setFeatureSelection(safeStr(row, col[3]));
+        ce.setBalancing(safeStr(row, col[4]));
+        ce.setCostSensitive(safeStr(row, col[5]));
+        ce.setAuc(safeDouble(row, col[6]));
+        ce.setMcc(safeDouble(row, col[7]));
 
         return ce;
     }
-
-    // ================================================================
-    //              LETTURA SPECIALIZZATA - REFACTOR DELTA
-    // ================================================================
 
     /**
      * Legge i dati di refactoring (BEFORE/AFTER) per una feature specifica.
@@ -219,14 +206,14 @@ public final class CsvExporter {
     public static RefactorDelta readRefactorDelta(Path refactorCsv, String aFeature) throws IOException {
         CsvData data = readCsvFile(refactorCsv);
         if (data.getRowCount() < 1) {
-            throw new IllegalArgumentException("Refactor metrics CSV too short: " + refactorCsv);
+            throw new IllegalArgumentException(String.format("Refactor metrics CSV too short: %s", refactorCsv));
         }
 
         if (!data.hasColumn("Tag")) {
             throw new IllegalArgumentException("Refactor CSV missing column: Tag");
         }
         if (!data.hasColumn(aFeature)) {
-            throw new IllegalArgumentException("Refactor CSV missing column for AFeature: " + aFeature);
+            throw new IllegalArgumentException(String.format("Refactor CSV missing column for AFeature: %s", aFeature));
         }
 
         int iTag = data.columnIndex().get("Tag");
@@ -244,105 +231,15 @@ public final class CsvExporter {
         }
 
         if (before == null || after == null || Double.isNaN(before) || Double.isNaN(after)) {
-            throw new IllegalStateException("Could not read BEFORE/AFTER values for " + aFeature + " from " + refactorCsv);
+            throw new IllegalStateException(String.format("Could not read BEFORE/AFTER values for %s from %s", aFeature, refactorCsv));
         }
 
         return RefactorDelta.compute(before, after);
     }
 
     // ================================================================
-    //              SCRITTURA FILE CSV - GENERICA
+    //                    SCRITTURA WHAT-IF RESULTS
     // ================================================================
-
-    /**
-     * Scrive un file CSV con header e righe.
-     */
-    public static void writeCsvFile(Path file, List<String> header, List<List<Object>> rows) throws IOException {
-        Files.createDirectories(file.getParent());
-        try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8))) {
-            pw.println(String.join(",", header));
-            for (List<Object> row : rows) {
-                pw.println(formatCsvRow(row));
-            }
-        }
-    }
-
-    /**
-     * Builder per scrittura CSV incrementale.
-     */
-    public static class CsvWriter implements AutoCloseable {
-        private final PrintWriter writer;
-
-        public CsvWriter(Path file) throws IOException {
-            Files.createDirectories(file.getParent());
-            this.writer = new PrintWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8));
-        }
-
-        public void writeHeader(String... columns) {
-            writer.println(String.join(",", columns));
-        }
-
-        public void writeHeader(List<String> columns) {
-            writer.println(String.join(",", columns));
-        }
-
-        public void writeRow(Object... values) {
-            writer.println(formatCsvRow(Arrays.asList(values)));
-        }
-
-        public void writeRow(List<Object> values) {
-            writer.println(formatCsvRow(values));
-        }
-
-        public void writeFormattedRow(String format, Object... args) {
-            writer.printf(Locale.US, format + "%n", args);
-        }
-
-        @Override
-        public void close() {
-            writer.close();
-        }
-    }
-
-    private static String formatCsvRow(List<Object> values) {
-        StringJoiner joiner = new StringJoiner(",");
-        for (Object v : values) {
-            joiner.add(formatCsvValue(v));
-        }
-        return joiner.toString();
-    }
-
-    private static String formatCsvValue(Object value) {
-        if (value == null) return "";
-        if (value instanceof Double d) {
-            if (Double.isNaN(d) || Double.isInfinite(d)) return "";
-            return String.format(Locale.US, "%.6f", d);
-        }
-        if (value instanceof Integer || value instanceof Long) {
-            return value.toString();
-        }
-        return escapeCsv(value.toString());
-    }
-
-    // ================================================================
-    //           SCRITTURA SPECIALIZZATA - WHAT-IF RESULTS
-    // ================================================================
-
-    /**
-     * Contesto per la scrittura dei risultati What-If.
-     */
-    public record WhatIfContext(
-            String project,
-            String aFeature,
-            String method,
-            String classifierSpec,
-            RefactorDelta delta,
-            double bPlusThreshold,
-            double deltaExpectedProb,
-            double relOnBPlusProb,
-            double relOnAProb,
-            int deltaEstimatedClassify
-    ) {}
 
     /**
      * Scrive i risultati dell'analisi What-If.
@@ -350,20 +247,13 @@ public final class CsvExporter {
     public static void writeWhatIfResults(Path outPath, WhatIfContext ctx,
                                           WhatIfResult rA, WhatIfResult rBPlus,
                                           WhatIfResult rB, WhatIfResult rC) throws IOException {
-        try (CsvWriter writer = new CsvWriter(outPath)) {
-            writer.writeHeader(
-                    "Project", "AFeature", "AFMethod", "BClassifier",
-                    "RefBefore", "RefAfter", "RefFactor",
-                    "BPlusThreshold", "Dataset",
-                    "N", "ActualBuggy",
-                    "ExpectedDefectsSum_Prob",
-                    "EstimatedBuggy_Threshold05",
-                    "EstimatedBuggy_Classify",
-                    "DeltaExpectedProb_BPlus_to_B",
-                    "RelDropProbOnBPlus",
-                    "RelDropProbOnA_latest",
-                    "DeltaEstimatedClassify_BPlus_to_B"
-            );
+        Files.createDirectories(outPath.getParent());
+        try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(outPath, StandardCharsets.UTF_8))) {
+            writer.println("Project,AFeature,AFMethod,BClassifier,RefBefore,RefAfter,RefFactor," +
+                    "BPlusThreshold,Dataset,N,ActualBuggy,ExpectedDefectsSum_Prob," +
+                    "EstimatedBuggy_Threshold05,EstimatedBuggy_Classify," +
+                    "DeltaExpectedProb_BPlus_to_B,RelDropProbOnBPlus,RelDropProbOnA_latest," +
+                    "DeltaEstimatedClassify_BPlus_to_B");
 
             writeWhatIfRow(writer, ctx, rA);
             writeWhatIfRow(writer, ctx, rBPlus);
@@ -372,9 +262,8 @@ public final class CsvExporter {
         }
     }
 
-    private static void writeWhatIfRow(CsvWriter writer, WhatIfContext ctx, WhatIfResult r) {
-        writer.writeFormattedRow(
-                "%s,%s,%s,\"%s\",%.6f,%.6f,%.6f,%.6f,%s,%d,%d,%.6f,%d,%d,%.6f,%.6f,%.6f,%d",
+    private static void writeWhatIfRow(PrintWriter writer, WhatIfContext ctx, WhatIfResult r) {
+        writer.printf(Locale.US, "%s,%s,%s,\"%s\",%.6f,%.6f,%.6f,%.6f,%s,%d,%d,%.6f,%d,%d,%.6f,%.6f,%.6f,%d%n",
                 escapeCsvSimple(ctx.project()),
                 escapeCsvSimple(ctx.aFeature()),
                 escapeCsvSimple(ctx.method()),
@@ -396,11 +285,6 @@ public final class CsvExporter {
         );
     }
 
-    private static String escapeCsvSimple(String s) {
-        if (s == null) return "";
-        return s.replace(",", " ");
-    }
-
     // ================================================================
     //                 EXPORT DATASET PROGETTO
     // ================================================================
@@ -410,11 +294,8 @@ public final class CsvExporter {
                                  List<Ticket> tickets,
                                  List<Method> methods) throws IOException {
 
-        if (projectName == null || projectName.isBlank()) {
-            projectName = "PROJECT";
-        }
-
-        Path baseDir = Paths.get("output", "csv", projectName.toUpperCase(Locale.ROOT));
+        String projName = (projectName == null || projectName.isBlank()) ? "PROJECT" : projectName;
+        Path baseDir = Paths.get("output", "csv", projName.toUpperCase(Locale.ROOT));
         Files.createDirectories(baseDir);
 
         exportVersions(baseDir.resolve("versions.csv"), versions);
@@ -424,33 +305,39 @@ public final class CsvExporter {
     }
 
     private static void exportVersions(Path file, List<Version> versions) throws IOException {
-        try (CsvWriter writer = new CsvWriter(file)) {
-            writer.writeHeader("Index", "Id", "Name", "Date", "NumCommits");
+        Files.createDirectories(file.getParent());
+        try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8))) {
+            writer.println("Index,Id,Name,Date,NumCommits");
 
             if (versions == null) return;
 
             versions.stream()
                     .filter(Objects::nonNull)
                     .sorted(Comparator.comparingInt(Version::getIndex))
-                    .forEach(v -> writer.writeRow(
-                            safeIndex(v),
-                            nullSafe(v.getId()),
-                            nullSafe(v.getName()),
-                            formatDate(v.getDate()),
-                            v.getCommitList() == null ? 0 : v.getCommitList().size()
-                    ));
+                    .forEach(v -> writer.println(formatVersionRow(v)));
         }
     }
 
+    private static String formatVersionRow(Version v) {
+        if (v == null) {
+            return "0,,,,0";
+        }
+        return String.format(Locale.US, "%d,%s,%s,%s,%d",
+                safeIndex(v),
+                escapeCsv(nullSafe(v.getId())),
+                escapeCsv(nullSafe(v.getName())),
+                formatDate(v.getDate()),
+                v.getCommitList() == null ? 0 : v.getCommitList().size());
+    }
+
     private static void exportCommits(Path file, List<Version> versions, List<Ticket> tickets) throws IOException {
-        try (CsvWriter writer = new CsvWriter(file)) {
-            writer.writeHeader("Hash", "AuthorName", "AuthorEmail", "Date",
-                    "VersionIndex", "VersionName", "TicketKeys", "ShortMessage");
+        Files.createDirectories(file.getParent());
+        try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8))) {
+            writer.println("Hash,AuthorName,AuthorEmail,Date,VersionIndex,VersionName,TicketKeys,ShortMessage");
 
             if (versions == null) return;
 
             Set<String> seenHashes = new HashSet<>();
-
             versions.stream()
                     .filter(Objects::nonNull)
                     .sorted(Comparator.comparingInt(Version::getIndex))
@@ -458,27 +345,29 @@ public final class CsvExporter {
         }
     }
 
-    private static void writeVersionCommits(CsvWriter writer, Version v,
+    private static void writeVersionCommits(PrintWriter writer, Version v,
                                             List<Ticket> tickets, Set<String> seenHashes) {
         if (v.getCommitList() == null) return;
 
         for (RevCommit c : v.getCommitList()) {
-            if (c == null) continue;
-            String hash = c.getName();
-            if (!seenHashes.add(hash)) continue;
+            if (c == null || !seenHashes.add(c.getName())) continue;
 
             PersonIdent author = c.getAuthorIdent();
-            writer.writeRow(
-                    hash,
-                    author != null ? nullSafe(author.getName()) : "",
-                    author != null ? nullSafe(author.getEmailAddress()) : "",
-                    formatDate(Instant.ofEpochSecond(c.getCommitTime()).atZone(ZoneOffset.UTC).toLocalDate()),
-                    safeIndex(v),
-                    nullSafe(v.getName()),
-                    buildTicketKeysForCommit(c, tickets),
-                    nullSafe(c.getShortMessage())
-            );
+            writer.println(formatCommitRow(c, author, v, tickets));
         }
+    }
+
+    private static String formatCommitRow(RevCommit c, PersonIdent author, Version v, List<Ticket> tickets) {
+        String versionName = (v != null) ? nullSafe(v.getName()) : "";
+        return String.format("%s,%s,%s,%s,%d,%s,%s,%s",
+                c.getName(),
+                escapeCsv(author != null ? nullSafe(author.getName()) : ""),
+                escapeCsv(author != null ? nullSafe(author.getEmailAddress()) : ""),
+                formatDate(Instant.ofEpochSecond(c.getCommitTime()).atZone(ZoneOffset.UTC).toLocalDate()),
+                safeIndex(v),
+                escapeCsv(versionName),
+                escapeCsv(buildTicketKeysForCommit(c, tickets)),
+                escapeCsv(nullSafe(c.getShortMessage())));
     }
 
     private static String buildTicketKeysForCommit(RevCommit commit, List<Ticket> tickets) {
@@ -493,40 +382,36 @@ public final class CsvExporter {
     }
 
     private static void exportTickets(Path file, List<Ticket> tickets) throws IOException {
-        try (CsvWriter writer = new CsvWriter(file)) {
-            writer.writeHeader("Key", "CreationDate", "ResolutionDate",
-                    "OpeningVersionIndex", "OpeningVersionName",
-                    "FixedVersionIndex", "FixedVersionName",
-                    "InjectedVersionIndex", "InjectedVersionName",
-                    "AffectedVersionIndices", "AffectedVersionNames",
-                    "NumAssociatedCommits");
+        Files.createDirectories(file.getParent());
+        try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8))) {
+            writer.println("Key,CreationDate,ResolutionDate,OpeningVersionIndex,OpeningVersionName," +
+                    "FixedVersionIndex,FixedVersionName,InjectedVersionIndex,InjectedVersionName," +
+                    "AffectedVersionIndices,AffectedVersionNames,NumAssociatedCommits");
 
             if (tickets == null) return;
 
             for (Ticket t : tickets) {
                 if (t == null) continue;
-                writeTicketRow(writer, t);
+                writer.println(formatTicketRow(t));
             }
         }
     }
 
-    private static void writeTicketRow(CsvWriter writer, Ticket t) {
+    private static String formatTicketRow(Ticket t) {
         Version ov = t.getOpeningVersion();
         Version fv = t.getFixedVersion();
         Version iv = t.getInjectedVersion();
-
         String[] avInfo = buildAffectedVersionsInfo(t.getAffectedVersions());
 
-        writer.writeRow(
-                nullSafe(t.getKey()),
+        return String.format("%s,%s,%s,%d,%s,%d,%s,%d,%s,%s,%s,%d",
+                escapeCsv(nullSafe(t.getKey())),
                 formatDate(t.getCreationDate()),
                 formatDate(t.getResolutionDate()),
-                safeIndex(ov), ov != null ? nullSafe(ov.getName()) : "",
-                safeIndex(fv), fv != null ? nullSafe(fv.getName()) : "",
-                safeIndex(iv), iv != null ? nullSafe(iv.getName()) : "",
-                avInfo[0], avInfo[1],
-                t.getAssociatedCommits() == null ? 0 : t.getAssociatedCommits().size()
-        );
+                safeIndex(ov), escapeCsv(ov != null ? nullSafe(ov.getName()) : ""),
+                safeIndex(fv), escapeCsv(fv != null ? nullSafe(fv.getName()) : ""),
+                safeIndex(iv), escapeCsv(iv != null ? nullSafe(iv.getName()) : ""),
+                escapeCsv(avInfo[0]), escapeCsv(avInfo[1]),
+                t.getAssociatedCommits() == null ? 0 : t.getAssociatedCommits().size());
     }
 
     private static String[] buildAffectedVersionsInfo(List<Version> affected) {
@@ -549,12 +434,11 @@ public final class CsvExporter {
     }
 
     private static void exportDataset(Path file, List<Method> methods) throws IOException {
-        try (CsvWriter writer = new CsvWriter(file)) {
-            writer.writeHeader("VersionIndex", "VersionName", "MethodFQN",
-                    "LOC", "NumParameters", "NumBranches", "NestingDepth",
-                    "NumCodeSmells", "NumLocalVariables", "NumRevisions", "NumAuthors",
-                    "TotalStmtAdded", "TotalStmtDeleted", "MaxChurn", "AvgChurn",
-                    "HasFixHistory", "Buggy", "BodyHash");
+        Files.createDirectories(file.getParent());
+        try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8))) {
+            writer.println("VersionIndex,VersionName,MethodFQN,LOC,NumParameters,NumBranches,NestingDepth," +
+                    "NumCodeSmells,NumLocalVariables,NumRevisions,NumAuthors,TotalStmtAdded,TotalStmtDeleted," +
+                    "MaxChurn,AvgChurn,HasFixHistory,Buggy,BodyHash");
 
             if (methods == null) return;
 
@@ -565,35 +449,34 @@ public final class CsvExporter {
 
             for (Method m : sorted) {
                 if (m == null) continue;
-                writeMethodRow(writer, m);
+                writer.println(formatMethodRow(m));
             }
         }
     }
 
-    private static void writeMethodRow(CsvWriter writer, Method m) {
+    private static String formatMethodRow(Method m) {
         Version v = m.getVersion();
-        Metrics metrics = m.getMetrics();
+        Metrics met = m.getMetrics();
 
-        writer.writeRow(
+        return String.format(Locale.US, "%d,%s,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%.6f,%d,%s,%s",
                 safeIndex(v),
-                v != null ? nullSafe(v.getName()) : "",
-                nullSafe(m.getFullyQualifiedName()),
-                metrics != null ? metrics.getLoc() : 0,
-                metrics != null ? metrics.getParameterCount() : 0,
-                metrics != null ? metrics.getNumBranches() : 0,
-                metrics != null ? metrics.getNestingDepth() : 0,
-                metrics != null ? metrics.getNumCodeSmells() : 0,
-                metrics != null ? metrics.getNumLocalVariables() : 0,
-                metrics != null ? metrics.getNumRevisions() : 0,
-                metrics != null ? metrics.getNumAuthors() : 0,
-                metrics != null ? metrics.getTotalStmtAdded() : 0,
-                metrics != null ? metrics.getTotalStmtDeleted() : 0,
-                metrics != null ? metrics.getMaxChurn() : 0,
-                metrics != null ? metrics.getAvgChurn() : 0.0,
-                metrics != null ? metrics.getHasFixHistory() : 0,
+                escapeCsv(v != null ? nullSafe(v.getName()) : ""),
+                escapeCsv(nullSafe(m.getFullyQualifiedName())),
+                met != null ? met.getLoc() : 0,
+                met != null ? met.getParameterCount() : 0,
+                met != null ? met.getNumBranches() : 0,
+                met != null ? met.getNestingDepth() : 0,
+                met != null ? met.getNumCodeSmells() : 0,
+                met != null ? met.getNumLocalVariables() : 0,
+                met != null ? met.getNumRevisions() : 0,
+                met != null ? met.getNumAuthors() : 0,
+                met != null ? met.getTotalStmtAdded() : 0,
+                met != null ? met.getTotalStmtDeleted() : 0,
+                met != null ? met.getMaxChurn() : 0,
+                met != null ? met.getAvgChurn() : 0.0,
+                met != null ? met.getHasFixHistory() : 0,
                 m.isBuggy() ? "yes" : "no",
-                nullSafe(m.getBodyHash())
-        );
+                escapeCsv(nullSafe(m.getBodyHash())));
     }
 
     // ================================================================
@@ -609,75 +492,64 @@ public final class CsvExporter {
 
         StringBuilder cur = new StringBuilder();
         boolean inQuotes = false;
+        int i = 0;
 
-        for (int i = 0; i < line.length(); i++) {
+        while (i < line.length()) {
             char ch = line.charAt(i);
+            int step = inQuotes
+                    ? handleQuotedChar(ch, line, i, cur)
+                    : handleUnquotedChar(ch, cur, out);
 
-            if (inQuotes) {
-                if (ch == '"') {
-                    if (i + 1 < line.length() && line.charAt(i + 1) == '"') {
-                        cur.append('"');
-                        i++;
-                    } else {
-                        inQuotes = false;
-                    }
-                } else {
-                    cur.append(ch);
-                }
-            } else {
-                if (ch == '"') {
-                    inQuotes = true;
-                } else if (ch == ',') {
-                    out.add(cur.toString());
-                    cur.setLength(0);
-                } else {
-                    cur.append(ch);
-                }
-            }
+            inQuotes = updateQuoteState(inQuotes, ch, line, i);
+            i += (step > 0) ? step : 1;
         }
 
         out.add(cur.toString());
         return out;
     }
 
-    /**
-     * Parsa l'header di un CSV e restituisce una mappa nome_colonna -> indice.
-     */
-    public static Map<String, Integer> parseHeader(String headerLine) {
-        List<String> header = parseCsvLine(headerLine);
-        Map<String, Integer> col = new HashMap<>();
-        for (int i = 0; i < header.size(); i++) {
-            col.put(header.get(i).trim(), i);
+    private static int handleQuotedChar(char ch, String line, int i, StringBuilder cur) {
+        if (ch == '"' && i + 1 < line.length() && line.charAt(i + 1) == '"') {
+            cur.append('"');
+            return 2;
         }
-        return col;
+        if (ch != '"') {
+            cur.append(ch);
+        }
+        return 1;
+    }
+
+    private static int handleUnquotedChar(char ch, StringBuilder cur, List<String> out) {
+        if (ch == ',') {
+            out.add(cur.toString());
+            cur.setLength(0);
+        } else if (ch != '"') {
+            cur.append(ch);
+        }
+        return 1;
+    }
+
+    private static boolean updateQuoteState(boolean inQuotes, char ch, String line, int i) {
+        if (ch != '"') {
+            return inQuotes;
+        }
+        if (inQuotes) {
+            return i + 1 < line.length() && line.charAt(i + 1) == '"';
+        }
+        return true;
     }
 
     // ================================================================
     //                    SAFE PARSING
     // ================================================================
 
-    public static String safeStr(String[] arr, int i) {
-        if (arr == null || i < 0 || i >= arr.length) return "";
-        return arr[i] == null ? "" : arr[i].trim();
-    }
-
-    public static String safeStr(List<String> fields, int i) {
+    private static String safeStr(List<String> fields, int i) {
         if (fields == null || i < 0 || i >= fields.size()) return "";
         String s = fields.get(i);
         return s == null ? "" : s.trim();
     }
 
-    public static int safeInt(String[] arr, int i, int def) {
-        try {
-            String s = safeStr(arr, i);
-            if (s.isEmpty()) return def;
-            return (int) Math.round(Double.parseDouble(s));
-        } catch (NumberFormatException _) {
-            return def;
-        }
-    }
-
-    public static int safeInt(List<String> fields, int i, int def) {
+    private static int safeInt(List<String> fields, int i, int def) {
         try {
             String s = safeStr(fields, i);
             if (s.isEmpty()) return def;
@@ -687,17 +559,7 @@ public final class CsvExporter {
         }
     }
 
-    public static double safeDouble(String[] arr, int i) {
-        try {
-            String s = safeStr(arr, i);
-            if (s.isEmpty()) return Double.NaN;
-            return Double.parseDouble(s);
-        } catch (NumberFormatException _) {
-            return Double.NaN;
-        }
-    }
-
-    public static double safeDouble(List<String> fields, int i) {
+    private static double safeDouble(List<String> fields, int i) {
         try {
             String s = safeStr(fields, i);
             if (s.isEmpty()) return Double.NaN;
@@ -707,7 +569,12 @@ public final class CsvExporter {
         }
     }
 
-    public static Double parseDoubleSafe(String s) {
+    /**
+     * Parsa un double da una lista di campi, restituendo null se non valido.
+     */
+    public static Double parseDoubleSafe(List<String> fields, int idx) {
+        if (fields == null || idx < 0 || idx >= fields.size()) return null;
+        String s = fields.get(idx);
         if (s == null || s.trim().isEmpty()) return null;
         try {
             return Double.parseDouble(s.trim());
@@ -716,23 +583,25 @@ public final class CsvExporter {
         }
     }
 
-    public static Double parseDoubleSafe(List<String> fields, int idx) {
-        if (fields == null || idx < 0 || idx >= fields.size()) return null;
-        return parseDoubleSafe(fields.get(idx));
+    private static double parseDoubleOrNaN(String s) {
+        if (s == null || s.trim().isEmpty()) return Double.NaN;
+        try {
+            return Double.parseDouble(s.trim());
+        } catch (NumberFormatException _) {
+            return Double.NaN;
+        }
     }
 
-    public static double parseDoubleOrNaN(String s) {
-        Double d = parseDoubleSafe(s);
-        return (d != null) ? d : Double.NaN;
-    }
-
+    /**
+     * Parsa il campo Buggy (yes/no) restituendo 1.0, 0.0 o null.
+     */
     public static Double parseBuggy(List<String> fields, int idx) {
         if (fields == null || idx < 0 || idx >= fields.size()) return null;
         String s = fields.get(idx);
         if (s == null) return null;
         s = s.trim().toLowerCase(Locale.ROOT);
-        if (s.equals("yes")) return 1.0;
-        if (s.equals("no")) return 0.0;
+        if ("yes".equals(s)) return 1.0;
+        if ("no".equals(s)) return 0.0;
         return null;
     }
 
@@ -761,10 +630,15 @@ public final class CsvExporter {
         return hasSpecial ? "\"" + escaped + "\"" : escaped;
     }
 
+    private static String escapeCsvSimple(String s) {
+        if (s == null) return "";
+        return s.replace(",", " ");
+    }
+
     private static int requireColumnIndex(Map<String, Integer> idx, String colName) {
         Integer v = idx.get(colName);
         if (v == null) {
-            throw new IllegalArgumentException("CSV missing required column: " + colName);
+            throw new IllegalArgumentException(String.format("CSV missing required column: %s", colName));
         }
         return v;
     }

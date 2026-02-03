@@ -34,7 +34,7 @@ public class RefactorAnalyzer {
     private static final String SANDBOX = "SANDBOX";
     private static final String AFTER = "AFTER";
     private final String projectName;     // atteso uppercase
-    private final String baseMethodName;  // es. dispatchReceivedMessagesToSubscribers
+    private final String baseMethodName;  // es. 'dispatchReceivedMessagesToSubscribers'
 
     private static final Logger LOGGER = Logger.getLogger(RefactorAnalyzer.class.getName());
 

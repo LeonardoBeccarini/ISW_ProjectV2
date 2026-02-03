@@ -60,16 +60,16 @@ public class GitRetriever {
     private final Repository repository;
     private final Git git;
 
-    /** Parser tollerante (usa ParseResult invece di eccezioni). */
+    // Parser tollerante (usa ParseResult invece di eccezioni).
     private final JavaParser javaParser;
 
-    /** Tutti i commit del repository, ordinati cronologicamente. */
+    // Tutti i commit del repository, ordinati cronologicamente.
     private final List<RevCommit> allCommits = new ArrayList<>();
 
-    /** Mapping commitId -> Version (calcolato in associateCommitToVersion). */
+    // Mapping commitId -> Version (calcolato in associateCommitToVersion).
     private final Map<String, Version> commitToVersion = new HashMap<>();
 
-    /** Componente dedicata al calcolo delle metriche. */
+    // Componente dedicata al calcolo delle metriche.
     private final MetricsCalc metricsCalc;
 
     public GitRetriever(String projectName,
@@ -239,7 +239,7 @@ public class GitRetriever {
     }
 
     /* =========================================================
-       =                 COMMIT â†’ TICKET                        =
+       =                 COMMIT --> TICKET                        =
        ========================================================= */
 
     void associateCommitToTicket(List<Ticket> tickets) throws GitAPIException, IOException {
@@ -265,18 +265,8 @@ public class GitRetriever {
         }
     }
 
-    private static final class TicketIndex {
-        final Map<String, Ticket> byKey;
-        final LocalDate minCreation;
-        final LocalDate maxResolution;
-        final int slackDays;
-
-        TicketIndex(Map<String, Ticket> byKey, LocalDate minCreation, LocalDate maxResolution, int slackDays) {
-            this.byKey = byKey;
-            this.minCreation = minCreation;
-            this.maxResolution = maxResolution;
-            this.slackDays = slackDays;
-        }
+    private record TicketIndex(Map<String, Ticket> byKey, LocalDate minCreation, LocalDate maxResolution,
+                               int slackDays) {
     }
 
     private TicketIndex buildTicketIndex(List<Ticket> tickets, int slackDays) {
@@ -294,7 +284,7 @@ public class GitRetriever {
             minC = minDate(minC, t.getCreationDate());
             maxR = maxDate(maxR, t.getResolutionDate());
 
-            // Reset solo per ticket validi (coerente con la versione precedente).
+            // Reset indici solo per ticket validi
             resetAssociatedCommits(t);
         }
 
@@ -317,7 +307,7 @@ public class GitRetriever {
         while (matcher.find()) {
             String key = matcher.group().toUpperCase(Locale.ROOT);
             Ticket ticket = index.byKey.get(key);
-            if (ticket != null && isWithinTicketWindow(commitDate, ticket, index.slackDays)) {
+            if (isWithinTicketWindow(commitDate, ticket, index.slackDays)) {
                 ticket.getAssociatedCommits().add(commit);
             }
         }
@@ -437,7 +427,7 @@ public class GitRetriever {
     private RevCommit latestCommitOrNull(Version version) {
         List<RevCommit> versionCommits = (version != null) ? version.getCommitList() : null;
         if (versionCommits == null || versionCommits.isEmpty()) {
-            // In teoria già filtrato in prepareAnalysisVersionList(), ma manteniamo robustezza.
+            // In teoria già filtrato in prepareAnalysisVersionList(), ma meglio essere sicuri.
             warnSkipVersion(version, "0 commit associati alla release");
             return null;
         }
@@ -506,7 +496,7 @@ public class GitRetriever {
                                          List<Method> allMethods,
                                          Map<String, List<Method>> methodsByFqn) {
 
-        // Versione accettata: ora è davvero "in analisi"
+        // Versione accettata
         analysisVersionList.add(version);
 
         if (extraction != null) {
@@ -545,7 +535,7 @@ public class GitRetriever {
 
         Map<Integer, Integer> codeSmellsByLine = metricsCalc.calculateCodeSmellsByLine(fileContent);
 
-        // Parsing tollerante: se c'Ã¨ un AST parziale lo usiamo comunque
+        // Parsing tollerante: se c'è un AST parziale si usa comunque
         try {
             ParseResult<CompilationUnit> pr = javaParser.parse(fileContent);
             Optional<CompilationUnit> cuOpt = pr.getResult();
@@ -565,7 +555,7 @@ public class GitRetriever {
                 methodsByFqn.computeIfAbsent(fqn, k -> new ArrayList<>()).add(method);
             }
 
-            // 2) Costruttori (nuovo: prima erano persi)
+            // 2) Costruttori
             for (ConstructorDeclaration cd : cu.findAll(ConstructorDeclaration.class)) {
                 String signature = metricsCalc.buildConstructorSignature(cd);
                 String fqn = filePath + "/" + signature;
@@ -578,7 +568,7 @@ public class GitRetriever {
             }
 
         } catch (ParseProblemException | StackOverflowError _) {
-            // Se proprio fallisce tutto, ignora il file (ma ora succede molto meno)
+            // Se proprio fallisce tutto, ignora il file
         }
     }
 
@@ -588,7 +578,7 @@ public class GitRetriever {
         if (!s.isEmpty() && s.charAt(0) == '\uFEFF') {
             s = s.substring(1);
         }
-        // caratteri NUL (a volte presenti in file â€œsporchiâ€)
+        // caratteri NULL (a volte presenti in file sporchi)
         s = s.replace("\u0000", "");
         return s;
     }

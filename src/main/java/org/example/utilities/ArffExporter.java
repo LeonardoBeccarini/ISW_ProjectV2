@@ -15,12 +15,11 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Utility per costruire (e opzionalmente salvare) un dataset WEKA
+ * Utility per costruire e salvare un dataset WEKA
  * a partire dalla lista di Method.
- * NOTA IMPORTANTE (allineamento al progetto reference):
+ * NOTA:
  * - Il dataset NON include VersionIndex come feature.
  * - La classe è nominale {no, yes} con attributo "IsBuggy".
- * - L'ordine delle feature è quello del reference.
  */
 public final class ArffExporter {
 
@@ -30,7 +29,7 @@ public final class ArffExporter {
 
     /**
      * Converte la lista di metodi in un oggetto Instances WEKA.
-     * Feature (ordine reference):
+     * Features:
      *  0  LOC
      *  1  NumParameters
      *  2  NumBranches
@@ -44,7 +43,7 @@ public final class ArffExporter {
      *  10 MaxChurn
      *  11 AvgChurn
      *  12 HasFixHistory
-     *  13 IsBuggy (classe nominale {no, yes})
+     *  13 IsBuggy ({no, yes})
      */
     public static Instances methodsToInstances(List<Method> methods, String relationName) {
         if (methods == null || methods.isEmpty()) {
@@ -73,7 +72,6 @@ public final class ArffExporter {
         attributes.add(new Attribute("AvgChurn"));
         attributes.add(new Attribute("HasFixHistory"));
 
-        // Classe nominale {no, yes} (come reference)
         List<String> classValues = Arrays.asList("no", "yes");
         attributes.add(new Attribute("IsBuggy", classValues));
 

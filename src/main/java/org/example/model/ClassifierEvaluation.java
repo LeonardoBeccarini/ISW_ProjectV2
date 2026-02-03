@@ -1,9 +1,7 @@
 package org.example.model;
 
 /**
- * Plain container for evaluation results, made robust against
- * older/newer processor code by exposing both legacy and new
- * getters/setters (aliases included).
+Contenitore valutazioni classificatore
  */
 public class ClassifierEvaluation {
 
@@ -42,24 +40,21 @@ public class ClassifierEvaluation {
     private int tn;
     private int fn;
 
-    /** Convenience constructor with project and WF index. */
     public ClassifierEvaluation(String projName, int walkForwardIterationIndex) {
         this.projName = projName;
         this.walkForwardIterationIndex = walkForwardIterationIndex;
     }
 
-    /* ----------------------- Setters (with aliases) ----------------------- */
+    /* ----------------------- Setters ----------------------- */
 
     public void setTrainingSize(int trainingSize) { this.trainingSize = trainingSize; }
     public void setTestingSize(int testingSize) { this.testingSize = testingSize; }
 
-    // model/classifier aliases
     public void setModel(String model) { this.classifier = model; }
     public void setClassifier(String classifier) { this.classifier = classifier; }
 
     public void setFeatureSelection(String featureSelection) { this.featureSelection = featureSelection; }
 
-    // sampling/balancing aliases
     public void setSampling(String sampling) { this.sampling = sampling; }
     public void setBalancing(String balancing) { this.sampling = balancing; }
 
@@ -116,7 +111,6 @@ public class ClassifierEvaluation {
     public String getTn() { return Integer.toString(tn); }
     public String getFn() { return Integer.toString(fn); }
 
-    // Also expose numeric getters if needed elsewhere
     public double precision() { return precision; }
     public double f1() { return f1; }
 

@@ -11,22 +11,22 @@ import java.util.List;
  */
 public class Method {
 
-    /** path del file + "/" + signature (nomeMetodo(tipoParam1, tipoParam2, ...)) */
+   // path del file + "/" + signature (nomeMetodo(tipoParam1, tipoParam2, ...))
     private final String fullyQualifiedName;
 
-    /** Versione del progetto a cui appartiene questa istanza del metodo. */
+    //Versione del progetto a cui appartiene questa istanza del metodo.
     private final Version version;
 
-    /** Oggetto che contiene tutte le metriche statiche + di processo. */
+    // Oggetto che contiene tutte le metriche statiche + di processo.
     private final Metrics metrics;
 
-    /** Commit che hanno modificato questo metodo (fino a questa Version). */
+    // Commit che hanno modificato questo metodo (fino a questa Version).
     private final List<RevCommit> commits = new ArrayList<>();
 
-    /** Hash del body normalizzato, usato per rilevare modifiche tra versioni. */
+    // Hash del body normalizzato, usato per rilevare modifiche tra versioni.
     private String bodyHash;
 
-    /** Etichetta di buggyness per questa istanza del metodo. */
+    // Etichetta di buggyness per questa istanza del metodo.
     private boolean buggy;
 
     public Method(String fullyQualifiedName, Version version) {

@@ -5,7 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-/** Writer CSV pulito: niente virgole finali, WF_ITER sempre presente, escaping basilare. */
+/** File finale per ogni classificatore */
 public class EvaluationFile {
 
     private final String projName;
