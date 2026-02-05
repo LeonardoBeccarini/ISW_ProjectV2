@@ -20,7 +20,7 @@ import java.util.*;
 
 /**
  * What-If analysis (method-level) allineata al report.
- *
+ *<p></p>
  * Responsabilità UNICA: logica di analisi What-If con modelli ML.
  * Delega TUTTO l'I/O CSV a CsvExporter.
  */
@@ -31,7 +31,7 @@ public class WhatIfAnalysis {
     private static final String COL_METHOD_FQN = "MethodFQN";
     private static final String COL_BODY_HASH = "BodyHash";
     private static final String COL_BUGGY = "Buggy";
-
+    private static final String NUM_CODESMELLS= "NumCodeSmells";
     private static final double DEFAULT_TOP_QUANTILE_FOR_BPLUS = 0.75;
     private static final double EPS = 1e-9;
 
@@ -69,7 +69,7 @@ public class WhatIfAnalysis {
 
         // B = copy of B+ with AFeature transformed
         Instances b = new Instances(bPlusSplit.bPlus);
-        applyWhatIfTransformation(b, aFeatIndex, ctx.delta);
+        applyWhatIfTransformation(b, aFeatIndex, ctx.delta, actionableFeature);
 
         // Normalize and evaluate
         NormalizedSets normSets = normalizeAllSets(train, test, bPlusSplit.bPlus, b, bPlusSplit.c);
@@ -511,14 +511,14 @@ public class WhatIfAnalysis {
     // ================================================================
 
     private static boolean isInBPlus(String aFeature, double value, double threshold) {
-        if ("NumCodeSmells".equalsIgnoreCase(aFeature)) return value > 0.0;
+        if (NUM_CODESMELLS.equalsIgnoreCase(aFeature)) return value > 0.0;
         return value >= threshold;
     }
 
     private static double chooseBPlusThreshold(Instances test, String aFeature, double topQuantile) {
         Attribute a = test.attribute(aFeature);
         if (a == null) throw new IllegalArgumentException("Missing attribute: " + aFeature);
-        if ("NumCodeSmells".equalsIgnoreCase(aFeature)) return 0.0;
+        if (NUM_CODESMELLS.equalsIgnoreCase(aFeature)) return 0.0;
         return quantile(test, a, topQuantile);
     }
 
@@ -572,11 +572,20 @@ public class WhatIfAnalysis {
         return out;
     }
 
-    private static void applyWhatIfTransformation(Instances b, int aFeatIndex, RefactorDelta d) {
+    private static void applyWhatIfTransformation(Instances b, int aFeatIndex, RefactorDelta d, String aFeatureName) {
         for (int i = 0; i < b.numInstances(); i++) {
             Instance inst = b.instance(i);
             double oldV = inst.value(aFeatIndex);
-            double newV = oldV * d.factor();
+            double newV;
+
+            // Per NumCodeSmells: azzera come nel paper
+            if (NUM_CODESMELLS.equalsIgnoreCase(aFeatureName)) {
+                newV = 0.0;
+            } else {
+                // Per altre feature: usa il fattore del refactoring
+                newV = oldV * d.factor();
+            }
+
             if (Double.isNaN(newV) || Double.isInfinite(newV)) newV = oldV;
             if (newV < 0.0) newV = 0.0;
             inst.setValue(aFeatIndex, newV);
